@@ -6,4 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Staff\Customers\" />
+    <Folder Include="Pages\Staff\Profile\" />
+    <Folder Include="Pages\Staff\Payments\" />
+    <Folder Include="Pages\Staff\Orders\" />
+    <Folder Include="Pages\Staff\Reservations\" />
+  </ItemGroup>
+
 </Project>

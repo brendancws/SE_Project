@@ -1,0 +1,240 @@
+﻿@page
+@model RROMS.Pages.Staff.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Staff Dashboard";
+    Layout = "_StaffLayout";
+}
+
+<div class="staff-dashboard">
+
+    <div class="dashboard-header mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Staff Dashboard</h2>
+            <p class="text-muted mb-0">Welcome back. Here is today's restaurant overview.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6 col-lg-3">
+            <div class="dashboard-card">
+                <div class="card-icon">📅</div>
+                <div>
+                    <p class="card-label">Today's Reservations</p>
+                    <h3>12</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="dashboard-card">
+                <div class="card-icon">🍽️</div>
+                <div>
+                    <p class="card-label">Pending Orders</p>
+                    <h3>5</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="dashboard-card">
+                <div class="card-icon">✅</div>
+                <div>
+                    <p class="card-label">Orders Ready</p>
+                    <h3>3</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="dashboard-card">
+                <div class="card-icon">💳</div>
+                <div>
+                    <p class="card-label">Pending Payments</p>
+                    <h3>4</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dashboard-section">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-1">Today's Reservations</h4>
+                <small class="text-muted">Manage upcoming customer reservations</small>
+            </div>
+
+            <a asp-page="/Staff/Reservations/Index"
+               class="btn btn-dark">
+                View All
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Customer</th>
+                        <th>Guests</th>
+                        <th>Table</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>12:30 PM</td>
+                        <td>John Tan</td>
+                        <td>4</td>
+                        <td>T05</td>
+                        <td>
+                            <span class="status confirmed">
+                                Confirmed
+                            </span>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-outline-dark">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>1:00 PM</td>
+                        <td>Sarah Lim</td>
+                        <td>2</td>
+                        <td>T02</td>
+                        <td>
+                            <span class="status pending">
+                                Pending
+                            </span>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-outline-dark">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>1:30 PM</td>
+                        <td>Daniel Wong</td>
+                        <td>5</td>
+                        <td>T08</td>
+                        <td>
+                            <span class="status confirmed">
+                                Confirmed
+                            </span>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-outline-dark">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+    .staff-dashboard {
+        padding: 10px 5px;
+    }
+
+    .dashboard-header h2 {
+        color: #202124;
+    }
+
+    .dashboard-card {
+        background: white;
+        border: 1px solid #eeeeee;
+        border-radius: 16px;
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-height: 120px;
+        transition: 0.2s;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .card-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 26px;
+    }
+
+    .card-label {
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #777;
+    }
+
+    .dashboard-card h3 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .dashboard-section {
+        background: white;
+        border: 1px solid #eeeeee;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .table thead th {
+        background: #f8f9fa;
+        color: #555;
+        border-bottom: none;
+        padding: 14px;
+    }
+
+    .table td {
+        padding: 15px 14px;
+    }
+
+    .status {
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .confirmed {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+</style>
