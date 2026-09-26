@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Pages\Staff\Customers\" />
-    <Folder Include="Pages\Staff\Payments\" />
   </ItemGroup>
 
 </Project>
