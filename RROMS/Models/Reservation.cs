@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class Reservation
     {
+        [Key]
         public int ReservationID { get; set; }
 
         public int CustomerID { get; set; }

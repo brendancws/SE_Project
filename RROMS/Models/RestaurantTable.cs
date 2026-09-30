@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class RestaurantTable
     {
+        [Key]
         public int TableID { get; set; }
 
         public string TableNumber { get; set; } = string.Empty;

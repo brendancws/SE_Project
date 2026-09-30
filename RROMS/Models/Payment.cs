@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class Payment
     {
+        [Key]
         public int PaymentID { get; set; }
 
         public int OrderID { get; set; }

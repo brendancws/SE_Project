@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class MenuItem
     {
+        [Key]
         public int MenuItemID { get; set; }
 
         public int CategoryID { get; set; }

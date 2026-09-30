@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class Customer
     {
+        [Key]
         public int CustomerID { get; set; }
 
         public string Name { get; set; } = string.Empty;

@@ -1,7 +1,10 @@
-﻿namespace RROMS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RROMS.Models
 {
     public class Notification
     {
+        [Key]
         public int NotificationID { get; set; }
 
         public int UserID { get; set; }
