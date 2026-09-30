@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "{id:int}"
 @model RROMS.Pages.Staff.Orders.DetailsModel
 
 @{
@@ -9,37 +9,167 @@
 <div class="order-details-page">
 
     <div class="page-header">
+
         <div>
             <h2>Order Details</h2>
-            <p>View order information and update its current status.</p>
+            <p>View order information and update its status.</p>
         </div>
 
         <a asp-page="/Staff/Orders/Index"
            class="btn btn-outline-secondary">
             ← Back to Orders
         </a>
+
     </div>
 
     <div class="details-card">
 
-        <div class="empty-state">
+        <div class="order-header">
 
-            <div class="empty-icon">
-                🍽️
+            <div>
+                <span class="small-label">Order ID</span>
+                <h4>#@Model.Order.OrderID</h4>
             </div>
 
-            <h4>No Order Selected</h4>
-
-            <p>
-                Select an order from the Orders page to view its details and update its status.
-            </p>
-
-            <a asp-page="/Staff/Orders/Index"
-               class="btn action-btn">
-                View Orders
-            </a>
+            <span class="status-badge">
+                @(Model.Order.Status ?? "Pending")
+            </span>
 
         </div>
+
+        <hr />
+
+        <div class="row g-4">
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Customer</span>
+
+                    <strong>
+                        @(Model.Order.Customer?.Name ?? "-")
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Phone Number</span>
+
+                    <strong>
+                        @(Model.Order.Customer?.Phone ?? "-")
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Reservation ID</span>
+
+                    <strong>
+                        @(Model.Order.ReservationID?.ToString() ?? "-")
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Table</span>
+
+                    <strong>
+                        @(Model.Order.Reservation?.Table?.TableNumber ?? "-")
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Order Date</span>
+
+                    <strong>
+                        @(Model.Order.OrderDate?.ToString("dd/MM/yyyy hh:mm tt") ?? "-")
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="info-box">
+                    <span>Total Amount</span>
+
+                    <strong>
+                        RM @(Model.Order.TotalAmount?.ToString("0.00") ?? "0.00")
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr class="my-4" />
+
+        <form method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="status-section">
+
+                <div>
+                    <h5>Update Order Status</h5>
+
+                    <p>
+                        Select the current progress of this order.
+                    </p>
+                </div>
+
+                <div class="status-controls">
+
+                    <select asp-for="NewStatus"
+                            class="form-select">
+
+                        <option value="Preparing">
+                            Preparing
+                        </option>
+
+                        <option value="Ready to Serve">
+                            Ready to Serve
+                        </option>
+
+                        <option value="Served">
+                            Served
+                        </option>
+
+                        <option value="Completed">
+                            Completed
+                        </option>
+
+                        <option value="Cancelled">
+                            Cancelled
+                        </option>
+
+                    </select>
+
+                    <button type="submit"
+                            class="btn update-btn">
+                        Update Status
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
 
     </div>
 
@@ -75,63 +205,108 @@
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 18px;
-        padding: 60px 30px;
+        padding: 30px;
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
-    .empty-state {
-        text-align: center;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-
-    .empty-icon {
-        width: 75px;
-        height: 75px;
-        margin: 0 auto 20px;
-
-        border-radius: 50%;
-        background: #f3f4f6;
-
+    .order-header {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
-
-        font-size: 30px;
     }
 
-    .empty-state h4 {
-        font-size: 22px;
+    .small-label {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .order-header h4 {
+        margin-top: 4px;
         font-weight: 700;
-        margin-bottom: 10px;
+    }
+
+    .status-badge {
+        padding: 7px 14px;
+        border-radius: 20px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px;
+    }
+
+    .info-box span {
+        display: block;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    .info-box strong {
         color: #1f2937;
     }
 
-    .empty-state p {
-        color: #6b7280;
-        margin-bottom: 25px;
+    .status-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 30px;
     }
 
-    .action-btn {
+    .status-section h5 {
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .status-section p {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .status-controls {
+        display: flex;
+        gap: 10px;
+        min-width: 420px;
+    }
+
+    .status-controls .form-select {
+        border-radius: 10px;
+        min-height: 45px;
+    }
+
+    .update-btn {
         background: #f59e0b;
         color: #111827;
         border: none;
         border-radius: 10px;
-        padding: 10px 22px;
+        padding: 10px 20px;
         font-weight: 600;
+        white-space: nowrap;
     }
 
-    .action-btn:hover {
+    .update-btn:hover {
         background: #d97706;
         color: white;
     }
 
-    @@media(max-width: 700px) {
+    @@media(max-width: 750px) {
 
-        .page-header {
+        .page-header,
+        .status-section {
             flex-direction: column;
             align-items: flex-start;
-            gap: 15px;
+        }
+
+        .status-controls {
+            width: 100%;
+            min-width: 0;
+            flex-direction: column;
         }
 
     }

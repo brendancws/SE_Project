@@ -21,7 +21,7 @@
             <div class="summary-icon">🧾</div>
             <div>
                 <span>Total Orders</span>
-                <h3>0</h3>
+                <h3>@Model.Orders.Count</h3>
             </div>
         </div>
 
@@ -29,7 +29,12 @@
             <div class="summary-icon">👨‍🍳</div>
             <div>
                 <span>Preparing</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Orders.Count(o =>
+                        o.Status != null &&
+                        o.Status.Equals("Preparing",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
         </div>
 
@@ -37,7 +42,12 @@
             <div class="summary-icon">🔔</div>
             <div>
                 <span>Ready to Serve</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Orders.Count(o =>
+                        o.Status != null &&
+                        o.Status.Equals("Ready to Serve",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
         </div>
 
@@ -45,7 +55,12 @@
             <div class="summary-icon">✅</div>
             <div>
                 <span>Completed</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Orders.Count(o =>
+                        o.Status != null &&
+                        o.Status.Equals("Completed",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
         </div>
 
@@ -97,14 +112,145 @@
 
                 <tbody>
 
-                    <tr>
-                        <td colspan="7"
-                            class="text-center text-muted py-5">
+                    @if (Model.Orders != null && Model.Orders.Any())
+                    {
+                        foreach (var order in Model.Orders)
+                        {
+                            <tr>
 
-                            No orders found.
+                                <td>
+                                    @order.OrderID
+                                </td>
 
-                        </td>
-                    </tr>
+                                <td>
+                                    @if (order.Customer != null)
+                                    {
+                                        <strong>
+                                            @order.Customer.Name
+                                        </strong>
+
+                                        @if (!string.IsNullOrEmpty(order.Customer.Phone))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                @order.Customer.Phone
+                                            </small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (order.ReservationID.HasValue)
+                                    {
+                                        @order.ReservationID
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (order.Reservation?.Table != null)
+                                    {
+                                        @order.Reservation.Table.TableNumber
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    RM @(order.TotalAmount?.ToString("0.00") ?? "0.00")
+                                </td>
+
+                                <td>
+
+                                    @if (order.Status != null &&
+                                         order.Status.Equals(
+                                             "Preparing",
+                                             StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge preparing">
+                                            Preparing
+                                        </span>
+                                    }
+                                    else if (order.Status != null &&
+                                             order.Status.Equals(
+                                                 "Ready to Serve",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge ready">
+                                            Ready to Serve
+                                        </span>
+                                    }
+                                    else if (order.Status != null &&
+                                             order.Status.Equals(
+                                                 "Served",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge served">
+                                            Served
+                                        </span>
+                                    }
+                                    else if (order.Status != null &&
+                                             order.Status.Equals(
+                                                 "Completed",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge completed">
+                                            Completed
+                                        </span>
+                                    }
+                                    else if (order.Status != null &&
+                                             order.Status.Equals(
+                                                 "Cancelled",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge cancelled">
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge pending">
+                                            @(order.Status ?? "Pending")
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+                                    <a asp-page="/Staff/Orders/Details"
+                                       asp-route-id="@order.OrderID"
+                                       class="btn btn-sm btn-outline-dark">
+                                        View
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7"
+                                class="text-center text-muted py-5">
+                                No orders found.
+                            </td>
+                        </tr>
+                    }
 
                 </tbody>
 
@@ -150,11 +296,9 @@
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         padding: 20px;
-
         display: flex;
         align-items: center;
         gap: 15px;
-
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
@@ -163,11 +307,9 @@
         height: 50px;
         border-radius: 12px;
         background: #f3f4f6;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         font-size: 23px;
     }
 
@@ -230,6 +372,44 @@
     .orders-table td {
         padding: 15px 14px;
         vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .preparing {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .ready {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .served {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .completed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .pending {
+        background: #f3f4f6;
+        color: #374151;
     }
 
     @@media(max-width: 1100px) {
