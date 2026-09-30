@@ -35,7 +35,7 @@
 
             <div>
                 <span>Total Today</span>
-                <h3>0</h3>
+                <h3>@Model.Reservations.Count</h3>
             </div>
 
         </div>
@@ -48,7 +48,12 @@
 
             <div>
                 <span>Pending</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Reservations.Count(r =>
+                        r.Status != null &&
+                        r.Status.Equals("Pending",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
 
         </div>
@@ -61,7 +66,12 @@
 
             <div>
                 <span>Confirmed</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Reservations.Count(r =>
+                        r.Status != null &&
+                        r.Status.Equals("Confirmed",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
 
         </div>
@@ -74,7 +84,12 @@
 
             <div>
                 <span>Cancelled</span>
-                <h3>0</h3>
+                <h3>
+                    @Model.Reservations.Count(r =>
+                        r.Status != null &&
+                        r.Status.Equals("Cancelled",
+                        StringComparison.OrdinalIgnoreCase))
+                </h3>
             </div>
 
         </div>
@@ -114,6 +129,7 @@
                 <thead>
                     <tr>
                         <th>Reservation ID</th>
+                        <th>Date</th>
                         <th>Time</th>
                         <th>Customer</th>
                         <th>Guests</th>
@@ -126,16 +142,131 @@
 
                 <tbody>
 
-                    <tr>
+                    @if (Model.Reservations != null &&
+                         Model.Reservations.Any())
+                    {
+                        foreach (var reservation in Model.Reservations)
+                        {
+                            <tr>
 
-                        <td colspan="8"
-                            class="text-center text-muted py-5">
+                                <td>
+                                    @reservation.ReservationID
+                                </td>
 
-                            No reservations found.
+                                <td>
+                                    @reservation.Date.ToString("dd/MM/yyyy")
+                                </td>
 
-                        </td>
+                                <td>
+                                    @reservation.Time.ToString(@"hh\:mm")
+                                </td>
 
-                    </tr>
+                                <td>
+                                    @if (reservation.Customer != null)
+                                    {
+                                        <strong>
+                                            @reservation.Customer.Name
+                                        </strong>
+
+                                        <br />
+
+                                        <small class="text-muted">
+                                            @reservation.Customer.Phone
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    -
+                                </td>
+
+                                <td>
+                                    @if (reservation.Table != null)
+                                    {
+                                        @reservation.Table.TableNumber
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    -
+                                </td>
+
+                                <td>
+
+                                    @if (reservation.Status != null &&
+                                         reservation.Status.Equals(
+                                             "Confirmed",
+                                             StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge confirmed">
+                                            Confirmed
+                                        </span>
+                                    }
+                                    else if (reservation.Status != null &&
+                                             reservation.Status.Equals(
+                                                 "Pending",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge pending">
+                                            Pending
+                                        </span>
+                                    }
+                                    else if (reservation.Status != null &&
+                                             reservation.Status.Equals(
+                                                 "Cancelled",
+                                                 StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge cancelled">
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge default-status">
+                                            @reservation.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <a asp-page="/Staff/Reservations/Edit"
+                                       asp-route-id="@reservation.ReservationID"
+                                       class="btn btn-sm btn-outline-warning">
+                                        Edit
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="9"
+                                class="text-center text-muted py-5">
+
+                                No reservations found.
+
+                            </td>
+
+                        </tr>
+                    }
 
                 </tbody>
 
@@ -266,6 +397,34 @@
     .reservation-table td {
         padding: 15px 14px;
         vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .confirmed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .default-status {
+        background: #e5e7eb;
+        color: #374151;
     }
 
     @@media(max-width: 1100px) {
