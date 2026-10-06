@@ -21,7 +21,7 @@
             <div class="summary-icon">👥</div>
             <div>
                 <span>Total Customers</span>
-                <h3>0</h3>
+                <h3>@Model.TotalCustomers</h3>
             </div>
         </div>
 
@@ -29,15 +29,15 @@
             <div class="summary-icon">📝</div>
             <div>
                 <span>Special Requests</span>
-                <h3>0</h3>
+                <h3>@Model.SpecialRequestsCount</h3>
             </div>
         </div>
 
         <div class="summary-card">
-            <div class="summary-icon">🍽️</div>
+            <div class="summary-icon">🍽</div>
             <div>
                 <span>Dining Preferences</span>
-                <h3>0</h3>
+                <h3>@Model.DiningPreferencesCount</h3>
             </div>
         </div>
 
@@ -45,7 +45,7 @@
             <div class="summary-icon">📅</div>
             <div>
                 <span>Reservation Records</span>
-                <h3>0</h3>
+                <h3>@Model.TotalReservationsCount</h3>
             </div>
         </div>
 
@@ -54,24 +54,19 @@
     <div class="customers-card">
 
         <div class="table-toolbar">
-
             <div>
                 <h4>Customer Information</h4>
                 <p>Review customer details and dining information.</p>
             </div>
-
             <div class="search-box">
                 <input type="text"
                        class="form-control"
                        placeholder="Search customer..." />
             </div>
-
         </div>
 
         <div class="table-responsive">
-
             <table class="table customers-table align-middle">
-
                 <thead>
                     <tr>
                         <th>Customer ID</th>
@@ -83,28 +78,63 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
-                    <tr>
-                        <td colspan="7"
-                            class="text-center text-muted py-5">
-                            No customer records found.
-                        </td>
-                    </tr>
-
+                    @if (Model.Customers != null && Model.Customers.Any())
+                    {
+                        foreach (var item in Model.Customers)
+                        {
+                            <tr>
+                                <td>@item.CustomerID</td>
+                                <td>
+                                    <strong>@item.Name</strong><br />
+                                    <small class="text-muted">@item.Email</small>
+                                </td>
+                                <td>@item.Phone</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.SpecialRequest))
+                                    {
+                                        <span class="badge bg-warning text-dark">@item.SpecialRequest</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">None</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.DiningPreference))
+                                    {
+                                        <span class="badge bg-info text-dark">@item.DiningPreference</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">None</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">View Details</span>
+                                </td>
+                                <td>
+                                    <a asp-page="./Details" asp-route-id="@item.CustomerID" class="btn btn-sm btn-outline-primary">View History</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                No customer records found.
+                            </td>
+                        </tr>
+                    }
                 </tbody>
-
             </table>
-
         </div>
 
     </div>
-
 </div>
 
 <style>
-
     .customers-page {
         width: 100%;
     }
@@ -213,7 +243,6 @@
     }
 
     @@media(max-width: 1100px) {
-
         .summary-row {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -226,15 +255,11 @@
         .search-box {
             width: 100%;
         }
-
     }
 
     @@media(max-width: 700px) {
-
         .summary-row {
             grid-template-columns: 1fr;
         }
-
     }
-
 </style>

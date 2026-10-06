@@ -14,40 +14,152 @@
             <p>View customer information, requests, preferences, and reservation history.</p>
         </div>
 
-        <a asp-page="/Staff/Customers/Index"
+        <a asp-page="./Index"
            class="btn btn-outline-secondary">
             ← Back to Customers
         </a>
     </div>
 
-    <div class="details-card">
-
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                👤
+    @if (Model.Customer != null)
+    {
+        <div class="details-grid">
+            
+            <!-- Contact Info Card -->
+            <div class="details-card">
+                <h4>Contact Information</h4>
+                <hr class="mb-3 mt-2" />
+                <div class="info-list">
+                    <p><strong>Name:</strong> @Model.Customer.Name</p>
+                    <p><strong>Email:</strong> @Model.Customer.Email</p>
+                    <p><strong>Phone:</strong> @(string.IsNullOrEmpty(Model.Customer.Phone) ? "N/A" : Model.Customer.Phone)</p>
+                    <p><strong>Status:</strong> <span class="badge bg-success">@Model.Customer.Status</span></p>
+                </div>
             </div>
 
-            <h4>No Customer Selected</h4>
-
-            <p>
-                Select a customer from the Customers page to view their
-                details, dining preferences, special requests, and reservation history.
-            </p>
-
-            <a asp-page="/Staff/Customers/Index"
-               class="btn action-btn">
-                View Customers
-            </a>
-
+            <!-- Preferences Card -->
+            <div class="details-card">
+                <h4>Dining Preferences & Requests</h4>
+                <hr class="mb-3 mt-2" />
+                <div class="info-list">
+                    <p>
+                        <strong>Special Request:</strong><br />
+                        @if (!string.IsNullOrEmpty(Model.Customer.SpecialRequest))
+                        {
+                            <span class="badge bg-warning text-dark mt-1">@Model.Customer.SpecialRequest</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">None specified</span>
+                        }
+                    </p>
+                    <p>
+                        <strong>Dining Preference:</strong><br />
+                        @if (!string.IsNullOrEmpty(Model.Customer.DiningPreference))
+                        {
+                            <span class="badge bg-info text-dark mt-1">@Model.Customer.DiningPreference</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">None specified</span>
+                        }
+                    </p>
+                </div>
+            </div>
         </div>
 
-    </div>
+        <div class="details-grid">
+            
+            <!-- Reservation History -->
+            <div class="details-card">
+                <h4>Reservation History</h4>
+                <hr class="mb-3 mt-2" />
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Table ID</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Reservations != null && Model.Reservations.Any())
+                            {
+                                foreach (var res in Model.Reservations)
+                                {
+                                    <tr>
+                                        <td>@res.Date.ToString("MMM dd, yyyy") at @res.Time</td>
+                                        <td>@res.TableID</td>
+                                        <td><span class="badge bg-primary">@res.Status</span></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No reservations found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="details-card">
+                <h4>Order History</h4>
+                <hr class="mb-3 mt-2" />
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Orders != null && Model.Orders.Any())
+                            {
+                                foreach (var order in Model.Orders)
+                                {
+                                    <tr>
+                                        <td>#@order.OrderID</td>
+                                        <td>@(order.OrderDate.HasValue ? order.OrderDate.Value.ToString("MMM dd, yyyy") : "N/A")</td>
+                                        <td>RM @order.TotalAmount</td>
+                                        <td><span class="badge bg-secondary">@order.Status</span></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No orders found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="details-card">
+            <div class="empty-state">
+                <div class="empty-icon">👤</div>
+                <h4>No Customer Selected</h4>
+                <p>Select a customer from the Customers page to view their details, dining preferences, special requests, and reservation history.</p>
+                <a asp-page="./Index" class="btn action-btn">View Customers</a>
+            </div>
+        </div>
+    }
 
 </div>
 
 <style>
-
     .customer-details-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -72,32 +184,48 @@
         color: #6b7280;
     }
 
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
     .details-card {
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 18px;
-        padding: 60px 30px;
+        padding: 30px;
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .details-card h4 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 5px;
+    }
+
+    .info-list p {
+        margin-bottom: 12px;
+        color: #4b5563;
     }
 
     .empty-state {
         text-align: center;
         max-width: 560px;
-        margin: 0 auto;
+        margin: 40px auto;
     }
 
     .empty-icon {
         width: 75px;
         height: 75px;
         margin: 0 auto 20px;
-
         border-radius: 50%;
         background: #f3f4f6;
-
         display: flex;
         justify-content: center;
         align-items: center;
-
         font-size: 30px;
     }
 
@@ -127,14 +255,14 @@
         color: white;
     }
 
-    @@media(max-width: 700px) {
-
+    @@media(max-width: 900px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
         .page-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 15px;
         }
-
     }
-
 </style>

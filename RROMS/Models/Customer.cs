@@ -20,5 +20,10 @@ namespace RROMS.Models
         public DateTime? DateRegistered { get; set; }
 
         public string? Status { get; set; }
+
+        // S7 - Customer requests and preferences
+        public string? SpecialRequest { get; set; }
+
+        public string? DiningPreference { get; set; }
     }
 }
