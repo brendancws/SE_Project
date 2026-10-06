@@ -15,17 +15,25 @@
         </div>
     </div>
 
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.StatusMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="profile-card">
 
         <div class="profile-header">
 
             <div class="profile-avatar">
-                S
+                @(string.IsNullOrEmpty(Model.Input.Name) ? "S" : Model.Input.Name.Substring(0, 1).ToUpper())
             </div>
 
             <div class="profile-info">
-                <h4>Staff Profile</h4>
-                <p>Restaurant Staff</p>
+                <h4>@Model.Input.Name</h4>
+                <p>@Model.Input.Role</p>
             </div>
 
         </div>
@@ -33,96 +41,56 @@
         <hr />
 
         <form method="post">
+            <input type="hidden" asp-for="Input.StaffID" />
 
             <div class="row g-4">
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Full Name
-                    </label>
-
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Enter full name" />
+                    <label class="form-label" asp-for="Input.Name">Full Name</label>
+                    <input asp-for="Input.Name" class="form-control" placeholder="Enter full name" />
+                    <span asp-validation-for="Input.Name" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Staff ID
-                    </label>
-
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Staff ID"
-                           readonly />
+                    <label class="form-label" asp-for="Input.StaffID">Staff ID</label>
+                    <input asp-for="Input.StaffID" class="form-control" readonly />
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Email Address
-                    </label>
-
-                    <input type="email"
-                           class="form-control"
-                           placeholder="Enter email address" />
+                    <label class="form-label" asp-for="Input.Email">Email Address</label>
+                    <input asp-for="Input.Email" class="form-control" placeholder="Enter email address" />
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Phone Number
-                    </label>
-
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Enter phone number" />
+                    <label class="form-label" asp-for="Input.Phone">Phone Number</label>
+                    <input asp-for="Input.Phone" class="form-control" placeholder="Enter phone number" />
+                    <span asp-validation-for="Input.Phone" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Role
-                    </label>
-
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Role"
-                           readonly />
+                    <label class="form-label" asp-for="Input.Role">Role</label>
+                    <input asp-for="Input.Role" class="form-control" readonly />
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">
-                        Account Status
-                    </label>
-
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Account status"
-                           readonly />
+                    <label class="form-label" asp-for="Input.Status">Account Status</label>
+                    <input asp-for="Input.Status" class="form-control" readonly />
                 </div>
 
             </div>
 
             <div class="action-buttons">
-
-                <button type="reset"
-                        class="btn btn-outline-secondary">
-                    Cancel
-                </button>
-
-                <button type="submit"
-                        class="btn save-btn">
-                    Save Changes
-                </button>
-
+                <a asp-page="./Index" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn save-btn">Save Changes</button>
             </div>
 
         </form>
 
     </div>
-
 </div>
 
 <style>
-
     .profile-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -165,11 +133,9 @@
         border-radius: 50%;
         background: #1f2937;
         color: white;
-
         display: flex;
         justify-content: center;
         align-items: center;
-
         font-size: 30px;
         font-weight: 700;
     }
@@ -234,5 +200,4 @@
         background: #d97706;
         color: white;
     }
-
 </style>
