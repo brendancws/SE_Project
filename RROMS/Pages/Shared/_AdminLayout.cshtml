@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — RROMS Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f1f5f9; }
+
+        .admin-shell { display: flex; min-height: 100vh; }
+
+        /* ---- Sidebar ---- */
+        .sidebar {
+            width: 220px;
+            background: #1e293b;
+            color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+        .sidebar .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #f59e0b;
+            padding: 0 24px 24px;
+            letter-spacing: 1px;
+        }
+        .sidebar .nav { display: flex; flex-direction: column; }
+        .sidebar .nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s;
+        }
+        .sidebar .nav a:hover { background: #334155; color: #fff; }
+        .sidebar .nav a.active { background: #f59e0b; color: #fff; font-weight: 600; }
+        .sidebar .nav .icon { width: 18px; text-align: center; }
+
+        /* ---- Main ---- */
+        .main { flex: 1; display: flex; flex-direction: column; }
+
+        .topbar {
+            background: #fff;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .topbar .panel-title { font-size: 16px; font-weight: 600; color: #0f172a; }
+        .topbar .user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #334155; }
+        .topbar .user .avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #1e293b; color: #f59e0b;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+        }
+        .topbar .user a { color: #64748b; margin-left: 12px; text-decoration: none; font-size: 12px; }
+
+        .content { padding: 28px; }
+        .content h1 { color: #0f172a; margin-bottom: 6px; font-size: 26px; }
+        .content .subtitle { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="sidebar">
+            <div class="logo">RROMS</div>
+            <nav class="nav">
+                <a href="/Admin/Dashboard" class="@(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
+                    <span class="icon">🏠</span> Dashboard
+                </a>
+                <a href="/Admin/Tables" class="@(Context.Request.Path.StartsWithSegments("/Admin/Tables") ? "active" : "")">
+                    <span class="icon">🪑</span> Tables
+                </a>
+                <a href="/Admin/Categories" class="@(Context.Request.Path.StartsWithSegments("/Admin/Categories") ? "active" : "")">
+                    <span class="icon">📂</span> Menu Categories
+                </a>
+                <a href="/Admin/OpeningHours" class="@(Context.Request.Path.StartsWithSegments("/Admin/OpeningHours") ? "active" : "")">
+                    <span class="icon">🕒</span> Opening Hours
+                </a>
+                <a href="/Admin/MenuItems" class="@(Context.Request.Path.StartsWithSegments("/Admin/MenuItems") ? "active" : "")">
+                    <span class="icon">🍽️</span> Menu Items
+                </a>
+                <a href="/Admin/Staff" class="@(Context.Request.Path.StartsWithSegments("/Admin/Staff") ? "active" : "")">
+                    <span class="icon">👥</span> Staff
+                </a>
+                <a href="/Admin/Customers" class="@(Context.Request.Path.StartsWithSegments("/Admin/Customers") ? "active" : "")">
+                    <span class="icon">👤</span> Customers
+                </a>
+            </nav>
+        </aside>
+
+        <div class="main">
+            <header class="topbar">
+                <div class="panel-title">@ViewData["Title"]</div>
+                <div class="user">
+                    <div class="avatar">@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</div>
+                    <div>Signed in as<br /><strong>@User.Identity?.Name</strong></div>
+                    <a href="/Account/Logout">Logout</a>
+                </div>
+            </header>
+
+            <main class="content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+﻿@page
+@model RROMS.Pages.Admin.Categories.CreateModel
+@{
+    ViewData["Title"] = "Add Category";
+    Layout = "_AdminLayout";
+}
+
+<h1>Add Menu Category</h1>
+<p class="subtitle">Create a new category for your menu.</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Name *</label>
+            <input asp-for="Category.Name" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Description</label>
+            <textarea asp-for="Category.Description" rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;"></textarea>
+        </div>
+        <div style="margin-bottom:16px; display:flex; gap:20px;">
+            <div>
+                <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Display Order</label>
+                <input asp-for="Category.DisplayOrder" type="number" style="width:120px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            </div>
+            <div>
+                <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Active</label>
+                <input asp-for="Category.IsActive" type="checkbox" />
+            </div>
+        </div>
+
+        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
+        <a href="/Admin/Categories" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>

@@ -9,5 +9,6 @@ namespace RROMS.Data
             : base(options) { }
 
         public DbSet<AdminUser> AdminUsers { get; set; }
+        public DbSet<MenuCategory> MenuCategories { get; set; }
     }
 }
