@@ -1,0 +1,10 @@
+@page
+@model RROMS.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<h1>Admin Dashboard</h1>
+<p>Welcome, <strong>@User.Identity?.Name</strong></p>
+<p>You are signed in as <strong>@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</strong></p>
+<hr />
+<a href="/Account/Logout">Logout</a>
