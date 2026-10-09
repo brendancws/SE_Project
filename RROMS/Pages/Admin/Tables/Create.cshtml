@@ -1,0 +1,35 @@
+﻿@page
+@model RROMS.Pages.Admin.Tables.CreateModel
+@{
+    ViewData["Title"] = "Add Table";
+    Layout = "_AdminLayout";
+}
+
+<h1>Add Restaurant Table</h1>
+<p class="subtitle">Register a new dining table.</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Table Number *</label>
+            <input asp-for="Table.TableNumber" placeholder="e.g. T1, A5" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Table.TableNumber" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Capacity (seats) *</label>
+            <input asp-for="Table.Capacity" type="number" min="1" max="50" style="width:120px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Table.Capacity" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Location</label>
+            <input asp-for="Table.Location" placeholder="e.g. Indoor, Patio, VIP" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Available</label>
+            <input asp-for="Table.IsAvailable" type="checkbox" />
+        </div>
+
+        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
+        <a href="/Admin/Tables" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>
