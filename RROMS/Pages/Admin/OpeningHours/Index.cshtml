@@ -1,0 +1,46 @@
+﻿@page
+@model RROMS.Pages.Admin.OpeningHours.IndexModel
+@{
+    ViewData["Title"] = "Opening Hours";
+    Layout = "_AdminLayout";
+}
+
+<h1>Opening Hours</h1>
+<p class="subtitle">Set your restaurant's weekly operating hours.</p>
+
+<div class="card">
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                <th style="padding:10px 8px;">Day</th>
+                <th style="padding:10px 8px;">Open</th>
+                <th style="padding:10px 8px;">Close</th>
+                <th style="padding:10px 8px;">Status</th>
+                <th style="padding:10px 8px; text-align:right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in Model.Hours)
+            {
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:12px 8px; font-weight:600;">@h.Day</td>
+                    <td style="padding:12px 8px;">@h.OpenTime.ToString(@"hh\:mm")</td>
+                    <td style="padding:12px 8px;">@h.CloseTime.ToString(@"hh\:mm")</td>
+                    <td style="padding:12px 8px;">
+                        @if (h.IsClosed)
+                        {
+                            <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">Closed</span>
+                        }
+                        else
+                        {
+                            <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">Open</span>
+                        }
+                    </td>
+                    <td style="padding:12px 8px; text-align:right;">
+                        <a href="/Admin/OpeningHours/Edit?id=@h.Id" style="color:#0284c7; text-decoration:none;">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

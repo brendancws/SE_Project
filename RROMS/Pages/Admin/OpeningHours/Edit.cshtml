@@ -1,0 +1,32 @@
+﻿@page
+@model RROMS.Pages.Admin.OpeningHours.EditModel
+@{
+    ViewData["Title"] = "Edit Opening Hours";
+    Layout = "_AdminLayout";
+}
+
+<h1>Edit @Model.Hour.Day Hours</h1>
+<p class="subtitle">Update opening and closing times.</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <input type="hidden" asp-for="Hour.Id" />
+        <input type="hidden" asp-for="Hour.Day" />
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Open Time</label>
+            <input asp-for="Hour.OpenTime" type="time" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Close Time</label>
+            <input asp-for="Hour.CloseTime" type="time" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Closed all day</label>
+            <input asp-for="Hour.IsClosed" type="checkbox" />
+        </div>
+
+        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save Changes</button>
+        <a href="/Admin/OpeningHours" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>

@@ -10,6 +10,7 @@ namespace RROMS.Data
 
         public DbSet<AdminUser> AdminUsers { get; set; }
         public DbSet<MenuCategory> MenuCategories { get; set; }
-        public DbSet<RestaurantTable> RestaurantTables { get; set; }   // ← new
+        public DbSet<RestaurantTable> RestaurantTables { get; set; }
+        public DbSet<OpeningHour> OpeningHours { get; set; }
     }
 }
