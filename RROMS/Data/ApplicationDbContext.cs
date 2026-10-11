@@ -12,5 +12,7 @@ namespace RROMS.Data
         public DbSet<MenuCategory> MenuCategories { get; set; }
         public DbSet<RestaurantTable> RestaurantTables { get; set; }
         public DbSet<OpeningHour> OpeningHours { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<StaffMember> Staff { get; set; }
     }
 }

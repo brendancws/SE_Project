@@ -1,0 +1,58 @@
+﻿@page
+@model RROMS.Pages.Admin.Staff.CreateModel
+@{
+    ViewData["Title"] = "Add Staff";
+    Layout = "_AdminLayout";
+}
+
+<h1>Add Staff Member</h1>
+<p class="subtitle">Create a new staff account.</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Full Name *</label>
+            <input asp-for="Staff.FullName" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Staff.FullName" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Username *</label>
+            <input asp-for="Staff.Username" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Staff.Username" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Email *</label>
+            <input asp-for="Staff.Email" type="email" placeholder="name@example.com" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Staff.Email" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Phone *</label>
+            <input asp-for="Staff.Phone" placeholder="012-3456789" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Staff.Phone" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Password *</label>
+            <input asp-for="Password" type="password" placeholder="Min 8 chars, 1 upper, 1 lower, 1 digit" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Password" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Role *</label>
+            <select asp-for="Staff.Role" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                <option value="Staff">Staff</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+            </select>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Active</label>
+            <input asp-for="Staff.IsActive" type="checkbox" checked />
+        </div>
+
+        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
+        <a href="/Admin/Staff" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,45 @@
+﻿@page
+@model RROMS.Pages.Admin.Customers.CreateModel
+@{
+    ViewData["Title"] = "Add Customer";
+    Layout = "_AdminLayout";
+}
+
+<h1>Add Customer</h1>
+<p class="subtitle">Register a new customer account.</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Full Name *</label>
+            <input asp-for="Customer.FullName" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Customer.FullName" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Email *</label>
+            <input asp-for="Customer.Email" type="email" placeholder="name@example.com" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Customer.Email" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Phone *</label>
+            <input asp-for="Customer.Phone" placeholder="012-3456789" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Customer.Phone" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Password *</label>
+            <input asp-for="Password" type="password" placeholder="Min 8 chars, 1 upper, 1 lower, 1 digit" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Password" style="color:#dc2626; font-size:12px;"></span>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Active</label>
+            <input asp-for="Customer.IsActive" type="checkbox" checked />
+        </div>
+
+        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
+        <a href="/Admin/Customers" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

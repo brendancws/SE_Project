@@ -1,0 +1,20 @@
+﻿@page
+@model RROMS.Pages.Admin.Customers.DeleteModel
+@{
+    ViewData["Title"] = "Delete Customer";
+    Layout = "_AdminLayout";
+}
+
+<h1>Delete Customer</h1>
+<p class="subtitle">Are you sure you want to delete this customer?</p>
+
+<div class="card" style="max-width:560px;">
+    <p><strong>Name:</strong> @Model.Customer.FullName</p>
+    <p><strong>Email:</strong> @Model.Customer.Email</p>
+
+    <form method="post" style="margin-top:20px;">
+        <input type="hidden" asp-for="Customer.Id" />
+        <button type="submit" style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Yes, Delete</button>
+        <a href="/Admin/Customers" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>

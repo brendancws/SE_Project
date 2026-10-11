@@ -1,0 +1,73 @@
+﻿@page
+@model RROMS.Pages.Admin.Staff.IndexModel
+@{
+    ViewData["Title"] = "Staff";
+    Layout = "_AdminLayout";
+}
+
+<h1>Staff Accounts</h1>
+<p class="subtitle">Manage staff members and their roles.</p>
+
+<div class="card">
+    <a href="/Admin/Staff/Create" style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">+ Add Staff</a>
+
+    @if (Model.StaffMembers.Count == 0)
+    {
+        <p style="color:#64748b;">No staff yet.</p>
+    }
+    else
+    {
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                    <th style="padding:10px 8px;">Name</th>
+                    <th style="padding:10px 8px;">Username</th>
+                    <th style="padding:10px 8px;">Email</th>
+                    <th style="padding:10px 8px;">Phone</th>
+                    <th style="padding:10px 8px;">Role</th>
+                    <th style="padding:10px 8px;">Status</th>
+                    <th style="padding:10px 8px; text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.StaffMembers)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:12px 8px; font-weight:600;">@s.FullName</td>
+                        <td style="padding:12px 8px; color:#475569;">@s.Username</td>
+                        <td style="padding:12px 8px; color:#475569;">@s.Email</td>
+                        <td style="padding:12px 8px; color:#475569;">@s.Phone</td>
+                        <td style="padding:12px 8px;">
+                            @if (s.Role == "Admin")
+                            {
+                                <span style="background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:20px; font-size:12px;">Admin</span>
+                            }
+                            else if (s.Role == "Manager")
+                            {
+                                <span style="background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:20px; font-size:12px;">Manager</span>
+                            }
+                            else
+                            {
+                                <span style="background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:20px; font-size:12px;">Staff</span>
+                            }
+                        </td>
+                        <td style="padding:12px 8px;">
+                            @if (s.IsActive)
+                            {
+                                <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">Active</span>
+                            }
+                            else
+                            {
+                                <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">Inactive</span>
+                            }
+                        </td>
+                        <td style="padding:12px 8px; text-align:right;">
+                            <a href="/Admin/Staff/Edit?id=@s.Id" style="color:#0284c7; text-decoration:none; margin-right:10px;">Edit</a>
+                            <a href="/Admin/Staff/Delete?id=@s.Id" style="color:#dc2626; text-decoration:none;">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
