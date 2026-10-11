@@ -112,6 +112,43 @@ namespace RROMS.Migrations
                     b.ToTable("MenuCategories");
                 });
 
+            modelBuilder.Entity("RROMS.Models.MenuItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MenuCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MenuCategoryId");
+
+                    b.ToTable("MenuItems");
+                });
+
             modelBuilder.Entity("RROMS.Models.OpeningHour", b =>
                 {
                     b.Property<int>("Id")
@@ -210,6 +247,17 @@ namespace RROMS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Staff");
+                });
+
+            modelBuilder.Entity("RROMS.Models.MenuItem", b =>
+                {
+                    b.HasOne("RROMS.Models.MenuCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("MenuCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }

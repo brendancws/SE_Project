@@ -1,0 +1,21 @@
+﻿@page
+@model RROMS.Pages.Admin.MenuItems.DeleteModel
+@{
+    ViewData["Title"] = "Delete Menu Item";
+    Layout = "_AdminLayout";
+}
+
+<h1>Delete Menu Item</h1>
+<p class="subtitle">Are you sure you want to delete this item?</p>
+
+<div class="card" style="max-width:560px;">
+    <p><strong>Name:</strong> @Model.Item.Name</p>
+    <p><strong>Category:</strong> @(Model.Item.Category?.Name ?? "—")</p>
+    <p><strong>Price:</strong> RM @Model.Item.Price.ToString("F2")</p>
+
+    <form method="post" style="margin-top:20px;">
+        <input type="hidden" asp-for="Item.Id" />
+        <button type="submit" style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Yes, Delete</button>
+        <a href="/Admin/MenuItems" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>

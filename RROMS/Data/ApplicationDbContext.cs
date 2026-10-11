@@ -14,5 +14,6 @@ namespace RROMS.Data
         public DbSet<OpeningHour> OpeningHours { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<StaffMember> Staff { get; set; }
+        public DbSet<MenuItem> MenuItems { get; set; }
     }
 }

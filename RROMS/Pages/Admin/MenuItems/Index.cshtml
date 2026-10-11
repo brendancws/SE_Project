@@ -1,0 +1,78 @@
+﻿@page
+@model RROMS.Pages.Admin.MenuItems.IndexModel
+@{
+    ViewData["Title"] = "Menu Items";
+    Layout = "_AdminLayout";
+}
+
+<h1>Menu Items</h1>
+<p class="subtitle">Manage your restaurant's menu items, pricing, and availability.</p>
+
+<div class="card">
+    <a href="/Admin/MenuItems/Create" style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">+ Add Menu Item</a>
+
+    @if (Model.Items.Count == 0)
+    {
+        <p style="color:#64748b;">No menu items yet. Add your first one.</p>
+    }
+    else
+    {
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                    <th style="padding:10px 8px;">Item</th>
+                    <th style="padding:10px 8px;">Category</th>
+                    <th style="padding:10px 8px;">Price</th>
+                    <th style="padding:10px 8px;">Status</th>
+                    <th style="padding:10px 8px; text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:12px 8px; font-weight:600;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Name" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" />
+                                }
+                                else
+                                {
+                                    <div style="width:40px; height:40px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:14px;">🍽️</div>
+                                }
+                                <div>
+                                    @item.Name
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <div style="font-size:12px; color:#64748b; font-weight:400;">@item.Description</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding:12px 8px; color:#475569;">
+                            @(item.Category?.Name ?? "—")
+                        </td>
+                        <td style="padding:12px 8px; font-weight:600; color:#0f172a;">
+                            RM @item.Price.ToString("F2")
+                        </td>
+                        <td style="padding:12px 8px;">
+                            @if (item.IsAvailable)
+                            {
+                                <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">Available</span>
+                            }
+                            else
+                            {
+                                <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">Unavailable</span>
+                            }
+                        </td>
+                        <td style="padding:12px 8px; text-align:right;">
+                            <a href="/Admin/MenuItems/Edit?id=@item.Id" style="color:#0284c7; text-decoration:none; margin-right:10px;">Edit</a>
+                            <a href="/Admin/MenuItems/Delete?id=@item.Id" style="color:#dc2626; text-decoration:none;">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
