@@ -12,23 +12,23 @@
     <form method="post">
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Full Name *</label>
-            <input asp-for="Staff.FullName" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Staff.FullName" style="color:#dc2626; font-size:12px;"></span>
+            <input asp-for="Input.FullName" placeholder="e.g. John Doe" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Input.FullName" style="color:#dc2626; font-size:12px;"></span>
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Username *</label>
-            <input asp-for="Staff.Username" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Staff.Username" style="color:#dc2626; font-size:12px;"></span>
+            <input asp-for="Input.Username" placeholder="e.g. jdoe" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Input.Username" style="color:#dc2626; font-size:12px;"></span>
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Email *</label>
-            <input asp-for="Staff.Email" type="email" placeholder="name@example.com" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Staff.Email" style="color:#dc2626; font-size:12px;"></span>
+            <input asp-for="Input.Email" type="email" placeholder="name@example.com" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Input.Email" style="color:#dc2626; font-size:12px;"></span>
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Phone *</label>
-            <input asp-for="Staff.Phone" placeholder="012-3456789" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Staff.Phone" style="color:#dc2626; font-size:12px;"></span>
+            <input asp-for="Input.Phone" placeholder="012-3456789" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <span asp-validation-for="Input.Phone" style="color:#dc2626; font-size:12px;"></span>
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Password *</label>
@@ -37,7 +37,7 @@
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Role *</label>
-            <select asp-for="Staff.Role" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            <select asp-for="Input.Role" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
                 <option value="Staff">Staff</option>
                 <option value="Manager">Manager</option>
                 <option value="Admin">Admin</option>
@@ -45,7 +45,7 @@
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Active</label>
-            <input asp-for="Staff.IsActive" type="checkbox" checked />
+            <input asp-for="Input.IsActive" type="checkbox" checked />
         </div>
 
         <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>

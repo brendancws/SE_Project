@@ -1,0 +1,72 @@
+﻿@page
+@model RROMS.Pages.Admin.Payments.IndexModel
+@{
+    ViewData["Title"] = "Payments Monitor";
+    Layout = "_AdminLayout";
+}
+
+<h1>Payments</h1>
+<p class="subtitle">Monitor all payments received and outstanding.</p>
+
+<div style="display:flex; gap:16px; margin-bottom:20px;">
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Total Paid</div>
+        <div style="font-size:24px; font-weight:700; color:#166534;">RM @Model.PaidTotal.ToString("F2")</div>
+    </div>
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Outstanding</div>
+        <div style="font-size:24px; font-weight:700; color:#dc2626;">RM @Model.PendingTotal.ToString("F2")</div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="margin-bottom:16px; display:flex; gap:8px;">
+        <a href="?filter=all"      style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "all" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">All</a>
+        <a href="?filter=paid"     style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "paid" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Paid</a>
+        <a href="?filter=pending"  style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "pending" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Pending</a>
+        <a href="?filter=refunded" style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "refunded" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Refunded</a>
+    </div>
+
+    @if (Model.Payments.Count == 0)
+    {
+        <p style="color:#64748b;">No payments found.</p>
+    }
+    else
+    {
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                    <th style="padding:10px 8px;">Payment #</th>
+                    <th style="padding:10px 8px;">Order #</th>
+                    <th style="padding:10px 8px;">Amount</th>
+                    <th style="padding:10px 8px;">Method</th>
+                    <th style="padding:10px 8px;">Status</th>
+                    <th style="padding:10px 8px;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Payments)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:12px 8px; font-weight:600;">#@p.Id</td>
+                        <td style="padding:12px 8px; color:#475569;">#@p.OrderId</td>
+                        <td style="padding:12px 8px; font-weight:600;">RM @p.Amount.ToString("F2")</td>
+                        <td style="padding:12px 8px;">@p.Method</td>
+                        <td style="padding:12px 8px;">
+                            @{
+                                var badge = p.Status switch
+                                {
+                                    "Paid"     => "background:#dcfce7; color:#166534;",
+                                    "Refunded" => "background:#fee2e2; color:#991b1b;",
+                                    _          => "background:#fef3c7; color:#92400e;"
+                                };
+                            }
+                            <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">@p.Status</span>
+                        </td>
+                        <td style="padding:12px 8px; color:#475569;">@p.PaidAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

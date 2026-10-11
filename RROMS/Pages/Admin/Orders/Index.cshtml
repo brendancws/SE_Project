@@ -1,0 +1,73 @@
+﻿@page
+@model RROMS.Pages.Admin.Orders.IndexModel
+@{
+    ViewData["Title"] = "Orders Monitor";
+    Layout = "_AdminLayout";
+}
+
+<h1>Orders</h1>
+<p class="subtitle">Monitor all customer orders.</p>
+
+<div style="display:flex; gap:16px; margin-bottom:20px;">
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Total Revenue (Served Orders)</div>
+        <div style="font-size:24px; font-weight:700; color:#166534;">RM @Model.TotalRevenue.ToString("F2")</div>
+    </div>
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Pending Orders</div>
+        <div style="font-size:24px; font-weight:700; color:#f59e0b;">@Model.PendingCount</div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="margin-bottom:16px; display:flex; gap:8px;">
+        <a href="?filter=all"        style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "all" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">All</a>
+        <a href="?filter=today"      style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "today" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Today</a>
+        <a href="?filter=pending"    style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "pending" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Pending</a>
+        <a href="?filter=preparing"  style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "preparing" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Preparing</a>
+        <a href="?filter=ready"      style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "ready" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Ready</a>
+    </div>
+
+    @if (Model.Orders.Count == 0)
+    {
+        <p style="color:#64748b;">No orders found.</p>
+    }
+    else
+    {
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                    <th style="padding:10px 8px;">Order #</th>
+                    <th style="padding:10px 8px;">Customer</th>
+                    <th style="padding:10px 8px;">Date</th>
+                    <th style="padding:10px 8px;">Total</th>
+                    <th style="padding:10px 8px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Orders)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:12px 8px; font-weight:600;">#@o.Id</td>
+                        <td style="padding:12px 8px;">@o.CustomerName</td>
+                        <td style="padding:12px 8px; color:#475569;">@o.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td style="padding:12px 8px; font-weight:600;">RM @o.TotalAmount.ToString("F2")</td>
+                        <td style="padding:12px 8px;">
+                            @{
+                                var badge = o.Status switch
+                                {
+                                    "Served"    => "background:#dcfce7; color:#166534;",
+                                    "Ready"     => "background:#dbeafe; color:#1e40af;",
+                                    "Preparing" => "background:#fef3c7; color:#92400e;",
+                                    "Cancelled" => "background:#fee2e2; color:#991b1b;",
+                                    _           => "background:#f1f5f9; color:#475569;"
+                                };
+                            }
+                            <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">@o.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

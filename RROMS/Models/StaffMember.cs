@@ -11,11 +11,11 @@ namespace RROMS.Models
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Username is required.")]
-        [StringLength(50, MinimumLength = 3)]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be 3–50 characters.")]
         public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address (e.g. name@example.com).")]
         [StringLength(120)]
         public string Email { get; set; } = string.Empty;
 

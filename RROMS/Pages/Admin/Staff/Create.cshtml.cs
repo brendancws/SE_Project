@@ -14,25 +14,15 @@ namespace RROMS.Pages.Admin.Staff
         private readonly ApplicationDbContext _db;
         public CreateModel(ApplicationDbContext db) => _db = db;
 
-        [BindProperty] public StaffMember Staff { get; set; } = new();
+        [BindProperty] public StaffMember Input { get; set; } = new();
 
-        [BindProperty]
-        public string? Password { get; set; }
+        [BindProperty] public string? Password { get; set; }
 
         public void OnGet() { }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // Debug log — will show in VS Output window during debugging
-            Console.WriteLine($"=== STAFF CREATE POST ===");
-            Console.WriteLine($"Name     : '{Staff.FullName}'");
-            Console.WriteLine($"Username : '{Staff.Username}'");
-            Console.WriteLine($"Email    : '{Staff.Email}'");
-            Console.WriteLine($"Phone    : '{Staff.Phone}'");
-            Console.WriteLine($"Role     : '{Staff.Role}'");
-            Console.WriteLine($"Password : '{(string.IsNullOrEmpty(Password) ? "<EMPTY>" : Password)}'");
-
-            // Password checks
+            // 1. Password checks
             if (string.IsNullOrWhiteSpace(Password))
             {
                 ModelState.AddModelError(nameof(Password), "Password is required.");
@@ -43,43 +33,38 @@ namespace RROMS.Pages.Admin.Staff
                     "Password must be 8+ characters with uppercase, lowercase, and a number.");
             }
 
-            // Duplicate username
-            if (!string.IsNullOrWhiteSpace(Staff.Username))
+            // 2. Duplicate username
+            if (!string.IsNullOrWhiteSpace(Input?.Username))
             {
                 bool exists = await _db.Staff
-                    .AnyAsync(s => s.Username.ToLower() == Staff.Username.ToLower());
+                    .AnyAsync(s => s.Username.ToLower() == Input.Username.ToLower());
                 if (exists)
-                    ModelState.AddModelError("Staff.Username", "This username is already taken.");
+                    ModelState.AddModelError("Input.Username", "This username is already taken.");
             }
 
-            // Duplicate email
-            if (!string.IsNullOrWhiteSpace(Staff.Email))
+            // 3. Duplicate email
+            if (!string.IsNullOrWhiteSpace(Input?.Email))
             {
                 bool exists = await _db.Staff
-                    .AnyAsync(s => s.Email.ToLower() == Staff.Email.ToLower());
+                    .AnyAsync(s => s.Email.ToLower() == Input.Email.ToLower());
                 if (exists)
-                    ModelState.AddModelError("Staff.Email", "This email is already registered.");
+                    ModelState.AddModelError("Input.Email", "This email is already registered.");
             }
 
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid) return Page();
+
+            try
             {
-                Console.WriteLine("--- ModelState INVALID. Errors: ---");
-                foreach (var kvp in ModelState)
-                {
-                    foreach (var err in kvp.Value.Errors)
-                    {
-                        Console.WriteLine($"  [{kvp.Key}] {err.ErrorMessage}");
-                    }
-                }
+                Input.PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password!);
+                _db.Staff.Add(Input);
+                await _db.SaveChangesAsync();
+                return RedirectToPage("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Could not save: " + ex.Message);
                 return Page();
             }
-
-            Staff.PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password!);
-            _db.Staff.Add(Staff);
-            await _db.SaveChangesAsync();
-
-            Console.WriteLine("=== SAVE SUCCESS ===");
-            return RedirectToPage("Index");
         }
     }
 }

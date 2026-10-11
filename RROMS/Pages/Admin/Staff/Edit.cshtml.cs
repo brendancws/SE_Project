@@ -13,31 +13,31 @@ namespace RROMS.Pages.Admin.Staff
         private readonly ApplicationDbContext _db;
         public EditModel(ApplicationDbContext db) => _db = db;
 
-        [BindProperty] public StaffMember Staff { get; set; } = new();
+        [BindProperty] public StaffMember Input { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var s = await _db.Staff.FindAsync(id);
             if (s == null) return RedirectToPage("Index");
-            Staff = s;
+            Input = s;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             bool userTaken = await _db.Staff.AnyAsync(s =>
-                s.Id != Staff.Id && s.Username.ToLower() == Staff.Username.ToLower());
+                s.Id != Input.Id && s.Username.ToLower() == Input.Username.ToLower());
             if (userTaken)
-                ModelState.AddModelError("Staff.Username", "Another staff member already uses this username.");
+                ModelState.AddModelError("Input.Username", "Another staff member already uses this username.");
 
             bool emailTaken = await _db.Staff.AnyAsync(s =>
-                s.Id != Staff.Id && s.Email.ToLower() == Staff.Email.ToLower());
+                s.Id != Input.Id && s.Email.ToLower() == Input.Email.ToLower());
             if (emailTaken)
-                ModelState.AddModelError("Staff.Email", "Another staff member already uses this email.");
+                ModelState.AddModelError("Input.Email", "Another staff member already uses this email.");
 
             if (!ModelState.IsValid) return Page();
 
-            _db.Staff.Update(Staff);
+            _db.Staff.Update(Input);
             await _db.SaveChangesAsync();
             return RedirectToPage("Index");
         }
