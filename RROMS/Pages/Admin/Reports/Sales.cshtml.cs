@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
+using System.Text;
 
 namespace RROMS.Pages.Admin.Reports
 {
@@ -19,7 +20,6 @@ namespace RROMS.Pages.Admin.Reports
         [BindProperty(SupportsGet = true)] public DateTime? To { get; set; }
         [BindProperty(SupportsGet = true)] public string Status { get; set; } = "all";
 
-        // Summary
         public int TotalOrders { get; set; }
         public decimal TotalRevenue { get; set; }
         public decimal AverageOrder { get; set; }
@@ -27,6 +27,34 @@ namespace RROMS.Pages.Admin.Reports
         public decimal PendingRevenue { get; set; }
 
         public async Task OnGetAsync()
+        {
+            await LoadAsync();
+        }
+
+        public async Task<IActionResult> OnGetExportAsync()
+        {
+            await LoadAsync();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Order #,Date,Customer,Total (RM),Status");
+
+            foreach (var o in Results)
+            {
+                sb.AppendLine(string.Join(",",
+                    o.Id,
+                    o.OrderDate.ToString("yyyy-MM-dd HH:mm"),
+                    Csv(o.CustomerName),
+                    o.TotalAmount.ToString("F2"),
+                    o.Status
+                ));
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            var fileName = $"sales_{DateTime.Now:yyyy-MM-dd}.csv";
+            return File(bytes, "text/csv", fileName);
+        }
+
+        private async Task LoadAsync()
         {
             if (!From.HasValue) From = DateTime.Today.AddDays(-30);
             if (!To.HasValue) To = DateTime.Today.AddDays(1);
@@ -47,6 +75,14 @@ namespace RROMS.Pages.Admin.Reports
             AverageOrder = TotalOrders > 0 ? TotalRevenue / TotalOrders : 0;
             ServedRevenue = Results.Where(o => o.Status == "Served").Sum(o => o.TotalAmount);
             PendingRevenue = Results.Where(o => o.Status == "Pending").Sum(o => o.TotalAmount);
+        }
+
+        private static string Csv(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+            return value;
         }
     }
 }

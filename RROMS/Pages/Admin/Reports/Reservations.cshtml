@@ -29,9 +29,14 @@
                 <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
             </select>
         </div>
-        <div>
+        <div style="display:flex; gap:10px; align-items:center;">
             <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Apply Filters</button>
-            <a href="/Admin/Reports/Reservations" style="margin-left:10px; color:#64748b; text-decoration:none;">Reset</a>
+            <a href="/Admin/Reports/Reservations" style="color:#64748b; text-decoration:none;">Reset</a>
+            <a href="?From=@Model.From?.ToString("yyyy-MM-dd")&To=@Model.To?.ToString("yyyy-MM-dd")&Status=@Model.Status&handler=Export"
+               style="background:#166534; color:#fff; padding:10px 20px; border-radius:8px; font-weight:600; text-decoration:none; display:inline-block;">
+                ⬇ Export CSV
+            </a>
+            <button type="button" onclick="window.print()" style="background:#64748b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">🖨 Print</button>
         </div>
     </form>
 </div>
