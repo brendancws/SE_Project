@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Dineflow</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+            /* Styles copied from _StaffLayout so all roles look the same.
+               If the team changes colours or fonts, update every layout. */
+            body {
+                margin: 0;
+                background: #f6f7f9;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .customer-wrapper {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            .customer-sidebar {
+                width: 250px;
+                background: #1f2937;
+                color: white;
+                padding: 25px 18px;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+            }
+
+            .customer-logo {
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 35px;
+                padding-left: 10px;
+            }
+
+                .customer-logo span {
+                    color: #f59e0b;
+                }
+
+            .customer-nav a {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: #d1d5db;
+                text-decoration: none;
+                padding: 12px 14px;
+                border-radius: 10px;
+                margin-bottom: 8px;
+                transition: 0.2s;
+            }
+
+                .customer-nav a:hover {
+                    background: #374151;
+                    color: white;
+                }
+
+                .customer-nav a.active {
+                    background: #f59e0b;
+                    color: #111827;
+                    font-weight: 600;
+                }
+
+            .customer-main {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+
+            .customer-topbar {
+                height: 70px;
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 32px;
+            }
+
+            .customer-page-content {
+                padding: 30px;
+            }
+
+            .profile-area {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .profile-circle {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #1f2937;
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 700;
+            }
+
+            @@media (max-width: 900px) {
+                .customer-sidebar {
+                    width: 200px;
+                }
+
+                .customer-main {
+                    margin-left: 200px;
+                    width: calc(100% - 200px);
+                }
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="customer-wrapper">
+
+        <aside class="customer-sidebar">
+
+            <div class="customer-logo">
+                Dine<span>flow</span>
+            </div>
+
+            <nav class="customer-nav">
+
+                <a asp-page="/Customer/Dashboard/Index">
+                    <span>🏠</span>
+                    Home
+                </a>
+
+                <!-- Change href="#" to asp-page="..." as each page is built -->
+                <a href="#">
+                    <span>📖</span>
+                    Menu
+                </a>
+
+                <a href="#">
+                    <span>📅</span>
+                    My Reservations
+                </a>
+
+                <a href="#">
+                    <span>🍽️</span>
+                    My Orders
+                </a>
+
+                <a href="#">
+                    <span>🧾</span>
+                    History
+                </a>
+
+                <a href="#">
+                    <span>👤</span>
+                    Profile
+                </a>
+
+                <hr style="border-color:#4b5563;" />
+
+                <a href="#">
+                    <span>🚪</span>
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <main class="customer-main">
+
+            <div class="customer-topbar">
+
+                <div>
+                    <strong>Customer Portal</strong>
+                </div>
+
+                <div class="profile-area">
+                    <div>
+                        <small class="text-muted">Signed in as</small><br />
+                        <strong>Customer</strong>
+                    </div>
+
+                    <div class="profile-circle">
+                        C
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="customer-page-content">
+                @RenderBody()
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>
