@@ -9,7 +9,6 @@
 <div class="edit-reservation-page">
 
     <div class="page-header">
-
         <div>
             <h2>Edit Reservation</h2>
             <p>Update reservation details and table assignment.</p>
@@ -17,42 +16,113 @@
 
         <a asp-page="/Staff/Reservations/Index"
            class="btn btn-outline-secondary">
-
             ← Back to Reservations
-
         </a>
-
     </div>
 
     <div class="edit-card">
 
-        <div class="empty-reservation">
+        <h4>Reservation #@Model.Reservation.ReservationID</h4>
 
-            <div class="empty-icon">
-                📅
+        <p class="text-muted">
+            Customer:
+            <strong>
+                @(Model.Reservation.Customer?.Name ?? "Unknown")
+            </strong>
+        </p>
+
+        <hr />
+
+        <form method="post"
+              asp-page="/Staff/Reservations/Edit"
+              asp-route-id="@Model.Reservation.ReservationID">
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3"></div>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Reservation Date
+                    </label>
+
+                    <input asp-for="ReservationDate"
+                           asp-format="{0:yyyy-MM-dd}"
+                           type="date"
+                           class="form-control"
+                           required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Reservation Time
+                    </label>
+
+                    <input type="time"
+                           id="ReservationTime"
+                           name="ReservationTime"
+                           value="@(Model.ReservationTime.ToString(@"hh\:mm"))"
+                           class="form-control"
+                           required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Table Assignment
+                    </label>
+
+                    <select asp-for="TableId"
+                            class="form-select">
+
+                        @foreach (var table in Model.Tables)
+                        {
+                            <option value="@table.TableID">
+                                Table @table.TableNumber
+                                (Capacity: @table.Capacity)
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Reservation Status
+                    </label>
+
+                    <select asp-for="NewStatus"
+                            class="form-select">
+
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Cancelled">Cancelled</option>
+
+                    </select>
+                </div>
+
             </div>
 
-            <h4>No Reservation Selected</h4>
+            <div class="form-actions">
 
-            <p>
-                Select a reservation from the Reservations page to edit its details.
-            </p>
+                <a asp-page="/Staff/Reservations/Index"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
 
-            <a asp-page="/Staff/Reservations/Index"
-               class="btn back-btn">
+                <button type="submit" class="save-btn">
+                    Save Changes
+                </button>
 
-                View Reservations
+            </div>
 
-            </a>
-
-        </div>
+        </form>
 
     </div>
 
 </div>
 
 <style>
-
     .edit-reservation-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -63,83 +133,64 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
+        gap: 15px;
+        flex-wrap: wrap;
     }
 
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #1f2937;
-    }
+        .page-header h2 {
+            font-size: 30px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
 
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .page-header p {
+            color: #6b7280;
+            margin: 0;
+        }
 
     .edit-card {
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 18px;
-        padding: 60px 30px;
+        padding: 30px;
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
-    .empty-reservation {
-        text-align: center;
-        max-width: 500px;
-        margin: 0 auto;
+        .edit-card h4 {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
     }
 
-    .empty-icon {
-        width: 75px;
-        height: 75px;
-        margin: 0 auto 20px;
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
 
-        border-radius: 50%;
-        background: #f3f4f6;
-
+    .form-actions {
         display: flex;
-        justify-content: center;
-        align-items: center;
-
-        font-size: 30px;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 30px;
     }
 
-    .empty-reservation h4 {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #1f2937;
-    }
-
-    .empty-reservation p {
-        color: #6b7280;
-        margin-bottom: 25px;
-    }
-
-    .back-btn {
+    .save-btn {
         background: #f59e0b;
         color: #111827;
         border: none;
         border-radius: 10px;
-        padding: 10px 22px;
+        padding: 10px 24px;
         font-weight: 600;
     }
 
-    .back-btn:hover {
-        background: #d97706;
-        color: white;
-    }
-
-    @@media(max-width: 700px) {
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
+        .save-btn:hover {
+            background: #d97706;
+            color: white;
         }
-
-    }
-
 </style>
