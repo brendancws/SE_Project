@@ -1,13 +1,40 @@
-﻿@page "{id:int}"
+﻿
+@page "{id:int}"
 @model RROMS.Pages.Staff.Orders.DetailsModel
 
 @{
     ViewData["Title"] = "Order Details";
     Layout = "_StaffLayout";
+
+    string currentStatus = Model.Order.Status ?? "Pending";
+
+    string statusClass = currentStatus.ToLowerInvariant() switch
+    {
+        "pending" => "pending",
+        "preparing" => "preparing",
+        "ready to serve" => "ready",
+        "served" => "served",
+        "completed" => "completed",
+        "cancelled" => "cancelled",
+        _ => "default-status"
+    };
+
+    // Must match the workflow in Details.cshtml.cs
+    var allowedNextStatuses = currentStatus switch
+    {
+        "Pending" => new[] { "Preparing", "Cancelled" },
+        "Preparing" => new[] { "Ready to Serve", "Cancelled" },
+        "Ready to Serve" => new[] { "Served", "Cancelled" },
+        "Served" => new[] { "Completed" },
+        _ => Array.Empty<string>()
+    };
+
+    bool canUpdate = allowedNextStatuses.Length > 0;
 }
 
 <div class="order-details-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
 
         <div>
@@ -22,6 +49,24 @@
 
     </div>
 
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            ✅ @TempData["SuccessMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+    <!-- ORDER DETAILS -->
     <div class="details-card">
 
         <div class="order-header">
@@ -31,145 +76,153 @@
                 <h4>#@Model.Order.OrderID</h4>
             </div>
 
-            <span class="status-badge">
-                @(Model.Order.Status ?? "Pending")
+            <span class="status-badge @statusClass">
+                @currentStatus
             </span>
 
         </div>
 
         <hr />
 
+        <!-- ORDER INFORMATION -->
         <div class="row g-4">
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Customer</span>
-
                     <strong>
                         @(Model.Order.Customer?.Name ?? "-")
                     </strong>
                 </div>
-
             </div>
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Phone Number</span>
-
                     <strong>
                         @(Model.Order.Customer?.Phone ?? "-")
                     </strong>
                 </div>
-
             </div>
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Reservation ID</span>
-
                     <strong>
                         @(Model.Order.ReservationID?.ToString() ?? "-")
                     </strong>
                 </div>
-
             </div>
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Table</span>
-
                     <strong>
                         @(Model.Order.Reservation?.Table?.TableNumber ?? "-")
                     </strong>
                 </div>
-
             </div>
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Order Date</span>
-
                     <strong>
-                        @(Model.Order.OrderDate?.ToString("dd/MM/yyyy hh:mm tt") ?? "-")
+                        @(Model.Order.OrderDate?.ToString(
+                            "dd/MM/yyyy hh:mm tt") ?? "-")
                     </strong>
                 </div>
-
             </div>
 
             <div class="col-md-6">
-
                 <div class="info-box">
                     <span>Total Amount</span>
-
                     <strong>
                         RM @(Model.Order.TotalAmount?.ToString("0.00") ?? "0.00")
                     </strong>
                 </div>
-
             </div>
 
         </div>
 
         <hr class="my-4" />
 
-        <form method="post">
+        <!-- STATUS UPDATE -->
+        <div class="status-section">
 
-            <div asp-validation-summary="ModelOnly"
-                 class="text-danger mb-3">
+            <div>
+                <h5>Update Order Status</h5>
+
+                <p>
+                    @if (canUpdate)
+                    {
+                        <span>
+                            Select the next stage of this order.
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            This order cannot be updated further.
+                        </span>
+                    }
+                </p>
             </div>
 
-            <div class="status-section">
+            @if (canUpdate)
+            {
+                <form method="post" class="status-form">
 
-                <div>
-                    <h5>Update Order Status</h5>
+                    <div asp-validation-summary="All"
+                         class="text-danger mb-3">
+                    </div>
 
-                    <p>
-                        Select the current progress of this order.
-                    </p>
-                </div>
+                    <div class="status-controls">
 
-                <div class="status-controls">
+                        <select asp-for="NewStatus"
+                                class="form-select"
+                                required>
 
-                    <select asp-for="NewStatus"
-                            class="form-select">
+                            <option value="">
+                                -- Select Next Status --
+                            </option>
 
-                        <option value="Preparing">
-                            Preparing
-                        </option>
+                            @foreach (string status in allowedNextStatuses)
+                            {
+                                <option value="@status">
+                                    @status
+                                </option>
+                            }
 
-                        <option value="Ready to Serve">
-                            Ready to Serve
-                        </option>
+                        </select>
 
-                        <option value="Served">
-                            Served
-                        </option>
+                        <button type="submit"
+                                class="btn update-btn">
+                            Update Status
+                        </button>
 
-                        <option value="Completed">
-                            Completed
-                        </option>
+                    </div>
 
-                        <option value="Cancelled">
-                            Cancelled
-                        </option>
+                </form>
+            }
+            else
+            {
+                <span class="final-status">
+                    @if (currentStatus == "Completed")
+                    {
+                        <text>✅ Order Completed</text>
+                    }
+                    else if (currentStatus == "Cancelled")
+                    {
+                        <text>❌ Order Cancelled</text>
+                    }
+                    else
+                    {
+                        <text>Status Unavailable</text>
+                    }
+                </span>
+            }
 
-                    </select>
-
-                    <button type="submit"
-                            class="btn update-btn">
-                        Update Status
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 
@@ -182,10 +235,12 @@
         margin: 0 auto;
     }
 
+    /* PAGE HEADER */
     .page-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 15px;
         margin-bottom: 25px;
     }
 
@@ -201,6 +256,7 @@
         color: #6b7280;
     }
 
+    /* MAIN DETAILS CARD */
     .details-card {
         background: white;
         border: 1px solid #e5e7eb;
@@ -213,6 +269,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 15px;
     }
 
     .small-label {
@@ -223,22 +280,61 @@
     .order-header h4 {
         margin-top: 4px;
         font-weight: 700;
+        color: #1f2937;
     }
 
+    /* ORDER STATUS BADGES */
     .status-badge {
+        display: inline-block;
         padding: 7px 14px;
         border-radius: 20px;
-        background: #f3f4f6;
-        color: #374151;
         font-size: 13px;
         font-weight: 600;
+        white-space: nowrap;
     }
 
+    .pending {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .preparing {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .ready {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .served {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .completed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .default-status {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    /* ORDER INFORMATION */
     .info-box {
         background: #f9fafb;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         padding: 18px;
+        height: 100%;
     }
 
     .info-box span {
@@ -250,8 +346,10 @@
 
     .info-box strong {
         color: #1f2937;
+        overflow-wrap: anywhere;
     }
 
+    /* STATUS UPDATE SECTION */
     .status-section {
         display: flex;
         justify-content: space-between;
@@ -269,10 +367,13 @@
         color: #6b7280;
     }
 
+    .status-form {
+        min-width: 420px;
+    }
+
     .status-controls {
         display: flex;
         gap: 10px;
-        min-width: 420px;
     }
 
     .status-controls .form-select {
@@ -280,6 +381,7 @@
         min-height: 45px;
     }
 
+    /* UPDATE BUTTON */
     .update-btn {
         background: #f59e0b;
         color: #111827;
@@ -295,7 +397,18 @@
         color: white;
     }
 
-    @@media(max-width: 750px) {
+    /* FINAL STATUS */
+    .final-status {
+        background: #f3f4f6;
+        color: #374151;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* RESPONSIVE */
+    @@media (max-width: 750px) {
 
         .page-header,
         .status-section {
@@ -303,10 +416,18 @@
             align-items: flex-start;
         }
 
-        .status-controls {
+        .status-form {
             width: 100%;
             min-width: 0;
+        }
+
+        .status-controls {
+            width: 100%;
             flex-direction: column;
+        }
+
+        .details-card {
+            padding: 20px;
         }
 
     }

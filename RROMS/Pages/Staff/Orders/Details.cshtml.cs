@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,6 @@ namespace RROMS.Pages.Staff.Orders
             _context = context;
         }
 
-        [BindProperty]
         public CustomerOrder Order { get; set; } = null!;
 
         [BindProperty]
@@ -30,9 +30,7 @@ namespace RROMS.Pages.Staff.Orders
                 .FirstOrDefaultAsync(o => o.OrderID == id);
 
             if (order == null)
-            {
                 return NotFound();
-            }
 
             Order = order;
             NewStatus = order.Status ?? "Pending";
@@ -42,35 +40,60 @@ namespace RROMS.Pages.Staff.Orders
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
+            // Always load the saved order from the database
             var order = await _context.CustomerOrders
+                .Include(o => o.Customer)
+                .Include(o => o.Reservation)
+                    .ThenInclude(r => r!.Table)
                 .FirstOrDefaultAsync(o => o.OrderID == id);
 
             if (order == null)
-            {
                 return NotFound();
-            }
 
-            var allowedStatuses = new[]
+            Order = order;
+
+            string currentStatus = order.Status ?? "Pending";
+
+            // Define valid order-status transitions
+            var transitions = new Dictionary<string, string[]>
             {
-                "Preparing",
-                "Ready to Serve",
-                "Served",
-                "Completed",
-                "Cancelled"
+                ["Pending"] = new[] { "Preparing", "Cancelled" },
+                ["Preparing"] = new[] { "Ready to Serve", "Cancelled" },
+                ["Ready to Serve"] = new[] { "Served", "Cancelled" },
+                ["Served"] = new[] { "Completed" },
+                ["Completed"] = Array.Empty<string>(),
+                ["Cancelled"] = Array.Empty<string>()
             };
 
-            if (!allowedStatuses.Contains(NewStatus))
+            // Reject unknown current statuses
+            if (!transitions.TryGetValue(
+                currentStatus, out var allowedNextStatuses))
             {
                 ModelState.AddModelError(
-                    string.Empty,
-                    "Invalid order status.");
+                    nameof(NewStatus),
+                    "The current order status is invalid.");
 
                 return Page();
             }
 
+            // Reject skipped or reversed order stages
+            if (!allowedNextStatuses.Contains(NewStatus))
+            {
+                ModelState.AddModelError(
+                    nameof(NewStatus),
+                    $"Cannot change order status from " +
+                    $"{currentStatus} to {NewStatus}.");
+
+                return Page();
+            }
+
+            // Save the new order status
             order.Status = NewStatus;
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Order status updated successfully.";
 
             return RedirectToPage(
                 "/Staff/Orders/Details",

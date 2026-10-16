@@ -8,6 +8,7 @@
 
 <div class="orders-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
             <h2>Orders</h2>
@@ -15,6 +16,7 @@
         </div>
     </div>
 
+    <!-- SUMMARY CARDS -->
     <div class="summary-row">
 
         <div class="summary-card">
@@ -31,9 +33,10 @@
                 <span>Preparing</span>
                 <h3>
                     @Model.Orders.Count(o =>
-                        o.Status != null &&
-                        o.Status.Equals("Preparing",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            o.Status,
+                            "Preparing",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
@@ -44,9 +47,10 @@
                 <span>Ready to Serve</span>
                 <h3>
                     @Model.Orders.Count(o =>
-                        o.Status != null &&
-                        o.Status.Equals("Ready to Serve",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            o.Status,
+                            "Ready to Serve",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
@@ -57,15 +61,17 @@
                 <span>Completed</span>
                 <h3>
                     @Model.Orders.Count(o =>
-                        o.Status != null &&
-                        o.Status.Equals("Completed",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            o.Status,
+                            "Completed",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
 
     </div>
 
+    <!-- ORDERS TABLE -->
     <div class="orders-card">
 
         <div class="table-toolbar">
@@ -75,22 +81,66 @@
                 <p>Manage and monitor customer order progress.</p>
             </div>
 
-            <div class="filters">
+            <!-- SEARCH AND STATUS FILTER -->
+            <form method="get" class="filters">
 
-                <input type="text"
+                <input type="search"
+                       name="Search"
+                       value="@Model.Search"
                        class="form-control"
-                       placeholder="Search order..." />
+                       placeholder="Search customer..." />
 
-                <select class="form-select">
-                    <option selected>All Status</option>
-                    <option>Preparing</option>
-                    <option>Ready to Serve</option>
-                    <option>Served</option>
-                    <option>Completed</option>
-                    <option>Cancelled</option>
+                <select name="StatusFilter"
+                        class="form-select"
+                        onchange="this.form.submit()">
+
+                    <option value="All"
+                            selected="@(string.IsNullOrEmpty(Model.StatusFilter) || Model.StatusFilter == "All")">
+                        All Status
+                    </option>
+
+                    <option value="Pending"
+                            selected="@(Model.StatusFilter == "Pending")">
+                        Pending
+                    </option>
+
+                    <option value="Preparing"
+                            selected="@(Model.StatusFilter == "Preparing")">
+                        Preparing
+                    </option>
+
+                    <option value="Ready to Serve"
+                            selected="@(Model.StatusFilter == "Ready to Serve")">
+                        Ready to Serve
+                    </option>
+
+                    <option value="Served"
+                            selected="@(Model.StatusFilter == "Served")">
+                        Served
+                    </option>
+
+                    <option value="Completed"
+                            selected="@(Model.StatusFilter == "Completed")">
+                        Completed
+                    </option>
+
+                    <option value="Cancelled"
+                            selected="@(Model.StatusFilter == "Cancelled")">
+                        Cancelled
+                    </option>
+
                 </select>
 
-            </div>
+                <button type="submit" class="btn btn-dark">
+                    Search
+                </button>
+
+                <a asp-page="/Staff/Orders/Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+
+            </form>
 
         </div>
 
@@ -112,16 +162,18 @@
 
                 <tbody>
 
-                    @if (Model.Orders != null && Model.Orders.Any())
+                    @if (Model.Orders.Any())
                     {
                         foreach (var order in Model.Orders)
                         {
                             <tr>
 
+                                <!-- ORDER ID -->
                                 <td>
                                     @order.OrderID
                                 </td>
 
+                                <!-- CUSTOMER -->
                                 <td>
                                     @if (order.Customer != null)
                                     {
@@ -129,35 +181,26 @@
                                             @order.Customer.Name
                                         </strong>
 
-                                        @if (!string.IsNullOrEmpty(order.Customer.Phone))
+                                        @if (!string.IsNullOrEmpty(
+                                            order.Customer.Phone))
                                         {
-                                            <br />
-                                            <small class="text-muted">
+                                            <div class="text-muted small">
                                                 @order.Customer.Phone
-                                            </small>
+                                            </div>
                                         }
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     }
                                 </td>
 
+                                <!-- RESERVATION ID -->
                                 <td>
-                                    @if (order.ReservationID.HasValue)
-                                    {
-                                        @order.ReservationID
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
-                                    }
+                                    @(order.ReservationID?.ToString() ?? "-")
                                 </td>
 
+                                <!-- TABLE NUMBER -->
                                 <td>
                                     @if (order.Reservation?.Table != null)
                                     {
@@ -165,72 +208,39 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     }
                                 </td>
 
+                                <!-- ORDER TOTAL -->
                                 <td>
                                     RM @(order.TotalAmount?.ToString("0.00") ?? "0.00")
                                 </td>
 
+                                <!-- STATUS -->
                                 <td>
+                                    @{
+                                        string status =
+                                            order.Status ?? "Pending";
 
-                                    @if (order.Status != null &&
-                                         order.Status.Equals(
-                                             "Preparing",
-                                             StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge preparing">
-                                            Preparing
-                                        </span>
-                                    }
-                                    else if (order.Status != null &&
-                                             order.Status.Equals(
-                                                 "Ready to Serve",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge ready">
-                                            Ready to Serve
-                                        </span>
-                                    }
-                                    else if (order.Status != null &&
-                                             order.Status.Equals(
-                                                 "Served",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge served">
-                                            Served
-                                        </span>
-                                    }
-                                    else if (order.Status != null &&
-                                             order.Status.Equals(
-                                                 "Completed",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge completed">
-                                            Completed
-                                        </span>
-                                    }
-                                    else if (order.Status != null &&
-                                             order.Status.Equals(
-                                                 "Cancelled",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge cancelled">
-                                            Cancelled
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="status-badge pending">
-                                            @(order.Status ?? "Pending")
-                                        </span>
+                                        string statusClass =
+                                            status.ToLowerInvariant() switch
+                                            {
+                                                "preparing" => "preparing",
+                                                "ready to serve" => "ready",
+                                                "served" => "served",
+                                                "completed" => "completed",
+                                                "cancelled" => "cancelled",
+                                                _ => "pending"
+                                            };
                                     }
 
+                                    <span class="status-badge @statusClass">
+                                        @status
+                                    </span>
                                 </td>
 
+                                <!-- VIEW DETAILS -->
                                 <td>
                                     <a asp-page="/Staff/Orders/Details"
                                        asp-route-id="@order.OrderID"
@@ -268,22 +278,24 @@
         width: 100%;
     }
 
+    /* PAGE HEADER */
     .page-header {
         margin-bottom: 25px;
     }
 
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #1f2937;
-    }
+        .page-header h2 {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
 
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+        }
 
+    /* SUMMARY CARDS */
     .summary-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -311,6 +323,7 @@
         align-items: center;
         justify-content: center;
         font-size: 23px;
+        flex-shrink: 0;
     }
 
     .summary-card span {
@@ -321,8 +334,10 @@
     .summary-card h3 {
         margin: 3px 0 0;
         font-weight: 700;
+        color: #111827;
     }
 
+    /* MAIN ORDERS CARD */
     .orders-card {
         background: white;
         border: 1px solid #e5e7eb;
@@ -331,50 +346,79 @@
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
+    /* TABLE TOOLBAR */
     .table-toolbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
         gap: 20px;
+        flex-wrap: wrap;
     }
 
-    .table-toolbar h4 {
-        margin-bottom: 3px;
-        font-weight: 700;
-    }
+        .table-toolbar h4 {
+            margin-bottom: 3px;
+            font-weight: 700;
+        }
 
-    .table-toolbar p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .table-toolbar p {
+            margin: 0;
+            color: #6b7280;
+        }
 
+    /* FILTERS */
     .filters {
         display: flex;
+        align-items: center;
         gap: 10px;
-        width: 420px;
+        flex-wrap: wrap;
     }
 
-    .filters .form-control,
-    .filters .form-select {
-        border-radius: 10px;
+        .filters .form-control {
+            width: 210px;
+        }
+
+        .filters .form-select {
+            width: 170px;
+        }
+
+        .filters .form-control,
+        .filters .form-select {
+            min-height: 40px;
+            border-radius: 10px;
+        }
+
+        .filters .btn {
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+    /* TABLE */
+    .orders-table {
+        width: 100%;
     }
 
-    .orders-table thead th {
-        background: #f9fafb;
-        border-bottom: none;
-        color: #4b5563;
-        font-size: 14px;
-        padding: 14px;
-        white-space: nowrap;
-    }
+        .orders-table thead th {
+            background: #f9fafb;
+            border-bottom: none;
+            color: #4b5563;
+            font-size: 14px;
+            padding: 14px;
+            white-space: nowrap;
+        }
 
-    .orders-table td {
-        padding: 15px 14px;
-        vertical-align: middle;
-    }
+        .orders-table td {
+            padding: 15px 14px;
+            vertical-align: middle;
+        }
 
+        .orders-table tbody tr:hover {
+            background: #fffaf0;
+        }
+
+    /* STATUS BADGES */
     .status-badge {
+        display: inline-block;
         padding: 6px 11px;
         border-radius: 20px;
         font-size: 12px;
@@ -412,7 +456,8 @@
         color: #374151;
     }
 
-    @@media(max-width: 1100px) {
+    /* RESPONSIVE DESIGN */
+    @@media (max-width: 1100px) {
 
         .summary-row {
             grid-template-columns: repeat(2, 1fr);
@@ -422,23 +467,29 @@
             flex-direction: column;
             align-items: flex-start;
         }
-
-        .filters {
-            width: 100%;
-        }
-
     }
 
-    @@media(max-width: 700px) {
+    @@media (max-width: 700px) {
 
         .summary-row {
             grid-template-columns: 1fr;
         }
 
         .filters {
+            width: 100%;
             flex-direction: column;
+            align-items: stretch;
         }
 
+            .filters .form-control,
+            .filters .form-select,
+            .filters .btn {
+                width: 100%;
+            }
+
+        .orders-card {
+            padding: 15px;
+        }
     }
 
 </style>
