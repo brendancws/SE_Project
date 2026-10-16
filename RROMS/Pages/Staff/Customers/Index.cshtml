@@ -1,4 +1,5 @@
-﻿@page
+﻿
+@page
 @model RROMS.Pages.Staff.Customers.IndexModel
 
 @{
@@ -8,6 +9,7 @@
 
 <div class="customers-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
             <h2>Customers</h2>
@@ -15,8 +17,10 @@
         </div>
     </div>
 
+    <!-- SUMMARY CARDS -->
     <div class="summary-row">
 
+        <!-- TOTAL CUSTOMERS -->
         <div class="summary-card">
             <div class="summary-icon">👥</div>
             <div>
@@ -25,6 +29,7 @@
             </div>
         </div>
 
+        <!-- SPECIAL REQUESTS -->
         <div class="summary-card">
             <div class="summary-icon">📝</div>
             <div>
@@ -33,14 +38,16 @@
             </div>
         </div>
 
+        <!-- DINING PREFERENCES -->
         <div class="summary-card">
-            <div class="summary-icon">🍽</div>
+            <div class="summary-icon">🍽️</div>
             <div>
                 <span>Dining Preferences</span>
                 <h3>@Model.DiningPreferencesCount</h3>
             </div>
         </div>
 
+        <!-- TOTAL RESERVATIONS -->
         <div class="summary-card">
             <div class="summary-icon">📅</div>
             <div>
@@ -51,22 +58,43 @@
 
     </div>
 
+    <!-- CUSTOMER INFORMATION -->
     <div class="customers-card">
 
         <div class="table-toolbar">
+
             <div>
                 <h4>Customer Information</h4>
                 <p>Review customer details and dining information.</p>
             </div>
-            <div class="search-box">
-                <input type="text"
+
+            <!-- CUSTOMER SEARCH -->
+            <form method="get" class="search-box">
+
+                <input type="search"
+                       name="Search"
+                       value="@Model.Search"
                        class="form-control"
-                       placeholder="Search customer..." />
-            </div>
+                       placeholder="Search name or phone..." />
+
+                <button type="submit" class="btn btn-dark">
+                    Search
+                </button>
+
+                <a asp-page="/Staff/Customers/Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+
+            </form>
+
         </div>
 
+        <!-- CUSTOMER TABLE -->
         <div class="table-responsive">
+
             <table class="table customers-table align-middle">
+
                 <thead>
                     <tr>
                         <th>Customer ID</th>
@@ -78,67 +106,129 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    @if (Model.Customers != null && Model.Customers.Any())
+
+                    @if (Model.Customers.Any())
                     {
                         foreach (var item in Model.Customers)
                         {
                             <tr>
-                                <td>@item.CustomerID</td>
+
+                                <!-- CUSTOMER ID -->
                                 <td>
-                                    <strong>@item.Name</strong><br />
-                                    <small class="text-muted">@item.Email</small>
+                                    @item.CustomerID
                                 </td>
-                                <td>@item.Phone</td>
+
+                                <!-- CUSTOMER NAME AND EMAIL -->
                                 <td>
-                                    @if (!string.IsNullOrEmpty(item.SpecialRequest))
+                                    <strong>@item.Name</strong>
+
+                                    <br />
+
+                                    <small class="text-muted">
+                                        @(item.Email ?? "-")
+                                    </small>
+                                </td>
+
+                                <!-- PHONE NUMBER -->
+                                <td>
+                                    @(item.Phone ?? "-")
+                                </td>
+
+                                <!-- SPECIAL REQUEST -->
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        item.SpecialRequest))
                                     {
-                                        <span class="badge bg-warning text-dark">@item.SpecialRequest</span>
+                                        <span class="badge bg-warning text-dark">
+                                            @item.SpecialRequest
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">None</span>
+                                        <span class="text-muted">
+                                            None
+                                        </span>
                                     }
                                 </td>
+
+                                <!-- DINING PREFERENCE -->
                                 <td>
-                                    @if (!string.IsNullOrEmpty(item.DiningPreference))
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        item.DiningPreference))
                                     {
-                                        <span class="badge bg-info text-dark">@item.DiningPreference</span>
+                                        <span class="badge bg-info text-dark">
+                                            @item.DiningPreference
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">None</span>
+                                        <span class="text-muted">
+                                            None
+                                        </span>
                                     }
                                 </td>
+
+                                <!-- RESERVATION DETAILS -->
                                 <td>
-                                    <span class="badge bg-secondary">View Details</span>
+                                    <span class="text-muted">
+                                        View history →
+                                    </span>
                                 </td>
+
+                                <!-- VIEW CUSTOMER HISTORY -->
                                 <td>
-                                    <a asp-page="./Details" asp-route-id="@item.CustomerID" class="btn btn-sm btn-outline-primary">View History</a>
+                                    <a asp-page="./Details"
+                                       asp-route-id="@item.CustomerID"
+                                       class="btn btn-sm btn-outline-primary">
+                                        View History
+                                    </a>
                                 </td>
+
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
-                                No customer records found.
+                            <td colspan="7"
+                                class="text-center text-muted py-5">
+
+                                @if (!string.IsNullOrWhiteSpace(Model.Search))
+                                {
+                                    <span>
+                                        No customers match your search.
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        No customer records found.
+                                    </span>
+                                }
+
                             </td>
                         </tr>
                     }
+
                 </tbody>
+
             </table>
+
         </div>
 
     </div>
+
 </div>
 
 <style>
+
     .customers-page {
         width: 100%;
     }
 
+    /* PAGE HEADER */
     .page-header {
         margin-bottom: 25px;
     }
@@ -155,6 +245,7 @@
         color: #6b7280;
     }
 
+    /* SUMMARY CARDS */
     .summary-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -194,6 +285,7 @@
         font-weight: 700;
     }
 
+    /* CUSTOMER TABLE CARD */
     .customers-card {
         background: white;
         border: 1px solid #e5e7eb;
@@ -202,12 +294,14 @@
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
+    /* TABLE TOOLBAR */
     .table-toolbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
         gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
     }
 
     .table-toolbar h4 {
@@ -220,12 +314,28 @@
         color: #6b7280;
     }
 
+    /* SEARCH BOX */
     .search-box {
-        width: 280px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
     }
 
-    .search-box input {
+    .search-box .form-control {
+        width: 230px;
+        min-height: 40px;
         border-radius: 10px;
+    }
+
+    .search-box .btn {
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    /* CUSTOMER TABLE */
+    .customers-table {
+        width: 100%;
     }
 
     .customers-table thead th {
@@ -242,7 +352,23 @@
         vertical-align: middle;
     }
 
-    @@media(max-width: 1100px) {
+    .customers-table tbody tr:hover {
+        background: #fffaf0;
+    }
+
+    .customers-table .badge {
+        display: inline-block;
+        max-width: 220px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        text-align: left;
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @@media (max-width: 1100px) {
+
         .summary-row {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -252,14 +378,29 @@
             align-items: flex-start;
         }
 
-        .search-box {
-            width: 100%;
-        }
     }
 
-    @@media(max-width: 700px) {
+    @@media (max-width: 700px) {
+
         .summary-row {
             grid-template-columns: 1fr;
         }
+
+        .search-box {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box .form-control,
+        .search-box .btn {
+            width: 100%;
+        }
+
+        .customers-card {
+            padding: 15px;
+        }
+
     }
+
 </style>
