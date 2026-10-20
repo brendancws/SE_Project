@@ -16,8 +16,8 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public IList<Customer> Customers { get; set; }
-            = new List<Customer>();
+        public IList<RROMS.Models.Customer> Customers { get; set; }
+       = new List<RROMS.Models.Customer>();
 
         [BindProperty(SupportsGet = true)]
         public string? Search { get; set; }

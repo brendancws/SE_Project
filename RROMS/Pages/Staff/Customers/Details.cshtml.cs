@@ -16,7 +16,7 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public Customer Customer { get; set; } = null!;
+        public RROMS.Models.Customer Customer { get; set; } = null!;
 
         public IList<CustomerOrder> Orders { get; set; }
             = new List<CustomerOrder>();
