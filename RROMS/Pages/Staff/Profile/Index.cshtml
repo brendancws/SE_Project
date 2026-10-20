@@ -1,4 +1,5 @@
-﻿@page
+﻿
+@page
 @model RROMS.Pages.Staff.Profile.IndexModel
 
 @{
@@ -8,6 +9,7 @@
 
 <div class="profile-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
             <h2>My Profile</h2>
@@ -15,20 +17,31 @@
         </div>
     </div>
 
+    <!-- SUCCESS MESSAGE -->
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
             @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
         </div>
     }
 
+    <!-- PROFILE CARD -->
     <div class="profile-card">
 
         <div class="profile-header">
 
             <div class="profile-avatar">
-                @(string.IsNullOrEmpty(Model.Input.Name) ? "S" : Model.Input.Name.Substring(0, 1).ToUpper())
+                @(string.IsNullOrWhiteSpace(Model.Input.Name)
+                    ? "S"
+                    : Model.Input.Name.Substring(0, 1).ToUpper())
             </div>
 
             <div class="profile-info">
@@ -40,62 +53,128 @@
 
         <hr />
 
+        <!-- PROFILE UPDATE FORM -->
         <form method="post">
-            <input type="hidden" asp-for="Input.StaffID" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
 
             <div class="row g-4">
 
+                <!-- FULL NAME -->
                 <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.Name">Full Name</label>
-                    <input asp-for="Input.Name" class="form-control" placeholder="Enter full name" />
-                    <span asp-validation-for="Input.Name" class="text-danger small"></span>
+
+                    <label asp-for="Input.Name"
+                           class="form-label">
+                        Full Name
+                    </label>
+
+                    <input asp-for="Input.Name"
+                           class="form-control"
+                           placeholder="Enter full name" />
+
+                    <span asp-validation-for="Input.Name"
+                          class="text-danger small">
+                    </span>
+
                 </div>
 
+                <!-- EMAIL ADDRESS -->
                 <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.StaffID">Staff ID</label>
-                    <input asp-for="Input.StaffID" class="form-control" readonly />
+
+                    <label asp-for="Input.Email"
+                           class="form-label">
+                        Email Address
+                    </label>
+
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           placeholder="Enter email address" />
+
+                    <span asp-validation-for="Input.Email"
+                          class="text-danger small">
+                    </span>
+
                 </div>
 
+                <!-- PHONE NUMBER -->
                 <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.Email">Email Address</label>
-                    <input asp-for="Input.Email" class="form-control" placeholder="Enter email address" />
-                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+
+                    <label asp-for="Input.Phone"
+                           class="form-label">
+                        Phone Number
+                    </label>
+
+                    <input asp-for="Input.Phone"
+                           class="form-control"
+                           placeholder="Enter phone number" />
+
+                    <span asp-validation-for="Input.Phone"
+                          class="text-danger small">
+                    </span>
+
                 </div>
 
+                <!-- ROLE (DISPLAY ONLY) -->
                 <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.Phone">Phone Number</label>
-                    <input asp-for="Input.Phone" class="form-control" placeholder="Enter phone number" />
-                    <span asp-validation-for="Input.Phone" class="text-danger small"></span>
+
+                    <label class="form-label">
+                        Role
+                    </label>
+
+                    <input type="text"
+                           value="@Model.Input.Role"
+                           class="form-control"
+                           readonly />
+
                 </div>
 
+                <!-- ACCOUNT STATUS (DISPLAY ONLY) -->
                 <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.Role">Role</label>
-                    <input asp-for="Input.Role" class="form-control" readonly />
-                </div>
 
-                <div class="col-md-6">
-                    <label class="form-label" asp-for="Input.Status">Account Status</label>
-                    <input asp-for="Input.Status" class="form-control" readonly />
+                    <label class="form-label">
+                        Account Status
+                    </label>
+
+                    <input type="text"
+                           value="@Model.Input.Status"
+                           class="form-control"
+                           readonly />
+
                 </div>
 
             </div>
 
+            <!-- ACTION BUTTONS -->
             <div class="action-buttons">
-                <a asp-page="./Index" class="btn btn-outline-secondary">Cancel</a>
-                <button type="submit" class="btn save-btn">Save Changes</button>
+
+                <a asp-page="./Index"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn save-btn">
+                    Save Changes
+                </button>
+
             </div>
 
         </form>
 
     </div>
+
 </div>
 
 <style>
+
     .profile-page {
         max-width: 1100px;
         margin: 0 auto;
     }
 
+    /* PAGE HEADER */
     .page-header {
         margin-bottom: 25px;
     }
@@ -112,6 +191,7 @@
         color: #6b7280;
     }
 
+    /* PROFILE CARD */
     .profile-card {
         background: #ffffff;
         border: 1px solid #e5e7eb;
@@ -120,6 +200,7 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
+    /* PROFILE HEADER */
     .profile-header {
         display: flex;
         align-items: center;
@@ -138,6 +219,7 @@
         align-items: center;
         font-size: 30px;
         font-weight: 700;
+        flex-shrink: 0;
     }
 
     .profile-info h4 {
@@ -145,6 +227,7 @@
         font-size: 22px;
         font-weight: 700;
         color: #1f2937;
+        overflow-wrap: anywhere;
     }
 
     .profile-info p {
@@ -153,6 +236,7 @@
         color: #6b7280;
     }
 
+    /* FORM */
     .form-label {
         font-weight: 600;
         color: #374151;
@@ -176,6 +260,7 @@
         color: #6b7280;
     }
 
+    /* ACTION BUTTONS */
     .action-buttons {
         display: flex;
         justify-content: flex-end;
@@ -200,4 +285,36 @@
         background: #d97706;
         color: white;
     }
+
+    /* RESPONSIVE */
+    @@media (max-width: 700px) {
+
+        .profile-card {
+            padding: 20px;
+        }
+
+        .profile-header {
+            align-items: flex-start;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+
+    }
+
 </style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

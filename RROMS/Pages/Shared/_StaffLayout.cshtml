@@ -1,116 +1,228 @@
-﻿<!DOCTYPE html>
+﻿
+@using System.Security.Claims
+
+@{
+    string staffName =
+        User.FindFirstValue(ClaimTypes.Name) ?? "Staff Member";
+
+    string staffInitial =
+        string.IsNullOrWhiteSpace(staffName)
+            ? "S"
+            : staffName.Substring(0, 1).ToUpper();
+
+    string currentPage =
+        ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+}
+
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - Dineflow</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <style>
-            body {
-                margin: 0;
-                background: #f6f7f9;
-                font-family: Arial, Helvetica, sans-serif;
-            }
 
-            .staff-wrapper {
-                display: flex;
-                min-height: 100vh;
-            }
+        body {
+            margin: 0;
+            background: #f6f7f9;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .staff-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .staff-sidebar {
+            width: 250px;
+            background: #1f2937;
+            color: white;
+            padding: 25px 18px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .staff-logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 35px;
+            padding-left: 10px;
+        }
+
+        .staff-logo span {
+            color: #f59e0b;
+        }
+
+        /* NAVIGATION */
+        .staff-nav a,
+        .staff-logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: 0.2s;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .staff-nav a:hover,
+        .staff-logout-btn:hover {
+            background: #374151;
+            color: white;
+        }
+
+        .staff-nav a.active {
+            background: #f59e0b;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        /* LOGOUT BUTTON */
+        .staff-logout-btn {
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .staff-logout-form {
+            margin: 0;
+        }
+
+        /* MAIN CONTENT */
+        .staff-main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-width: 0;
+        }
+
+        /* TOP BAR */
+        .staff-topbar {
+            min-height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 32px;
+        }
+
+        .staff-page-content {
+            padding: 30px;
+        }
+
+        /* PROFILE AREA */
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-details {
+            text-align: right;
+        }
+
+        .profile-details strong {
+            color: #1f2937;
+        }
+
+        .profile-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #1f2937;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* RESPONSIVE */
+        @@media (max-width: 900px) {
 
             .staff-sidebar {
-                width: 250px;
-                background: #1f2937;
-                color: white;
-                padding: 25px 18px;
-                position: fixed;
-                top: 0;
-                bottom: 0;
-                left: 0;
+                width: 200px;
             }
-
-            .staff-logo {
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 35px;
-                padding-left: 10px;
-            }
-
-                .staff-logo span {
-                    color: #f59e0b;
-                }
-
-            .staff-nav a {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                color: #d1d5db;
-                text-decoration: none;
-                padding: 12px 14px;
-                border-radius: 10px;
-                margin-bottom: 8px;
-                transition: 0.2s;
-            }
-
-                .staff-nav a:hover {
-                    background: #374151;
-                    color: white;
-                }
-
-                .staff-nav a.active {
-                    background: #f59e0b;
-                    color: #111827;
-                    font-weight: 600;
-                }
 
             .staff-main {
-                margin-left: 250px;
-                width: calc(100% - 250px);
-            }
-
-            .staff-topbar {
-                height: 70px;
-                background: white;
-                border-bottom: 1px solid #e5e7eb;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 32px;
+                margin-left: 200px;
+                width: calc(100% - 200px);
             }
 
             .staff-page-content {
-                padding: 30px;
+                padding: 20px;
             }
 
-            .profile-area {
-                display: flex;
-                align-items: center;
-                gap: 10px;
+            .staff-topbar {
+                padding: 12px 20px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+
+            .staff-sidebar {
+                width: 75px;
+                padding: 20px 10px;
             }
 
-            .profile-circle {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                background: #1f2937;
-                color: white;
-                display: flex;
+            .staff-logo {
+                font-size: 13px;
+                padding-left: 0;
+                text-align: center;
+                overflow-wrap: anywhere;
+            }
+
+            .staff-nav a,
+            .staff-logout-btn {
                 justify-content: center;
-                align-items: center;
-                font-weight: 700;
+                gap: 0;
+                padding: 12px 5px;
+                font-size: 0;
             }
 
-            @@media(max-width: 900px) {
-                .staff-sidebar {
-                    width: 200px;
-                }
-
-                .staff-main {
-                    margin-left: 200px;
-                    width: calc(100% - 200px);
-                }
+            .staff-nav a span,
+            .staff-logout-btn span {
+                font-size: 22px;
             }
+
+            .staff-main {
+                margin-left: 75px;
+                width: calc(100% - 75px);
+            }
+
+            .staff-topbar {
+                padding: 10px 15px;
+            }
+
+            .staff-page-content {
+                padding: 15px;
+            }
+
+            .profile-details {
+                display: none;
+            }
+        }
+
     </style>
 </head>
 
@@ -118,6 +230,7 @@
 
     <div class="staff-wrapper">
 
+        <!-- SIDEBAR -->
         <aside class="staff-sidebar">
 
             <div class="staff-logo">
@@ -126,68 +239,104 @@
 
             <nav class="staff-nav">
 
-                <a asp-page="/Staff/Dashboard/Index">
+                <!-- DASHBOARD -->
+                <a asp-page="/Staff/Dashboard/Index"
+                   class="@(currentPage.StartsWith("/Staff/Dashboard")
+                       ? "active" : "")">
                     <span>🏠</span>
                     Dashboard
                 </a>
 
-                <a asp-page="/Staff/Reservations/Index">
+                <!-- RESERVATIONS -->
+                <a asp-page="/Staff/Reservations/Index"
+                   class="@(currentPage.StartsWith("/Staff/Reservations")
+                       ? "active" : "")">
                     <span>📅</span>
                     Reservations
                 </a>
 
-                <a asp-page="/Staff/Orders/Index">
+                <!-- ORDERS -->
+                <a asp-page="/Staff/Orders/Index"
+                   class="@(currentPage.StartsWith("/Staff/Orders")
+                       ? "active" : "")">
                     <span>🍽️</span>
                     Orders
                 </a>
 
-                <a asp-page="/Staff/Payments/Index">
+                <!-- PAYMENTS -->
+                <a asp-page="/Staff/Payments/Index"
+                   class="@(currentPage.StartsWith("/Staff/Payments")
+                       ? "active" : "")">
                     <span>💳</span>
                     Payments
                 </a>
 
-                <a asp-page="/Staff/Customers/Index">
+                <!-- CUSTOMERS -->
+                <a asp-page="/Staff/Customers/Index"
+                   class="@(currentPage.StartsWith("/Staff/Customers")
+                       ? "active" : "")">
                     <span>👥</span>
                     Customers
                 </a>
 
-                <a asp-page="/Staff/Profile/Index">
+                <!-- PROFILE -->
+                <a asp-page="/Staff/Profile/Index"
+                   class="@(currentPage.StartsWith("/Staff/Profile")
+                       ? "active" : "")">
                     <span>👤</span>
                     Profile
                 </a>
 
                 <hr style="border-color:#4b5563;" />
 
-                <a href="#">
-                    <span>🚪</span>
-                    Logout
-                </a>
+                <!-- REAL LOGOUT -->
+                <form method="post"
+                      asp-page="/Staff/Logout"
+                      class="staff-logout-form">
+
+                    <button type="submit"
+                            class="staff-logout-btn">
+                        <span>🚪</span>
+                        Logout
+                    </button>
+
+                </form>
 
             </nav>
 
         </aside>
 
+        <!-- MAIN -->
         <main class="staff-main">
 
+            <!-- TOP BAR -->
             <div class="staff-topbar">
 
                 <div>
                     <strong>Restaurant Staff Panel</strong>
                 </div>
 
+                <!-- DYNAMIC STAFF PROFILE -->
                 <div class="profile-area">
-                    <div>
-                        <small class="text-muted">Signed in as</small><br />
-                        <strong>Staff Member</strong>
+
+                    <div class="profile-details">
+                        <small class="text-muted">
+                            Signed in as
+                        </small>
+                        <br />
+
+                        <strong>@staffName</strong>
                     </div>
 
                     <div class="profile-circle">
-                        S
+                        @staffInitial
                     </div>
+
                 </div>
 
             </div>
 
+            <!-- PAGE CONTENT -->
             <div class="staff-page-content">
                 @RenderBody()
             </div>
@@ -196,7 +345,8 @@
 
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js">
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

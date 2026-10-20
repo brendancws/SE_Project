@@ -1,3 +1,5 @@
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
@@ -14,7 +16,11 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public IList<Customer> Customers { get; set; } = default!;
+        public IList<Customer> Customers { get; set; }
+            = new List<Customer>();
+
+        [BindProperty(SupportsGet = true)]
+        public string? Search { get; set; }
 
         public int TotalCustomers { get; set; }
         public int SpecialRequestsCount { get; set; }
@@ -23,17 +29,40 @@ namespace RROMS.Pages.Staff.Customers
 
         public async Task OnGetAsync()
         {
-            // Fixed: Use _context.Customers (plural)
-            Customers = await _context.Customers
+            // Retrieve overall statistics
+            TotalCustomers = await _context.Customers
+                .CountAsync();
+
+            SpecialRequestsCount = await _context.Customers
+                .CountAsync(c =>
+                    c.SpecialRequest != null &&
+                    c.SpecialRequest != "");
+
+            DiningPreferencesCount = await _context.Customers
+                .CountAsync(c =>
+                    c.DiningPreference != null &&
+                    c.DiningPreference != "");
+
+            TotalReservationsCount = await _context.Reservations
+                .CountAsync();
+
+            // Customer search
+            var query = _context.Customers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(Search))
+            {
+                string searchTerm = Search.Trim();
+
+                query = query.Where(c =>
+                    c.Name.Contains(searchTerm) ||
+                    (c.Phone != null &&
+                     c.Phone.Contains(searchTerm)));
+            }
+
+            // Retrieve matching customers
+            Customers = await query
                 .OrderBy(c => c.Name)
                 .ToListAsync();
-
-            TotalCustomers = Customers.Count;
-            SpecialRequestsCount = Customers.Count(c => !string.IsNullOrEmpty(c.SpecialRequest));
-            DiningPreferencesCount = Customers.Count(c => !string.IsNullOrEmpty(c.DiningPreference));
-
-            // Fetch total reservation count safely from the Reservation table
-            TotalReservationsCount = await _context.Reservations.CountAsync();
         }
     }
 }

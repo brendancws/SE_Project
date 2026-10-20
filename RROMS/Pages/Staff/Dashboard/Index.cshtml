@@ -1,4 +1,5 @@
-﻿@page
+﻿
+@page
 @model RROMS.Pages.Staff.Dashboard.IndexModel
 
 @{
@@ -17,50 +18,56 @@
         </div>
     </div>
 
+    <!-- DASHBOARD STATISTICS -->
     <div class="row g-4 mb-4">
 
+        <!-- TODAY'S RESERVATIONS -->
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
                 <div class="card-icon">📅</div>
                 <div>
                     <p class="card-label">Today's Reservations</p>
-                    <h3>0</h3>
+                    <h3>@Model.TodayReservations</h3>
                 </div>
             </div>
         </div>
 
+        <!-- PENDING ORDERS -->
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
                 <div class="card-icon">🍽️</div>
                 <div>
                     <p class="card-label">Pending Orders</p>
-                    <h3>0</h3>
+                    <h3>@Model.PendingOrders</h3>
                 </div>
             </div>
         </div>
 
+        <!-- ORDERS READY -->
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
                 <div class="card-icon">✅</div>
                 <div>
                     <p class="card-label">Orders Ready</p>
-                    <h3>0</h3>
+                    <h3>@Model.OrdersReady</h3>
                 </div>
             </div>
         </div>
 
+        <!-- PENDING PAYMENTS -->
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
                 <div class="card-icon">💳</div>
                 <div>
                     <p class="card-label">Pending Payments</p>
-                    <h3>0</h3>
+                    <h3>@Model.PendingPayments</h3>
                 </div>
             </div>
         </div>
 
     </div>
 
+    <!-- TODAY'S RESERVATIONS -->
     <div class="dashboard-section">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -99,12 +106,84 @@
 
                 <tbody>
 
-                    <tr>
-                        <td colspan="6"
-                            class="text-center text-muted py-4">
-                            No reservations found.
-                        </td>
-                    </tr>
+                    @if (Model.TodayReservationList.Any())
+                    {
+                        foreach (var reservation in Model.TodayReservationList)
+                        {
+                            <tr>
+
+                                <!-- TIME -->
+                                <td>
+                                    @reservation.Time.ToString(@"hh\:mm")
+                                </td>
+
+                                <!-- CUSTOMER -->
+                                <td>
+                                    @(reservation.Customer?.Name ?? "Unknown")
+                                </td>
+
+                                <!-- GUESTS -->
+                                <td>
+                                    <span class="text-muted">-</span>
+                                </td>
+
+                                <!-- TABLE -->
+                                <td>
+                                    @if (reservation.Table != null)
+                                    {
+                                        <span>
+                                            Table @reservation.Table.TableNumber
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Unassigned
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- STATUS -->
+                                <td>
+                                    @{
+                                        string status =
+                                            reservation.Status ?? "Pending";
+
+                                        string badgeClass = status switch
+                                        {
+                                            "Confirmed" => "bg-success",
+                                            "Pending" => "bg-warning text-dark",
+                                            "Cancelled" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+
+                                    <span class="badge @badgeClass">
+                                        @status
+                                    </span>
+                                </td>
+
+                                <!-- ACTION -->
+                                <td>
+                                    <a asp-page="/Staff/Reservations/Edit"
+                                       asp-route-id="@reservation.ReservationID"
+                                       class="btn btn-sm btn-outline-warning">
+                                        Edit
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6"
+                                class="text-center text-muted py-4">
+                                No reservations found for today.
+                            </td>
+                        </tr>
+                    }
 
                 </tbody>
 
@@ -139,10 +218,10 @@
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
-        .dashboard-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
+    .dashboard-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
 
     .card-icon {
         width: 55px;
@@ -183,6 +262,24 @@
 
     .table td {
         padding: 15px 14px;
+    }
+
+    .badge {
+        font-size: 12px;
+        padding: 7px 12px;
+        border-radius: 20px;
+    }
+
+    @@media (max-width: 768px) {
+
+        .dashboard-section {
+            padding: 15px;
+        }
+
+        .dashboard-card {
+            padding: 18px;
+        }
+
     }
 
 </style>

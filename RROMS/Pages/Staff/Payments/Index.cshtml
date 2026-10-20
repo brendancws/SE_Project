@@ -1,4 +1,5 @@
-﻿@page
+﻿
+@page
 @model RROMS.Pages.Staff.Payments.IndexModel
 
 @{
@@ -8,6 +9,7 @@
 
 <div class="payments-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
             <h2>Payments</h2>
@@ -15,8 +17,10 @@
         </div>
     </div>
 
+    <!-- SUMMARY CARDS -->
     <div class="summary-row">
 
+        <!-- TOTAL PAYMENTS -->
         <div class="summary-card">
             <div class="summary-icon">💳</div>
             <div>
@@ -25,56 +29,59 @@
             </div>
         </div>
 
+        <!-- PENDING PAYMENTS -->
         <div class="summary-card">
             <div class="summary-icon">⏳</div>
             <div>
                 <span>Pending</span>
                 <h3>
                     @Model.Payments.Count(p =>
-                        p.Status != null &&
-                        p.Status.Equals(
+                        string.Equals(
+                            p.Status,
                             "Pending",
                             StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
 
+        <!-- PAID PAYMENTS -->
         <div class="summary-card">
             <div class="summary-icon">✅</div>
             <div>
                 <span>Paid</span>
                 <h3>
                     @Model.Payments.Count(p =>
-                        p.Status != null &&
-                        p.Status.Equals(
+                        string.Equals(
+                            p.Status,
                             "Paid",
                             StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
 
+        <!-- FAILED / CANCELLED -->
         <div class="summary-card">
             <div class="summary-icon">❌</div>
             <div>
                 <span>Failed / Cancelled</span>
                 <h3>
                     @Model.Payments.Count(p =>
-                        p.Status != null &&
-                        (
-                            p.Status.Equals(
-                                "Failed",
-                                StringComparison.OrdinalIgnoreCase)
-                            ||
-                            p.Status.Equals(
-                                "Cancelled",
-                                StringComparison.OrdinalIgnoreCase)
-                        ))
+                        string.Equals(
+                            p.Status,
+                            "Failed",
+                            StringComparison.OrdinalIgnoreCase)
+                        ||
+                        string.Equals(
+                            p.Status,
+                            "Cancelled",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
         </div>
 
     </div>
 
+    <!-- PAYMENT RECORDS -->
     <div class="payments-card">
 
         <div class="table-toolbar">
@@ -84,24 +91,60 @@
                 <p>View transaction and billing status.</p>
             </div>
 
-            <div class="filters">
+            <!-- SEARCH AND FILTER -->
+            <form method="get" class="filters">
 
-                <input type="text"
+                <input type="search"
+                       name="Search"
+                       value="@Model.Search"
                        class="form-control"
-                       placeholder="Search payment..." />
+                       placeholder="Search customer..." />
 
-                <select class="form-select">
-                    <option selected>All Status</option>
-                    <option>Pending</option>
-                    <option>Paid</option>
-                    <option>Failed</option>
-                    <option>Cancelled</option>
+                <select name="StatusFilter"
+                        class="form-select"
+                        onchange="this.form.submit()">
+
+                    <option value="All"
+                            selected="@(string.IsNullOrEmpty(Model.StatusFilter) || Model.StatusFilter == "All")">
+                        All Status
+                    </option>
+
+                    <option value="Pending"
+                            selected="@(Model.StatusFilter == "Pending")">
+                        Pending
+                    </option>
+
+                    <option value="Paid"
+                            selected="@(Model.StatusFilter == "Paid")">
+                        Paid
+                    </option>
+
+                    <option value="Failed"
+                            selected="@(Model.StatusFilter == "Failed")">
+                        Failed
+                    </option>
+
+                    <option value="Cancelled"
+                            selected="@(Model.StatusFilter == "Cancelled")">
+                        Cancelled
+                    </option>
+
                 </select>
 
-            </div>
+                <button type="submit" class="btn btn-dark">
+                    Search
+                </button>
+
+                <a asp-page="/Staff/Payments/Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+
+            </form>
 
         </div>
 
+        <!-- PAYMENT TABLE -->
         <div class="table-responsive">
 
             <table class="table payments-table align-middle">
@@ -122,21 +165,23 @@
 
                 <tbody>
 
-                    @if (Model.Payments != null &&
-                         Model.Payments.Any())
+                    @if (Model.Payments.Any())
                     {
                         foreach (var payment in Model.Payments)
                         {
                             <tr>
 
+                                <!-- PAYMENT ID -->
                                 <td>
                                     @payment.PaymentID
                                 </td>
 
+                                <!-- ORDER ID -->
                                 <td>
                                     @payment.OrderID
                                 </td>
 
+                                <!-- CUSTOMER -->
                                 <td>
                                     @if (payment.Order?.Customer != null)
                                     {
@@ -146,76 +191,54 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     }
                                 </td>
 
+                                <!-- PAYMENT DATE -->
                                 <td>
                                     @(payment.PaymentDate?.ToString(
                                         "dd/MM/yyyy hh:mm tt") ?? "-")
                                 </td>
 
+                                <!-- PAYMENT AMOUNT -->
                                 <td>
                                     RM @payment.Amount.ToString("0.00")
                                 </td>
 
+                                <!-- PAYMENT METHOD -->
                                 <td>
                                     @(payment.Method ?? "-")
                                 </td>
 
+                                <!-- TRANSACTION NUMBER -->
                                 <td>
                                     @(payment.TransactionNo ?? "-")
                                 </td>
 
+                                <!-- PAYMENT STATUS -->
                                 <td>
+                                    @{
+                                        string status =
+                                            payment.Status ?? "Unknown";
 
-                                    @if (payment.Status != null &&
-                                         payment.Status.Equals(
-                                             "Paid",
-                                             StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge paid">
-                                            Paid
-                                        </span>
-                                    }
-                                    else if (payment.Status != null &&
-                                             payment.Status.Equals(
-                                                 "Pending",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge pending">
-                                            Pending
-                                        </span>
-                                    }
-                                    else if (payment.Status != null &&
-                                             payment.Status.Equals(
-                                                 "Failed",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge failed">
-                                            Failed
-                                        </span>
-                                    }
-                                    else if (payment.Status != null &&
-                                             payment.Status.Equals(
-                                                 "Cancelled",
-                                                 StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <span class="status-badge cancelled">
-                                            Cancelled
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="status-badge default-status">
-                                            @(payment.Status ?? "-")
-                                        </span>
+                                        string statusClass =
+                                            status.ToLowerInvariant() switch
+                                            {
+                                                "paid" => "paid",
+                                                "pending" => "pending",
+                                                "failed" => "failed",
+                                                "cancelled" => "cancelled",
+                                                _ => "default-status"
+                                            };
                                     }
 
+                                    <span class="status-badge @statusClass">
+                                        @status
+                                    </span>
                                 </td>
 
+                                <!-- ACTION -->
                                 <td>
                                     <a asp-page="/Staff/Payments/Details"
                                        asp-route-id="@payment.PaymentID"
@@ -253,6 +276,7 @@
         width: 100%;
     }
 
+    /* PAGE HEADER */
     .page-header {
         margin-bottom: 25px;
     }
@@ -269,6 +293,7 @@
         color: #6b7280;
     }
 
+    /* SUMMARY CARDS */
     .summary-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -296,6 +321,7 @@
         align-items: center;
         justify-content: center;
         font-size: 23px;
+        flex-shrink: 0;
     }
 
     .summary-card span {
@@ -306,8 +332,10 @@
     .summary-card h3 {
         margin: 3px 0 0;
         font-weight: 700;
+        color: #111827;
     }
 
+    /* PAYMENT RECORD CARD */
     .payments-card {
         background: white;
         border: 1px solid #e5e7eb;
@@ -316,17 +344,20 @@
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
+    /* TABLE TOOLBAR */
     .table-toolbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
         gap: 20px;
+        flex-wrap: wrap;
     }
 
     .table-toolbar h4 {
         margin-bottom: 3px;
         font-weight: 700;
+        color: #111827;
     }
 
     .table-toolbar p {
@@ -334,15 +365,37 @@
         color: #6b7280;
     }
 
+    /* SEARCH AND FILTER */
     .filters {
         display: flex;
+        align-items: center;
         gap: 10px;
-        width: 420px;
+        width: auto;
+        flex-wrap: wrap;
+    }
+
+    .filters .form-control {
+        width: 210px;
+    }
+
+    .filters .form-select {
+        width: 150px;
     }
 
     .filters .form-control,
     .filters .form-select {
         border-radius: 10px;
+        min-height: 40px;
+    }
+
+    .filters .btn {
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    /* PAYMENT TABLE */
+    .payments-table {
+        width: 100%;
     }
 
     .payments-table thead th {
@@ -359,7 +412,13 @@
         vertical-align: middle;
     }
 
+    .payments-table tbody tr:hover {
+        background: #fffaf0;
+    }
+
+    /* STATUS BADGES */
     .status-badge {
+        display: inline-block;
         padding: 6px 11px;
         border-radius: 20px;
         font-size: 12px;
@@ -388,7 +447,8 @@
         color: #374151;
     }
 
-    @@media(max-width: 1100px) {
+    /* RESPONSIVE DESIGN */
+    @@media (max-width: 1100px) {
 
         .summary-row {
             grid-template-columns: repeat(2, 1fr);
@@ -399,20 +459,28 @@
             align-items: flex-start;
         }
 
-        .filters {
-            width: 100%;
-        }
-
     }
 
-    @@media(max-width: 700px) {
+    @@media (max-width: 700px) {
 
         .summary-row {
             grid-template-columns: 1fr;
         }
 
         .filters {
+            width: 100%;
             flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters .form-control,
+        .filters .form-select,
+        .filters .btn {
+            width: 100%;
+        }
+
+        .payments-card {
+            padding: 15px;
         }
 
     }

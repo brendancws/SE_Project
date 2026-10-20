@@ -8,25 +8,35 @@
 
 <div class="reservation-page">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
 
         <div>
             <h2>Reservations</h2>
-            <p>View and manage today's table reservations.</p>
+            <p>View and manage restaurant table reservations.</p>
         </div>
 
-        <div class="header-actions">
+        <!-- DATE FILTER -->
+        <form method="get" class="header-actions">
+
+            <input type="hidden"
+                   name="Search"
+                   value="@Model.Search" />
 
             <input type="date"
+                   name="SelectedDate"
                    class="form-control date-filter"
-                   value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                   value="@(Model.SelectedDate?.ToString("yyyy-MM-dd"))"
+                   onchange="this.form.submit()" />
 
-        </div>
+        </form>
 
     </div>
 
+    <!-- SUMMARY CARDS -->
     <div class="summary-row">
 
+        <!-- TOTAL RESERVATIONS -->
         <div class="summary-card">
 
             <div class="summary-icon">
@@ -34,12 +44,13 @@
             </div>
 
             <div>
-                <span>Total Today</span>
+                <span>Total Selected Date</span>
                 <h3>@Model.Reservations.Count</h3>
             </div>
 
         </div>
 
+        <!-- PENDING RESERVATIONS -->
         <div class="summary-card">
 
             <div class="summary-icon">
@@ -48,16 +59,19 @@
 
             <div>
                 <span>Pending</span>
+
                 <h3>
                     @Model.Reservations.Count(r =>
-                        r.Status != null &&
-                        r.Status.Equals("Pending",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            r.Status,
+                            "Pending",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
 
         </div>
 
+        <!-- CONFIRMED RESERVATIONS -->
         <div class="summary-card">
 
             <div class="summary-icon">
@@ -66,16 +80,19 @@
 
             <div>
                 <span>Confirmed</span>
+
                 <h3>
                     @Model.Reservations.Count(r =>
-                        r.Status != null &&
-                        r.Status.Equals("Confirmed",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            r.Status,
+                            "Confirmed",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
 
         </div>
 
+        <!-- CANCELLED RESERVATIONS -->
         <div class="summary-card">
 
             <div class="summary-icon">
@@ -84,11 +101,13 @@
 
             <div>
                 <span>Cancelled</span>
+
                 <h3>
                     @Model.Reservations.Count(r =>
-                        r.Status != null &&
-                        r.Status.Equals("Cancelled",
-                        StringComparison.OrdinalIgnoreCase))
+                        string.Equals(
+                            r.Status,
+                            "Cancelled",
+                            StringComparison.OrdinalIgnoreCase))
                 </h3>
             </div>
 
@@ -96,29 +115,33 @@
 
     </div>
 
+    <!-- RESERVATIONS TABLE -->
     <div class="reservation-card">
 
         <div class="table-toolbar">
 
             <div>
-
-                <h4>
-                    Today's Reservations
-                </h4>
+                <h4>Reservations for Selected Date</h4>
 
                 <p>
                     Manage customer bookings and table assignments.
                 </p>
-
             </div>
 
-            <div class="search-box">
+            <!-- CUSTOMER SEARCH -->
+            <form method="get" class="search-box">
 
-                <input type="text"
+                <input type="hidden"
+                       name="SelectedDate"
+                       value="@(Model.SelectedDate?.ToString("yyyy-MM-dd"))" />
+
+                <input type="search"
+                       name="Search"
+                       value="@Model.Search"
                        class="form-control"
                        placeholder="Search customer..." />
 
-            </div>
+            </form>
 
         </div>
 
@@ -142,26 +165,30 @@
 
                 <tbody>
 
-                    @if (Model.Reservations != null &&
-                         Model.Reservations.Any())
+                    @if (Model.Reservations.Any())
                     {
                         foreach (var reservation in Model.Reservations)
                         {
                             <tr>
 
+                                <!-- RESERVATION ID -->
                                 <td>
                                     @reservation.ReservationID
                                 </td>
 
+                                <!-- RESERVATION DATE -->
                                 <td>
                                     @reservation.Date.ToString("dd/MM/yyyy")
                                 </td>
 
+                                <!-- RESERVATION TIME -->
                                 <td>
                                     @reservation.Time.ToString(@"hh\:mm")
                                 </td>
 
+                                <!-- CUSTOMER INFORMATION -->
                                 <td>
+
                                     @if (reservation.Customer != null)
                                     {
                                         <strong>
@@ -176,57 +203,72 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     }
+
                                 </td>
 
+                                <!-- NUMBER OF GUESTS -->
                                 <td>
                                     -
                                 </td>
 
+                                <!-- TABLE NUMBER -->
                                 <td>
+
                                     @if (reservation.Table != null)
                                     {
-                                        @reservation.Table.TableNumber
+                                        <span>
+                                            Table @reservation.Table.TableNumber
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">
-                                            -
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     }
+
                                 </td>
 
+                                <!-- CUSTOMER SPECIAL REQUEST -->
                                 <td>
-                                    -
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        reservation.Customer?.SpecialRequest))
+                                    {
+                                        @reservation.Customer.SpecialRequest
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+
                                 </td>
 
+                                <!-- RESERVATION STATUS -->
                                 <td>
 
-                                    @if (reservation.Status != null &&
-                                         reservation.Status.Equals(
-                                             "Confirmed",
-                                             StringComparison.OrdinalIgnoreCase))
+                                    @if (string.Equals(
+                                        reservation.Status,
+                                        "Confirmed",
+                                        StringComparison.OrdinalIgnoreCase))
                                     {
                                         <span class="status-badge confirmed">
                                             Confirmed
                                         </span>
                                     }
-                                    else if (reservation.Status != null &&
-                                             reservation.Status.Equals(
-                                                 "Pending",
-                                                 StringComparison.OrdinalIgnoreCase))
+                                    else if (string.Equals(
+                                        reservation.Status,
+                                        "Pending",
+                                        StringComparison.OrdinalIgnoreCase))
                                     {
                                         <span class="status-badge pending">
                                             Pending
                                         </span>
                                     }
-                                    else if (reservation.Status != null &&
-                                             reservation.Status.Equals(
-                                                 "Cancelled",
-                                                 StringComparison.OrdinalIgnoreCase))
+                                    else if (string.Equals(
+                                        reservation.Status,
+                                        "Cancelled",
+                                        StringComparison.OrdinalIgnoreCase))
                                     {
                                         <span class="status-badge cancelled">
                                             Cancelled
@@ -235,12 +277,13 @@
                                     else
                                     {
                                         <span class="status-badge default-status">
-                                            @reservation.Status
+                                            @(reservation.Status ?? "Unknown")
                                         </span>
                                     }
 
                                 </td>
 
+                                <!-- EDIT RESERVATION -->
                                 <td>
 
                                     <a asp-page="/Staff/Reservations/Edit"
@@ -261,7 +304,7 @@
                             <td colspan="9"
                                 class="text-center text-muted py-5">
 
-                                No reservations found.
+                                No reservations found for the selected date.
 
                             </td>
 
@@ -284,31 +327,35 @@
         width: 100%;
     }
 
+    /* PAGE HEADER */
     .page-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
+        gap: 15px;
     }
 
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #1f2937;
-    }
+        .page-header h2 {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
 
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+        }
 
+    /* DATE FILTER */
     .date-filter {
         width: 180px;
         height: 44px;
         border-radius: 10px;
     }
 
+    /* SUMMARY CARDS */
     .summary-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -321,11 +368,9 @@
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         padding: 20px;
-
         display: flex;
         align-items: center;
         gap: 15px;
-
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
@@ -334,11 +379,9 @@
         height: 50px;
         border-radius: 12px;
         background: #f3f4f6;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         font-size: 23px;
     }
 
@@ -350,8 +393,10 @@
     .summary-card h3 {
         margin: 3px 0 0;
         font-weight: 700;
+        color: #111827;
     }
 
+    /* RESERVATION CARD */
     .reservation-card {
         background: white;
         border: 1px solid #e5e7eb;
@@ -360,46 +405,63 @@
         box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
+    /* TABLE TOOLBAR */
     .table-toolbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        gap: 15px;
     }
 
-    .table-toolbar h4 {
-        margin-bottom: 3px;
-        font-weight: 700;
-    }
+        .table-toolbar h4 {
+            margin-bottom: 3px;
+            font-weight: 700;
+            color: #111827;
+        }
 
-    .table-toolbar p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .table-toolbar p {
+            margin: 0;
+            color: #6b7280;
+        }
 
+    /* SEARCH BOX */
     .search-box {
-        width: 260px;
+        width: 280px;
     }
 
-    .search-box input {
-        border-radius: 10px;
+        .search-box input {
+            width: 100%;
+            height: 42px;
+            border-radius: 10px;
+        }
+
+    /* RESERVATION TABLE */
+    .reservation-table {
+        width: 100%;
     }
 
-    .reservation-table thead th {
-        background: #f9fafb;
-        border-bottom: none;
-        color: #4b5563;
-        font-size: 14px;
-        padding: 14px;
-        white-space: nowrap;
-    }
+        .reservation-table thead th {
+            background: #f9fafb;
+            border-bottom: none;
+            color: #4b5563;
+            font-size: 14px;
+            padding: 14px;
+            white-space: nowrap;
+        }
 
-    .reservation-table td {
-        padding: 15px 14px;
-        vertical-align: middle;
-    }
+        .reservation-table td {
+            padding: 15px 14px;
+            vertical-align: middle;
+        }
 
+        .reservation-table tbody tr:hover {
+            background: #fffaf0;
+        }
+
+    /* RESERVATION STATUS */
     .status-badge {
+        display: inline-block;
         padding: 6px 11px;
         border-radius: 20px;
         font-size: 12px;
@@ -427,15 +489,21 @@
         color: #374151;
     }
 
-    @@media(max-width: 1100px) {
+    /* EDIT BUTTON */
+    .btn-outline-warning {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @@media (max-width: 1100px) {
 
         .summary-row {
             grid-template-columns: repeat(2, 1fr);
         }
-
     }
 
-    @@media(max-width: 700px) {
+    @@media (max-width: 700px) {
 
         .page-header {
             flex-direction: column;
@@ -457,6 +525,9 @@
             width: 100%;
         }
 
+        .reservation-card {
+            padding: 15px;
+        }
     }
 
 </style>

@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -15,19 +16,26 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public Customer Customer { get; set; } = default!;
-        public IList<CustomerOrder> Orders { get; set; } = default!;
-        public IList<Reservation> Reservations { get; set; } = default!;
+        public Customer Customer { get; set; } = null!;
+
+        public IList<CustomerOrder> Orders { get; set; }
+            = new List<CustomerOrder>();
+
+        public IList<Reservation> Reservations { get; set; }
+            = new List<Reservation>();
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
+            // Check whether the Customer ID was provided
             if (id == null)
             {
                 return NotFound();
             }
 
-            // Fetch the specific customer
-            var customer = await _context.Customers.FirstOrDefaultAsync(m => m.CustomerID == id);
+            // Retrieve the selected customer
+            var customer = await _context.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.CustomerID == id);
 
             if (customer == null)
             {
@@ -36,14 +44,18 @@ namespace RROMS.Pages.Staff.Customers
 
             Customer = customer;
 
-            // Fetch Reservation History
+            // Retrieve customer reservation history
             Reservations = await _context.Reservations
+                .AsNoTracking()
+                .Include(r => r.Table)
                 .Where(r => r.CustomerID == id)
                 .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.Time)
                 .ToListAsync();
 
-            // Fetch Order History (Using .Set<T>() to avoid plural/singular naming errors)
-            Orders = await _context.Set<CustomerOrder>()
+            // Retrieve customer order history
+            Orders = await _context.CustomerOrders
+                .AsNoTracking()
                 .Where(o => o.CustomerID == id)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();

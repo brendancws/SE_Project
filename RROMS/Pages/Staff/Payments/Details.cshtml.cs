@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,10 @@ namespace RROMS.Pages.Staff.Payments
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
+            // Load payment with order and customer details
             var payment = await _context.Payments
+                .Include(p => p.Order)
+                    .ThenInclude(o => o!.Customer)
                 .FirstOrDefaultAsync(p => p.PaymentID == id);
 
             if (payment == null)
@@ -48,6 +52,9 @@ namespace RROMS.Pages.Staff.Payments
                 return NotFound();
             }
 
+            Payment = payment;
+
+            // Validate the selected payment status
             var allowedStatuses = new[]
             {
                 "Pending",
@@ -56,19 +63,24 @@ namespace RROMS.Pages.Staff.Payments
                 "Cancelled"
             };
 
-            if (!allowedStatuses.Contains(NewStatus))
+            if (string.IsNullOrWhiteSpace(NewStatus) ||
+                !allowedStatuses.Contains(NewStatus))
             {
                 ModelState.AddModelError(
-                    string.Empty,
-                    "Invalid payment status.");
+                    nameof(NewStatus),
+                    "Please select a valid payment status.");
 
-                Payment = payment;
                 return Page();
             }
 
+            // Update payment status
             payment.Status = NewStatus;
 
+            // Save the update to SQL Server
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Payment status updated successfully.";
 
             return RedirectToPage(
                 "/Staff/Payments/Details",
