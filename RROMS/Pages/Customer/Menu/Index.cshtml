@@ -1,0 +1,81 @@
+﻿@page
+@model RROMS.Pages.Customer.Menu.IndexModel
+@using System.Linq
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Menu";
+}
+
+<h1 class="mb-2">Our Menu</h1>
+<p class="text-muted mb-4">
+    Browse our dishes, prices and current availability.
+</p>
+
+@if (Model.MenuItems.Count == 0)
+{
+    <div class="alert alert-info" role="status">
+        No menu items are available to display yet.
+    </div>
+}
+else
+{
+    var categories = Model.MenuItems
+        .GroupBy(item => new
+        {
+            item.CategoryID,
+            CategoryName = item.Category?.CategoryName ?? "Uncategorised"
+        })
+        .OrderBy(group => group.Key.CategoryName);
+
+    foreach (var category in categories)
+    {
+        <section class="mb-5">
+            <h2 class="h4 mb-3">@category.Key.CategoryName</h2>
+
+            <div class="row">
+                @foreach (var item in category)
+                {
+                    <div class="col-12 col-md-6 col-xl-4 mb-4">
+                        <article class="card h-100 shadow-sm">
+                            <div class="card-body d-flex flex-column">
+                                <h3 class="h5 card-title">@item.Name</h3>
+
+                                <p class="card-text text-muted">
+                                    @(string.IsNullOrWhiteSpace(item.Description)
+                                        ? "No description provided."
+                                        : item.Description)
+                                </p>
+
+                                <div class="mt-auto">
+                                    <p class="fw-bold mb-2">
+                                        Price: RM @item.Price.ToString("0.00", CultureInfo.InvariantCulture)
+                                    </p>
+
+                                    @if (item.Availability == true)
+                                    {
+                                        <span class="badge bg-success">
+                                            Available
+                                        </span>
+                                    }
+                                    else if (item.Availability == false)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Unavailable
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Availability not specified
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+}
