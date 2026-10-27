@@ -1,0 +1,97 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using RROMS.Data;
+using RROMS.Models;
+
+namespace RROMS.Pages.Customer.Reservations
+{
+    // Protected by the "CustomerOnly" folder convention in Program.cs
+    public class IndexModel : PageModel
+    {
+        private readonly ApplicationDbContext _context;
+
+        public IndexModel(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public List<Reservation> MyReservations { get; private set; } = new();
+
+        [TempData]
+        public string? StatusMessage { get; set; }
+
+        [TempData]
+        public string? ErrorMessage { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            int? customerId = GetCurrentCustomerId();
+            if (customerId == null)
+            {
+                return Challenge();
+            }
+
+            MyReservations = await _context.Reservations
+                .AsNoTracking()
+                .Include(r => r.Table)
+                .Where(r => r.CustomerID == customerId.Value)
+                .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.Time)
+                .ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostCancelAsync(int id)
+        {
+            int? customerId = GetCurrentCustomerId();
+            if (customerId == null)
+            {
+                return Challenge();
+            }
+
+            // Only this customer's own booking can be found
+            var reservation = await _context.Reservations
+                .FirstOrDefaultAsync(r => r.ReservationID == id
+                                          && r.CustomerID == customerId.Value);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            if (!CanCancel(reservation))
+            {
+                ErrorMessage = "This reservation can no longer be cancelled.";
+                return RedirectToPage();
+            }
+
+            // Only the booking changes. Other bookings and the table are untouched.
+            reservation.Status = "Cancelled";
+            await _context.SaveChangesAsync();
+
+            StatusMessage = "Your reservation has been cancelled.";
+            return RedirectToPage();
+        }
+
+        // Pending or Confirmed, and still in the future
+        public bool CanCancel(Reservation reservation)
+        {
+            bool activeStatus =
+                string.Equals(reservation.Status, "Pending", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(reservation.Status, "Confirmed", StringComparison.OrdinalIgnoreCase);
+
+            DateTime start = reservation.Date.Date + reservation.Time;
+
+            return activeStatus && start > DateTime.Now;
+        }
+
+        private int? GetCurrentCustomerId()
+        {
+            string? idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(idValue, out int id) && id > 0 ? id : null;
+        }
+    }
+}

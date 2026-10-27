@@ -1,0 +1,49 @@
+﻿@page
+@model RROMS.Pages.Customer.Reservations.CreateModel
+@{
+    ViewData["Title"] = "Book a Table";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <h2 class="mb-4">Book a Table</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Date" class="form-label"></label>
+                    <input asp-for="Input.Date" type="date" class="form-control"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Input.Date" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Time" class="form-label"></label>
+                    <input asp-for="Input.Time" type="time" class="form-control" />
+                    <span asp-validation-for="Input.Time" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.NumberOfGuests" class="form-label"></label>
+                    <input asp-for="Input.NumberOfGuests" type="number" min="1" class="form-control" />
+                    <span asp-validation-for="Input.NumberOfGuests" class="text-danger small"></span>
+                </div>
+
+                <p class="text-muted small">
+                    Each booking is for a 2-hour slot. We will choose the best available table for your party.
+                </p>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Book Table</button>
+                    <a asp-page="/Customer/Reservations/Index" class="btn btn-outline-secondary">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
