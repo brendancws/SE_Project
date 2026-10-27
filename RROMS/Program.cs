@@ -65,6 +65,20 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
 
+        // Send logged-out customers to the Customer login, everyone else to the Staff login
+        options.Events.OnRedirectToLogin = context =>
+        {
+            string loginPath = context.Request.Path.StartsWithSegments("/Customer")
+                ? "/Customer/Account/Login"
+                : "/Staff/Login";
+
+            string returnUrl = Uri.EscapeDataString(
+                context.Request.PathBase + context.Request.Path + context.Request.QueryString);
+
+            context.Response.Redirect($"{context.Request.PathBase}{loginPath}?ReturnUrl={returnUrl}");
+            return Task.CompletedTask;
+        };
+
         // Validate account whenever its cookie is checked
         options.Events.OnValidatePrincipal = async context =>
         {
