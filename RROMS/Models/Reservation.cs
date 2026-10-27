@@ -22,5 +22,7 @@ namespace RROMS.Models
         public Customer? Customer { get; set; }
 
         public RestaurantTable? Table { get; set; }
+        public int NumberOfGuests { get; set; }
+
     }
 }
