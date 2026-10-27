@@ -180,12 +180,18 @@
                 <div class="profile-area">
                     <div>
                         <small class="text-muted">Signed in as</small><br />
-                        <strong>Customer</strong>
+                        <strong>@(User.Identity?.Name ?? "Customer")</strong>
                     </div>
 
-                    <div class="profile-circle">
-                        C
-                    </div>
+                    @{
+    var displayName = User.Identity?.Name;
+    var initial = string.IsNullOrWhiteSpace(displayName)
+        ? "C"
+        : displayName.Trim().Substring(0, 1).ToUpperInvariant();
+}
+<div class="profile-circle">
+    @initial
+</div>
                 </div>
 
             </div>
