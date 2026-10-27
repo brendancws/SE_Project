@@ -1,8 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
-using RROMS.Models;
 
 namespace RROMS.Pages.Customer.Account
 {
@@ -18,31 +19,45 @@ namespace RROMS.Pages.Customer.Account
         }
 
         [BindProperty]
-        public string Name { get; set; }
+        [Required(ErrorMessage = "Name is required.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters.")]
+        public string Name { get; set; } = string.Empty;
+
         [BindProperty]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
         [BindProperty]
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        public string Password { get; set; } = string.Empty;
 
         public void OnGet() { }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (_context.Customers.Any(c => c.Email == Email))
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("Email", "Email already registered.");
+                return Page();
+            }
+
+            string email = Email.Trim();
+
+            if (await _context.Customers.AnyAsync(c => c.Email == email))
+            {
+                ModelState.AddModelError(nameof(Email), "Email already registered.");
                 return Page();
             }
 
             var newCustomer = new RROMS.Models.Customer
             {
-                Name = Name,
-                Email = Email,
+                Name = Name.Trim(),
+                Email = email,
                 Status = "Active",
                 DateRegistered = DateTime.Now
             };
 
-            // Hash the password using the injected service
             newCustomer.Password = _passwordHasher.HashPassword(newCustomer, Password);
 
             _context.Customers.Add(newCustomer);
