@@ -38,7 +38,8 @@ namespace RROMS.Pages.Customer.Account
             {
                 Name = Name,
                 Email = Email,
-                Status = "Active"
+                Status = "Active",
+                DateRegistered = DateTime.Now
             };
 
             // Hash the password using the injected service
