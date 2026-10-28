@@ -7,10 +7,32 @@
     ViewData["Title"] = "Menu";
 }
 
-<h1 class="mb-2">Our Menu</h1>
-<p class="text-muted mb-4">
-    Browse our dishes, prices and current availability.
-</p>
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h1 class="mb-2">Our Menu</h1>
+        <p class="text-muted mb-4">
+            Browse our dishes, prices and current availability.
+        </p>
+    </div>
+    <a asp-page="/Customer/Cart/Index" class="btn btn-outline-primary">View Cart</a>
+</div>
+
+@if (TempData["CartMessage"] is string cartMessage && !string.IsNullOrEmpty(cartMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @cartMessage
+        <a asp-page="/Customer/Cart/Index" class="alert-link ms-2">View Cart</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["CartError"] is string cartError && !string.IsNullOrEmpty(cartError))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @cartError
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 @if (Model.MenuItems.Count == 0)
 {
@@ -53,11 +75,19 @@ else
                                     </p>
 
                                     @if (item.Availability == true)
-                                    {
-                                        <span class="badge bg-success">
-                                            Available
-                                        </span>
-                                    }
+{
+    <span class="badge bg-success">
+        Available
+    </span>
+
+    <form method="post" asp-page="/Customer/Cart/Index" asp-page-handler="Add"
+          class="d-flex gap-2 mt-3">
+        <input type="hidden" name="menuItemId" value="@item.MenuItemID" />
+        <input type="number" name="quantity" value="1" min="1" max="20"
+               class="form-control form-control-sm" style="width: 80px;" />
+        <button type="submit" class="btn btn-sm btn-primary">Add to cart</button>
+    </form>
+}
                                     else if (item.Availability == false)
                                     {
                                         <span class="badge bg-secondary">
