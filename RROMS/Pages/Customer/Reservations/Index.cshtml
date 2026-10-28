@@ -64,15 +64,20 @@
                                 <td>
                                     <span class="badge @badgeClass">@(reservation.Status ?? "Pending")</span>
                                 </td>
+
                                 <td class="text-end">
-                                    @if (Model.CanCancel(reservation))
-                                    {
-                                        <form method="post" asp-page-handler="Cancel" asp-route-id="@reservation.ReservationID"
-                                              onsubmit="return confirm('Cancel this reservation?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
-                                        </form>
-                                    }
-                                </td>
+    @if (Model.CanCancel(reservation))
+    {
+        <div class="d-flex justify-content-end gap-2">
+            <a asp-page="/Customer/Reservations/Edit" asp-route-id="@reservation.ReservationID"
+               class="btn btn-sm btn-outline-primary">Edit</a>
+            <form method="post" asp-page-handler="Cancel" asp-route-id="@reservation.ReservationID"
+                  onsubmit="return confirm('Cancel this reservation?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+        </div>
+    }
+</td>
                             </tr>
                         }
                     </tbody>

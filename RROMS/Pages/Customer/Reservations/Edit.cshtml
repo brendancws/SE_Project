@@ -1,0 +1,56 @@
+﻿@page "{id:int}"
+@model RROMS.Pages.Customer.Reservations.EditModel
+@{
+    ViewData["Title"] = "Change Reservation";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <h2 class="mb-4">Change Reservation</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <p class="text-muted small mb-3">
+                Current table: <strong>@Model.CurrentTableNumber</strong>.
+                We keep your table if it is still free, otherwise we choose another one.
+            </p>
+
+            <form method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Date" class="form-label"></label>
+                    <input asp-for="Input.Date" type="date" class="form-control"
+                           value="@Model.Input.Date.ToString("yyyy-MM-dd")"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Input.Date" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Time" class="form-label"></label>
+                    <input asp-for="Input.Time" type="time" class="form-control"
+                           value="@Model.Input.Time.ToString(@"hh\:mm")" />
+                    <span asp-validation-for="Input.Time" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.NumberOfGuests" class="form-label"></label>
+                    <input asp-for="Input.NumberOfGuests" type="number" min="1" class="form-control" />
+                    <span asp-validation-for="Input.NumberOfGuests" class="text-danger small"></span>
+                </div>
+
+                <p class="text-muted small">
+                    Each booking is for a 2-hour slot. A changed booking will be set to pending confirmation.
+                </p>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a asp-page="/Customer/Reservations/Index" class="btn btn-outline-secondary">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
