@@ -177,6 +177,22 @@ builder.Services.AddAuthorization(options =>
 });
 
 // ==========================================
+// 5b. SESSION (customer cart)
+// ==========================================
+
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = "Dineflow.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(2);
+});
+
+// ==========================================
 // 6. BUILD APPLICATION
 // ==========================================
 
@@ -201,6 +217,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
 // ==========================================
 // 9. STATIC FILES & RAZOR PAGES
