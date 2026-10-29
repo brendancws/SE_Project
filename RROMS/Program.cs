@@ -23,6 +23,14 @@ builder.Services.AddRazorPages(options =>
     // Login must remain accessible without signing in
     options.Conventions.AllowAnonymousToPage(
         "/Staff/Login");
+
+    // Forgot Password must be accessible without login
+    options.Conventions.AllowAnonymousToPage(
+        "/Staff/ForgotPassword");
+
+    // Reset Password must be accessible without login
+    options.Conventions.AllowAnonymousToPage(
+        "/Staff/ResetPassword");
 });
 
 // ==========================================
