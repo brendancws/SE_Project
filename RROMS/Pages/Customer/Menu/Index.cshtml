@@ -14,14 +14,14 @@
             Browse our dishes, prices and current availability.
         </p>
     </div>
-    <a asp-page="/Customer/Cart/Index" class="btn btn-outline-primary">View Cart</a>
+    <a asp-page="/Customer/Cart/Index" class="btn btn-outline-primary">View Cart (@Model.CartItemCount)</a>
 </div>
 
 @if (TempData["CartMessage"] is string cartMessage && !string.IsNullOrEmpty(cartMessage))
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         @cartMessage
-        <a asp-page="/Customer/Cart/Index" class="alert-link ms-2">View Cart</a>
+        <a asp-page="/Customer/Cart/Index" class="alert-link ms-2">View Cart (@Model.CartItemCount)</a>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
@@ -59,7 +59,7 @@ else
                 @foreach (var item in category)
                 {
                     <div class="col-12 col-md-6 col-xl-4 mb-4">
-                        <article class="card h-100 shadow-sm">
+                        <article id="menu-item-@item.MenuItemID" class="card h-100 shadow-sm" data-menu-item-card>
                             <div class="card-body d-flex flex-column">
                                 <h3 class="h5 card-title">@item.Name</h3>
 
@@ -81,7 +81,7 @@ else
     </span>
 
     <form method="post" asp-page="/Customer/Cart/Index" asp-page-handler="Add"
-          class="d-flex gap-2 mt-3">
+          class="d-flex gap-2 mt-3 js-add-to-cart-form">
         <input type="hidden" name="menuItemId" value="@item.MenuItemID" />
         <input type="number" name="quantity" value="1" min="1" max="20"
                class="form-control form-control-sm" style="width: 80px;" />
@@ -108,4 +108,36 @@ else
             </div>
         </section>
     }
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const restoreFlagKey = "dineflow.menu.restore";
+            const anchorKey = "dineflow.menu.anchor";
+
+            if (sessionStorage.getItem(restoreFlagKey) === "1") {
+                const anchorId = sessionStorage.getItem(anchorKey);
+                if (anchorId) {
+                    const anchor = document.getElementById(anchorId);
+                    if (anchor) {
+                        anchor.scrollIntoView({ block: "center" });
+                    }
+                }
+
+                sessionStorage.removeItem(restoreFlagKey);
+                sessionStorage.removeItem(anchorKey);
+            }
+
+            document.querySelectorAll(".js-add-to-cart-form").forEach(function (form) {
+                form.addEventListener("submit", function () {
+                    const card = form.closest("[data-menu-item-card]");
+                    if (card && card.id) {
+                        sessionStorage.setItem(anchorKey, card.id);
+                    }
+                    sessionStorage.setItem(restoreFlagKey, "1");
+                });
+            });
+        })();
+    </script>
 }

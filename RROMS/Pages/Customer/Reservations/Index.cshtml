@@ -66,18 +66,40 @@
                                 </td>
 
                                 <td class="text-end">
-    @if (Model.CanCancel(reservation))
-    {
-        <div class="d-flex justify-content-end gap-2">
-            <a asp-page="/Customer/Reservations/Edit" asp-route-id="@reservation.ReservationID"
-               class="btn btn-sm btn-outline-primary">Edit</a>
-            <form method="post" asp-page-handler="Cancel" asp-route-id="@reservation.ReservationID"
-                  onsubmit="return confirm('Cancel this reservation?');">
-                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
-            </form>
-        </div>
-    }
-</td>
+                                    @if (Model.CanCancel(reservation))
+                                    {
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a asp-page="/Customer/Reservations/Edit" asp-route-id="@reservation.ReservationID"
+                                               class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <form id="cancelReservationForm-@reservation.ReservationID" method="post"
+                                                  asp-page-handler="Cancel" asp-route-id="@reservation.ReservationID">
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#cancelReservationModal-@reservation.ReservationID">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div class="modal fade" id="cancelReservationModal-@reservation.ReservationID"
+                                             tabindex="-1" aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="cancelReservationModalLabel-@reservation.ReservationID">Cancel reservation</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Cancel this reservation on @reservation.Date.ToString("dd MMM yyyy") at @reservation.Time.ToString(@"hh\:mm")?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep reservation</button>
+                                                        <button type="submit" class="btn btn-danger" form="cancelReservationForm-@reservation.ReservationID">Yes, cancel reservation</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
