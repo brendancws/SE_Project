@@ -160,10 +160,13 @@
 
                 <hr style="border-color:#4b5563;" />
 
-                <a href="#">
-                    <span>🚪</span>
-                    Logout
-                </a>
+                <form method="post" asp-page="/Customer/Logout" class="m-0 p-0">
+    <button type="submit" class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 w-100"
+            style="color: #d1d5db; padding: 12px 14px !important; border-radius: 10px;">
+        <span>🚪</span>
+        Logout
+    </button>
+</form>
 
             </nav>
 
