@@ -75,19 +75,19 @@ else
                                     </p>
 
                                     @if (item.Availability == true)
-{
-    <span class="badge bg-success">
-        Available
-    </span>
+                                    {
+                                        <span class="badge bg-success">
+                                            Available
+                                        </span>
 
-    <form method="post" asp-page="/Customer/Cart/Index" asp-page-handler="Add"
-          class="d-flex gap-2 mt-3 js-add-to-cart-form">
-        <input type="hidden" name="menuItemId" value="@item.MenuItemID" />
-        <input type="number" name="quantity" value="1" min="1" max="20"
-               class="form-control form-control-sm" style="width: 80px;" />
-        <button type="submit" class="btn btn-sm btn-primary">Add to cart</button>
-    </form>
-}
+                                        <form method="post" asp-page="/Customer/Cart/Index" asp-page-handler="Add"
+                                              class="d-flex gap-2 mt-3 js-add-to-cart-form">
+                                            <input type="hidden" name="menuItemId" value="@item.MenuItemID" />
+                                            <input type="number" name="quantity" value="1" min="1" max="20"
+                                                   class="form-control form-control-sm" style="width: 80px;" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Add to cart</button>
+                                        </form>
+                                    }
                                     else if (item.Availability == false)
                                     {
                                         <span class="badge bg-secondary">
@@ -113,6 +113,11 @@ else
 @section Scripts {
     <script>
         (function () {
+            // Stop the browser's own scroll-position memory from fighting with ours
+            if ("scrollRestoration" in history) {
+                history.scrollRestoration = "manual";
+            }
+
             const restoreFlagKey = "dineflow.menu.restore";
             const anchorKey = "dineflow.menu.anchor";
 
@@ -121,7 +126,7 @@ else
                 if (anchorId) {
                     const anchor = document.getElementById(anchorId);
                     if (anchor) {
-                        anchor.scrollIntoView({ block: "center" });
+                        anchor.scrollIntoView({ block: "center", behavior: "auto" });
                     }
                 }
 
