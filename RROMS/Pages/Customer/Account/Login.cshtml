@@ -10,6 +10,7 @@
             <h2 class="card-title text-center mb-4">Customer Login</h2>
             
             <form method="post">
+    <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="All" class="text-danger"></div>
 
                 <div class="mb-3">

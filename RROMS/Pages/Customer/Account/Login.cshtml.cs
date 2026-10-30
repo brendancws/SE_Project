@@ -25,6 +25,10 @@ namespace RROMS.Pages.Customer.Account
         [BindProperty]
         public string Password { get; set; }
 
+        // Bound from the query string, e.g. ?ReturnUrl=%2FCustomer%2FProfile
+        [BindProperty(SupportsGet = true)]
+        public string? ReturnUrl { get; set; }
+
         public void OnGet() { }
 
         public async Task<IActionResult> OnPostAsync()
@@ -54,6 +58,14 @@ namespace RROMS.Pages.Customer.Account
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity));
+
+                // Only redirect to ReturnUrl if it's a safe, local path.
+                // This stops someone crafting a link like
+                // /Customer/Account/Login?ReturnUrl=https://evil.com
+                if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+                {
+                    return LocalRedirect(ReturnUrl);
+                }
 
                 return RedirectToPage("/Customer/Dashboard/Index");
             }
