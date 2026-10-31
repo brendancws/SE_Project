@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -21,9 +22,13 @@ namespace RROMS.Pages.Customer.Account
         }
 
         [BindProperty]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
         [BindProperty]
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required.")]
+        public string Password { get; set; } = string.Empty;
 
         // Bound from the query string, e.g. ?ReturnUrl=%2FCustomer%2FProfile
         [BindProperty(SupportsGet = true)]
@@ -33,6 +38,11 @@ namespace RROMS.Pages.Customer.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
             var customer = _context.Customers.FirstOrDefault(c => c.Email == Email);
             if (customer == null)
             {
@@ -60,8 +70,6 @@ namespace RROMS.Pages.Customer.Account
                     new ClaimsPrincipal(claimsIdentity));
 
                 // Only redirect to ReturnUrl if it's a safe, local path.
-                // This stops someone crafting a link like
-                // /Customer/Account/Login?ReturnUrl=https://evil.com
                 if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
                 {
                     return LocalRedirect(ReturnUrl);
