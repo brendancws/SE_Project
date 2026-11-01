@@ -103,7 +103,7 @@
                 font-weight: 700;
             }
 
-            @@media (max-width: 900px) {
+                        @@media (max-width: 900px) {
                 .customer-sidebar {
                     width: 200px;
                 }
@@ -112,6 +112,14 @@
                     margin-left: 200px;
                     width: calc(100% - 200px);
                 }
+            }
+
+                        /* Remove the default bullet from validation error lists */
+            .text-danger ul,
+            .alert-danger ul {
+                list-style: none;
+                padding-left: 0;
+                margin-bottom: 0;
             }
     </style>
 </head>
