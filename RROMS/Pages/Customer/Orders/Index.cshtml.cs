@@ -31,6 +31,7 @@ namespace RROMS.Pages.Customer.Orders
             public string Status { get; set; } = "Pending";
             public decimal Total { get; set; }
             public string BookingText { get; set; } = "-";
+            public string? PaymentStatus { get; set; }
             public List<OrderLineView> Lines { get; set; } = new();
         }
 
@@ -61,6 +62,13 @@ namespace RROMS.Pages.Customer.Orders
                 .Where(i => orderIds.Contains(i.OrderID))
                 .ToListAsync();
 
+            // Each order's most recent payment attempt, if any
+            var latestPayments = await _context.Payments
+                .AsNoTracking()
+                .Where(p => orderIds.Contains(p.OrderID))
+                .OrderByDescending(p => p.PaymentID)
+                .ToListAsync();
+
             Orders = orders.Select(o => new OrderView
             {
                 OrderID = o.OrderID,
@@ -68,18 +76,19 @@ namespace RROMS.Pages.Customer.Orders
                 Status = o.Status ?? "Pending",
                 Total = o.TotalAmount ?? 0m,
                 BookingText = o.Reservation == null
-                    ? "-"
-                    : $"{o.Reservation.Date:dd MMM yyyy} at {o.Reservation.Time:hh\\:mm} - Table {o.Reservation.Table?.TableNumber ?? "-"}",
+        ? "-"
+        : $"{o.Reservation.Date:dd MMM yyyy} at {o.Reservation.Time:hh\\:mm} - Table {o.Reservation.Table?.TableNumber ?? "-"}",
+                PaymentStatus = latestPayments.FirstOrDefault(p => p.OrderID == o.OrderID)?.Status,
                 Lines = items
-                    .Where(i => i.OrderID == o.OrderID)
-                    .Select(i => new OrderLineView
-                    {
-                        Name = i.MenuItem?.Name ?? "(removed item)",
-                        Quantity = i.Quantity,
-                        UnitPrice = i.UnitPrice,
-                        Subtotal = i.Subtotal
-                    })
-                    .ToList()
+        .Where(i => i.OrderID == o.OrderID)
+        .Select(i => new OrderLineView
+        {
+            Name = i.MenuItem?.Name ?? "(removed item)",
+            Quantity = i.Quantity,
+            UnitPrice = i.UnitPrice,
+            Subtotal = i.Subtotal
+        })
+        .ToList()
             }).ToList();
 
             return Page();
