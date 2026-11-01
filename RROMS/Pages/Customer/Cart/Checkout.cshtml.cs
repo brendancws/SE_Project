@@ -115,43 +115,9 @@ namespace RROMS.Pages.Customer.Cart
                 return Page();
             }
 
-            // Save the order and its items together, or not at all
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            var order = new CustomerOrder
-            {
-                CustomerID = customerId.Value,
-                ReservationID = reservation.ReservationID,
-                OrderDate = DateTime.Now,
-                Status = "Pending",
-                TotalAmount = Total
-            };
-
-            _context.CustomerOrders.Add(order);
-            await _context.SaveChangesAsync();
-
-            foreach (var line in Lines)
-            {
-                _context.OrderItems.Add(new OrderItem
-                {
-                    OrderID = order.OrderID,
-                    MenuItemID = line.MenuItemID,
-                    Quantity = line.Quantity,
-                    UnitPrice = line.UnitPrice,
-                    Subtotal = line.Subtotal
-                });
-            }
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            CartSession.Clear(HttpContext.Session, customerId.Value);
-
-            TempData["OrderMessage"] =
-    $"Order #{order.OrderID} placed for table {reservation.Table?.TableNumber ?? "-"}. " +
-    $"Total: RM {Total.ToString("0.00", CultureInfo.InvariantCulture)}. It is pending.";
-
-            return RedirectToPage("/Customer/Orders/Index");
+            // Nothing is saved yet. The cart and chosen reservation carry over to
+            // the Payment page, where the order is only created once payment is confirmed.
+            return RedirectToPage("/Customer/Payment/Index", new { reservationId = reservation.ReservationID });
         }
 
         private async Task LoadLinesAsync(int customerId)
