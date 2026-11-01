@@ -1,5 +1,4 @@
-﻿
-@page
+﻿@page
 @model RROMS.Pages.Staff.Profile.IndexModel
 
 @{
@@ -163,6 +162,32 @@
 
         </form>
 
+        <!-- ACCOUNT SECURITY SECTION -->
+        <div class="security-section">
+
+            <div class="security-header">
+
+                <div class="security-info">
+
+                    <h5>Account Security</h5>
+
+                    <p>
+                        Keep your account secure by updating
+                        your password regularly.
+                    </p>
+
+                </div>
+
+                <a asp-page="./ChangePassword"
+                   class="btn change-password-btn">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    Change Password
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
@@ -179,17 +204,17 @@
         margin-bottom: 25px;
     }
 
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        color: #1f2937;
-    }
+        .page-header h2 {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1f2937;
+        }
 
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+        }
 
     /* PROFILE CARD */
     .profile-card {
@@ -250,15 +275,15 @@
         padding-left: 14px;
     }
 
-    .form-control:focus {
-        border-color: #f59e0b;
-        box-shadow: 0 0 0 0.2rem rgba(245,158,11,0.15);
-    }
+        .form-control:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 0.2rem rgba(245,158,11,0.15);
+        }
 
-    .form-control[readonly] {
-        background: #f3f4f6;
-        color: #6b7280;
-    }
+        .form-control[readonly] {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
 
     /* ACTION BUTTONS */
     .action-buttons {
@@ -268,12 +293,12 @@
         margin-top: 30px;
     }
 
-    .action-buttons .btn {
-        min-width: 120px;
-        border-radius: 10px;
-        padding: 10px 18px;
-        font-weight: 600;
-    }
+        .action-buttons .btn {
+            min-width: 120px;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-weight: 600;
+        }
 
     .save-btn {
         background: #f59e0b;
@@ -281,10 +306,60 @@
         color: #111827;
     }
 
-    .save-btn:hover {
-        background: #d97706;
-        color: white;
+        .save-btn:hover {
+            background: #d97706;
+            color: white;
+        }
+
+    /* ACCOUNT SECURITY */
+    .security-section {
+        margin-top: 35px;
+        padding-top: 25px;
+        border-top: 1px solid #e5e7eb;
     }
+
+    .security-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .security-info h5 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .security-info p {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    /* CHANGE PASSWORD BUTTON */
+    .change-password-btn {
+        background: #1f2937;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+
+        .change-password-btn:hover {
+            background: #374151;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .change-password-btn:focus-visible {
+            outline: 3px solid #f59e0b;
+            outline-offset: 2px;
+        }
 
     /* RESPONSIVE */
     @@media (max-width: 700px) {
@@ -307,10 +382,20 @@
             flex-direction: column;
         }
 
-        .action-buttons .btn {
-            width: 100%;
+            .action-buttons .btn {
+                width: 100%;
+            }
+
+        .security-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
         }
 
+        .change-password-btn {
+            width: 100%;
+            text-align: center;
+        }
     }
 
 </style>

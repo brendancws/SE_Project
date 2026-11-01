@@ -18,6 +18,8 @@ builder.Services.AddRazorPages(options =>
     // Staff authorization
     options.Conventions.AuthorizeFolder("/Staff", "StaffOnly");
     options.Conventions.AllowAnonymousToPage("/Staff/Login");
+    options.Conventions.AllowAnonymousToPage("/Staff/ForgotPassword");
+    options.Conventions.AllowAnonymousToPage("/Staff/ResetPassword");
 
     // Customer authorization
     options.Conventions.AuthorizeFolder("/Customer", "CustomerOnly");
