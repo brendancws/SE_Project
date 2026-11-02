@@ -7,28 +7,45 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">My Reservations</h2>
-        <a asp-page="/Customer/Reservations/Create" class="btn btn-primary">Book a Table</a>
+        <a asp-page="/Customer/Reservations/Create"
+           class="btn btn-primary">
+            Book a Table
+        </a>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
             @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
         </div>
     }
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
             @Model.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
         </div>
     }
 
     @if (!Model.MyReservations.Any())
     {
-        <div class="alert alert-info">You have no reservations yet.</div>
+        <div class="alert alert-info">
+            You have no reservations yet.
+        </div>
     }
     else
     {
@@ -42,58 +59,117 @@
                             <th>Table</th>
                             <th>Guests</th>
                             <th>Status</th>
-                            <th></th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var reservation in Model.MyReservations)
                         {
-                            string badgeClass = (reservation.Status ?? "Pending").ToLowerInvariant() switch
-                            {
-                                "confirmed" => "bg-success",
-                                "pending" => "bg-warning text-dark",
-                                "cancelled" => "bg-danger",
-                                _ => "bg-secondary"
-                            };
+                            string badgeClass =
+                                (reservation.Status ?? "Pending")
+                                .ToLowerInvariant() switch
+                                {
+                                    "confirmed" => "bg-success",
+                                    "pending" => "bg-warning text-dark",
+                                    "cancelled" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
 
                             <tr>
-                                <td>@reservation.Date.ToString("dd MMM yyyy")</td>
-                                <td>@reservation.Time.ToString(@"hh\:mm")</td>
-                                <td>@(reservation.Table?.TableNumber ?? "-")</td>
-                                <td>@reservation.NumberOfGuests</td>
                                 <td>
-                                    <span class="badge @badgeClass">@(reservation.Status ?? "Pending")</span>
+                                    @reservation.Date.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @reservation.Time.ToString(@"hh\:mm")
+                                </td>
+
+                                <td>
+                                    @(reservation.Table?.TableNumber ?? "-")
+                                </td>
+
+                                <td>
+                                    @reservation.NumberOfGuests
+                                </td>
+
+                                <td>
+                                    <span class="badge @badgeClass">
+                                        @(reservation.Status ?? "Pending")
+                                    </span>
                                 </td>
 
                                 <td class="text-end">
-                                    @if (Model.CanCancel(reservation))
-                                    {
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a asp-page="/Customer/Reservations/Edit" asp-route-id="@reservation.ReservationID"
-                                               class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <form id="cancelReservationForm-@reservation.ReservationID" method="post"
-                                                  asp-page-handler="Cancel" asp-route-id="@reservation.ReservationID">
-                                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        data-bs-toggle="modal" data-bs-target="#cancelReservationModal-@reservation.ReservationID">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-page="/Customer/Reservations/Confirmation"
+                                           asp-route-id="@reservation.ReservationID"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Confirmation
+                                        </a>
+
+                                        @if (Model.CanCancel(reservation))
+                                        {
+                                            <a asp-page="/Customer/Reservations/Edit"
+                                               asp-route-id="@reservation.ReservationID"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Edit
+                                            </a>
+
+                                            <form id="cancelReservationForm-@reservation.ReservationID"
+                                                  method="post"
+                                                  asp-page-handler="Cancel"
+                                                  asp-route-id="@reservation.ReservationID">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#cancelReservationModal-@reservation.ReservationID">
                                                     Cancel
                                                 </button>
                                             </form>
-                                        </div>
+                                        }
+                                    </div>
 
-                                        <div class="modal fade" id="cancelReservationModal-@reservation.ReservationID"
-                                             tabindex="-1" aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID" aria-hidden="true">
+                                    @if (Model.CanCancel(reservation))
+                                    {
+                                        <div class="modal fade"
+                                             id="cancelReservationModal-@reservation.ReservationID"
+                                             tabindex="-1"
+                                             aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID"
+                                             aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
+                                                <div class="modal-content text-start">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="cancelReservationModalLabel-@reservation.ReservationID">Cancel reservation</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <h5 class="modal-title"
+                                                            id="cancelReservationModalLabel-@reservation.ReservationID">
+                                                            Cancel reservation
+                                                        </h5>
+
+                                                        <button type="button"
+                                                                class="btn-close"
+                                                                data-bs-dismiss="modal"
+                                                                aria-label="Close">
+                                                        </button>
                                                     </div>
+
                                                     <div class="modal-body">
-                                                        Cancel this reservation on @reservation.Date.ToString("dd MMM yyyy") at @reservation.Time.ToString(@"hh\:mm")?
+                                                        Cancel this reservation on
+                                                        @reservation.Date.ToString("dd MMM yyyy")
+                                                        at
+                                                        @reservation.Time.ToString(@"hh\:mm")?
                                                     </div>
+
                                                     <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep reservation</button>
-                                                        <button type="submit" class="btn btn-danger" form="cancelReservationForm-@reservation.ReservationID">Yes, cancel reservation</button>
+                                                        <button type="button"
+                                                                class="btn btn-outline-secondary"
+                                                                data-bs-dismiss="modal">
+                                                            Keep reservation
+                                                        </button>
+
+                                                        <button type="submit"
+                                                                class="btn btn-danger"
+                                                                form="cancelReservationForm-@reservation.ReservationID">
+                                                            Yes, cancel reservation
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>

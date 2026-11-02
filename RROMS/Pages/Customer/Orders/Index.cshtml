@@ -46,21 +46,58 @@
                             @(order.OrderDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")
                         </span>
                     </div>
-                                        <div class="d-flex gap-2">
-                        <span class="badge @badgeClass">@order.Status</span>
-                        @{
-                            string paymentBadgeClass = (order.PaymentStatus ?? "").ToLowerInvariant() switch
-                            {
-                                "paid" => "bg-success",
-                                "pending" => "bg-warning text-dark",
-                                "failed" => "bg-danger",
-                                _ => "bg-secondary"
-                            };
-                        }
-                        <span class="badge @paymentBadgeClass">
-                            Payment: @(order.PaymentStatus ?? "None")
-                        </span>
-                    </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+    <span class="badge @badgeClass">
+        @order.Status
+    </span>
+
+    @{
+        string paymentBadgeClass =
+            (order.PaymentStatus ?? "").ToLowerInvariant() switch
+            {
+                "paid" => "bg-success",
+                "pending" => "bg-warning text-dark",
+                "failed" => "bg-danger",
+                _ => "bg-secondary"
+            };
+    }
+
+    <span class="badge @paymentBadgeClass">
+        Payment: @(order.PaymentStatus ?? "None")
+    </span>
+
+    @if (string.Equals(
+        order.PaymentStatus,
+        "Paid",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        <a asp-page="/Customer/Orders/Receipt"
+           asp-route-id="@order.OrderID"
+           class="btn btn-sm btn-outline-success">
+            View Receipt
+        </a>
+    }
+    else if (string.Equals(
+        order.PaymentStatus,
+        "Pending",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        <a asp-page="/Customer/Orders/Receipt"
+           asp-route-id="@order.OrderID"
+           class="btn btn-sm btn-outline-secondary">
+            View Payment Summary
+        </a>
+    }
+    else if (string.Equals(
+        order.PaymentStatus,
+        "Failed",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        <span class="small text-danger fw-semibold">
+            Payment failed
+        </span>
+    }
+</div>            
                 </div>
                 <div class="card-body pb-2">
                     <p class="text-muted small mb-2">Booking: @order.BookingText</p>

@@ -1,0 +1,137 @@
+﻿@page "{id:int}"
+@model RROMS.Pages.Customer.Reservations.ConfirmationModel
+@{
+    ViewData["Title"] = "Reservation Confirmation";
+}
+
+@if (Model.Reservation != null)
+{
+    <div class="container py-4" style="max-width: 760px;">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <h2 class="mb-0">Reservation Confirmation</h2>
+
+            <div class="d-flex gap-2">
+                <button type="button"
+                        class="btn btn-primary"
+                        onclick="window.print()">
+                    Print / Save as PDF
+                </button>
+
+                <a asp-page="/Customer/Reservations/Index"
+                   class="btn btn-outline-secondary">
+                    Back
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm confirmation-document">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center border-bottom pb-4 mb-4">
+                    <h1 class="h3 mb-1">
+                        Dine<span class="text-warning">flow</span>
+                    </h1>
+
+                    <p class="text-muted mb-3">
+                        Restaurant Reservation Confirmation
+                    </p>
+
+                    <h2 class="h4 mb-2">
+                        @Model.BookingReference
+                    </h2>
+
+                    <span class="badge @RROMS.Pages.Customer.Reservations.ConfirmationModel.StatusBadgeClass(Model.Reservation.Status)">
+                        @(Model.Reservation.Status ?? "Pending")
+                    </span>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Customer</p>
+                        <p class="fw-semibold mb-0">@Model.CustomerName</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Booking Reference</p>
+                        <p class="fw-semibold mb-0">@Model.BookingReference</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Reservation Date</p>
+                        <p class="fw-semibold mb-0">
+                            @Model.Reservation.Date.ToString("dd MMM yyyy")
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Reservation Time</p>
+                        <p class="fw-semibold mb-0">
+                            @Model.Reservation.Time.ToString(@"hh\:mm")
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Table</p>
+                        <p class="fw-semibold mb-0">
+                            @(Model.Reservation.Table?.TableNumber ?? "-")
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Number of Guests</p>
+                        <p class="fw-semibold mb-0">
+                            @Model.Reservation.NumberOfGuests
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Reservation Status</p>
+                        <p class="fw-semibold mb-0">
+                            @(Model.Reservation.Status ?? "Pending")
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Created At</p>
+                        <p class="fw-semibold mb-0">
+                            @(Model.Reservation.CreatedAt?.ToString("dd MMM yyyy, HH:mm")
+                                ?? "Not recorded")
+                        </p>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mt-4 mb-0">
+                    Please keep this confirmation for reference when contacting the restaurant.
+                    A Pending reservation is awaiting staff confirmation.
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    @@media print {
+        body {
+            background: white !important;
+        }
+
+        .customer-sidebar,
+        .customer-topbar,
+        .no-print {
+            display: none !important;
+        }
+
+        .customer-main {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        .customer-page-content {
+            padding: 0 !important;
+        }
+
+        .confirmation-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
