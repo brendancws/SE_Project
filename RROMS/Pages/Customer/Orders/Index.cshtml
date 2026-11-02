@@ -11,6 +11,49 @@
         <a asp-page="/Customer/Menu/Index" class="btn btn-primary">Order More Food</a>
     </div>
 
+    <div class="card border-0 bg-light mb-4 no-print">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <span class="fw-semibold">Live order tracking:</span>
+                <span class="text-success">On</span>
+
+                <span class="text-muted small ms-2">
+                    Last checked:
+                    <span id="lastStatusCheck">Not checked yet</span>
+                </span>
+            </div>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="statusChangeNotice"
+             class="alert alert-info mt-3 mb-0 d-none"
+             role="status">
+            <strong>Order status updated.</strong>
+            Refresh the full page to update payment details,
+            receipt actions, and other order information.
+
+            <button type="button"
+                    class="btn btn-sm btn-primary ms-2"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="statusPollingError"
+             class="alert alert-warning mt-3 mb-0 d-none"
+             role="status">
+            Live status updates are temporarily unavailable.
+            Use Refresh Full Page to check the latest information.
+        </div>
+    </div>
+</div>
+
     @if (TempData["OrderMessage"] is string orderMessage && !string.IsNullOrEmpty(orderMessage))
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -38,7 +81,9 @@
                 _ => "bg-secondary"
             };
 
-            <div class="card shadow-sm mb-4">
+            <div class="card shadow-sm mb-4"
+     data-order-id="@order.OrderID"
+     data-current-status="@order.Status">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <strong>Order #@order.OrderID</strong>
@@ -47,9 +92,10 @@
                         </span>
                     </div>
                             <div class="d-flex align-items-center gap-2 flex-wrap">
-    <span class="badge @badgeClass">
-        @order.Status
-    </span>
+    <span class="badge @badgeClass order-status-badge">
+    @order.Status
+</span>
+
 
     @{
         string paymentBadgeClass =
@@ -100,8 +146,55 @@
 </div>            
                 </div>
                 <div class="card-body pb-2">
-                    <p class="text-muted small mb-2">Booking: @order.BookingText</p>
-                </div>
+    <p class="text-muted small mb-3">
+        Booking: @order.BookingText
+    </p>
+
+    <div class="order-progress"
+         data-progress-status="@order.Status">
+        <div class="order-progress-step"
+             data-step-status="Pending">
+            <span class="order-progress-dot"></span>
+            <span>Pending</span>
+        </div>
+
+        <div class="order-progress-line"></div>
+
+        <div class="order-progress-step"
+             data-step-status="Preparing">
+            <span class="order-progress-dot"></span>
+            <span>Preparing</span>
+        </div>
+
+        <div class="order-progress-line"></div>
+
+        <div class="order-progress-step"
+             data-step-status="Ready to Serve">
+            <span class="order-progress-dot"></span>
+            <span>Ready</span>
+        </div>
+
+        <div class="order-progress-line"></div>
+
+        <div class="order-progress-step"
+             data-step-status="Served">
+            <span class="order-progress-dot"></span>
+            <span>Served</span>
+        </div>
+
+        <div class="order-progress-line"></div>
+
+        <div class="order-progress-step"
+             data-step-status="Completed">
+            <span class="order-progress-dot"></span>
+            <span>Completed</span>
+        </div>
+    </div>
+
+    <div class="order-cancelled-message text-danger fw-semibold small mt-2 d-none">
+        This order has been cancelled.
+    </div>
+</div>
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
                         <thead class="table-light">
@@ -135,3 +228,288 @@
         }
     }
 </div>
+
+                            <style>
+    .order-progress {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .order-progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 72px;
+        color: #9ca3af;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .order-progress-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 3px solid #d1d5db;
+        background: white;
+        margin-bottom: 6px;
+        transition: 0.2s;
+    }
+
+    .order-progress-line {
+        flex: 1;
+        min-width: 24px;
+        height: 3px;
+        margin-top: 8px;
+        background: #d1d5db;
+        transition: 0.2s;
+    }
+
+    .order-progress-step.completed,
+    .order-progress-step.current {
+        color: #111827;
+        font-weight: 600;
+    }
+
+    .order-progress-step.completed .order-progress-dot {
+        border-color: #198754;
+        background: #198754;
+    }
+
+    .order-progress-step.current .order-progress-dot {
+        border-color: #0d6efd;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    }
+
+    .order-progress-line.completed {
+        background: #198754;
+    }
+
+    .order-progress.cancelled {
+        opacity: 0.45;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        (function () {
+            const statusOrder = [
+                "Pending",
+                "Preparing",
+                "Ready to Serve",
+                "Served",
+                "Completed"
+            ];
+
+            const lastCheckElement =
+                document.getElementById("lastStatusCheck");
+
+            const changeNotice =
+                document.getElementById("statusChangeNotice");
+
+            const pollingError =
+                document.getElementById("statusPollingError");
+
+            function badgeClassFor(status) {
+                switch ((status || "").toLowerCase()) {
+                    case "pending":
+                        return "bg-warning text-dark";
+                    case "preparing":
+                        return "bg-info text-dark";
+                    case "ready to serve":
+                        return "bg-primary";
+                    case "served":
+                        return "bg-success";
+                    case "completed":
+                        return "bg-dark";
+                    case "cancelled":
+                        return "bg-danger";
+                    default:
+                        return "bg-secondary";
+                }
+            }
+
+            function updateProgress(card, status) {
+                const progress =
+                    card.querySelector(".order-progress");
+
+                const cancelledMessage =
+                    card.querySelector(
+                        ".order-cancelled-message"
+                    );
+
+                const steps =
+                    Array.from(
+                        progress.querySelectorAll(
+                            ".order-progress-step"
+                        )
+                    );
+
+                const lines =
+                    Array.from(
+                        progress.querySelectorAll(
+                            ".order-progress-line"
+                        )
+                    );
+
+                steps.forEach(function (step) {
+                    step.classList.remove(
+                        "completed",
+                        "current"
+                    );
+                });
+
+                lines.forEach(function (line) {
+                    line.classList.remove("completed");
+                });
+
+                if (status === "Cancelled") {
+                    progress.classList.add("cancelled");
+                    cancelledMessage.classList.remove("d-none");
+                    return;
+                }
+
+                progress.classList.remove("cancelled");
+                cancelledMessage.classList.add("d-none");
+
+                const currentIndex =
+    statusOrder.indexOf(status);
+
+if (currentIndex === -1) {
+    return;
+}
+
+// A completed order should show the entire workflow in green.
+if (status === "Completed") {
+    steps.forEach(function (step) {
+        step.classList.add("completed");
+    });
+
+    lines.forEach(function (line) {
+        line.classList.add("completed");
+    });
+
+    return;
+}
+
+steps.forEach(function (step, index) {
+    if (index < currentIndex) {
+        step.classList.add("completed");
+    } else if (index === currentIndex) {
+        step.classList.add("current");
+    }
+});
+
+lines.forEach(function (line, index) {
+    if (index < currentIndex) {
+        line.classList.add("completed");
+    }
+});
+            }
+
+            function updateOrderCard(card, newStatus) {
+                const oldStatus =
+                    card.dataset.currentStatus;
+
+                const badge =
+                    card.querySelector(
+                        ".order-status-badge"
+                    );
+
+                badge.textContent = newStatus;
+
+                badge.className =
+                    "badge order-status-badge " +
+                    badgeClassFor(newStatus);
+
+                updateProgress(card, newStatus);
+
+                card.dataset.currentStatus = newStatus;
+
+                return oldStatus !== newStatus;
+            }
+
+            async function pollStatuses() {
+                try {
+                    const response = await fetch(
+                        "?handler=Statuses",
+                        {
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Status request failed."
+                        );
+                    }
+
+                    const statuses =
+                        await response.json();
+
+                    let anyChanged = false;
+
+                    statuses.forEach(function (item) {
+                        const card =
+                            document.querySelector(
+                                '[data-order-id="' +
+                                item.orderId +
+                                '"]'
+                            );
+
+                        if (!card) {
+                            return;
+                        }
+
+                        if (updateOrderCard(
+                            card,
+                            item.status
+                        )) {
+                            anyChanged = true;
+                        }
+                    });
+
+                    document
+                        .querySelectorAll(
+                            "[data-order-id]"
+                        )
+                        .forEach(function (card) {
+                            updateProgress(
+                                card,
+                                card.dataset.currentStatus
+                            );
+                        });
+
+                    lastCheckElement.textContent =
+                        new Date()
+                            .toLocaleTimeString();
+
+                    pollingError.classList.add("d-none");
+
+                    if (anyChanged) {
+                        changeNotice.classList.remove(
+                            "d-none"
+                        );
+                    }
+                } catch (error) {
+                    pollingError.classList.remove(
+                        "d-none"
+                    );
+                }
+            }
+
+            pollStatuses();
+
+            window.setInterval(
+                pollStatuses,
+                10000
+            );
+        })();
+    </script>
+}

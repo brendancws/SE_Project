@@ -13,6 +13,56 @@
         </a>
     </div>
 
+    <div class="card border-0 bg-light mb-4 no-print">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <span class="fw-semibold">
+                    Live reservation tracking:
+                </span>
+
+                <span class="text-success">
+                    On
+                </span>
+
+                <span class="text-muted small ms-2">
+                    Last checked:
+                    <span id="lastReservationStatusCheck">
+                        Not checked yet
+                    </span>
+                </span>
+            </div>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="reservationStatusChangeNotice"
+             class="alert alert-info mt-3 mb-0 d-none"
+             role="status">
+            <strong>Reservation status updated.</strong>
+            Refresh the full page to update table details
+            and available actions.
+
+            <button type="button"
+                    class="btn btn-sm btn-primary ms-2"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="reservationStatusPollingError"
+             class="alert alert-warning mt-3 mb-0 d-none"
+             role="status">
+            Live reservation updates are temporarily unavailable.
+            Use Refresh Full Page to check the latest information.
+        </div>
+    </div>
+</div>
+
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
         <div class="alert alert-success alert-dismissible fade show"
@@ -76,7 +126,8 @@
                                     _ => "bg-secondary"
                                 };
 
-                            <tr>
+                            <tr data-reservation-id="@reservation.ReservationID"
+    data-current-status="@(reservation.Status ?? "Pending")">
                                 <td>
                                     @reservation.Date.ToString("dd MMM yyyy")
                                 </td>
@@ -94,9 +145,32 @@
                                 </td>
 
                                 <td>
-                                    <span class="badge @badgeClass">
-                                        @(reservation.Status ?? "Pending")
-                                    </span>
+                                    <span class="badge @badgeClass reservation-status-badge">
+    @(reservation.Status ?? "Pending")
+</span>
+
+<div class="reservation-status-explanation small mt-1">
+    @switch ((reservation.Status ?? "Pending").ToLowerInvariant())
+    {
+        case "confirmed":
+            <span class="text-success">
+                Reservation confirmed.
+            </span>
+            break;
+
+        case "cancelled":
+            <span class="text-danger">
+                Reservation cancelled.
+            </span>
+            break;
+
+        default:
+            <span class="text-muted">
+                Awaiting staff confirmation.
+            </span>
+            break;
+    }
+</div>
                                 </td>
 
                                 <td class="text-end">
@@ -184,3 +258,165 @@
         </div>
     }
 </div>
+
+                                                        @section Scripts {
+    <script>
+        (function () {
+            const lastCheckElement =
+                document.getElementById(
+                    "lastReservationStatusCheck"
+                );
+
+            const changeNotice =
+                document.getElementById(
+                    "reservationStatusChangeNotice"
+                );
+
+            const pollingError =
+                document.getElementById(
+                    "reservationStatusPollingError"
+                );
+
+            function badgeClassFor(status) {
+                switch ((status || "").toLowerCase()) {
+                    case "confirmed":
+                        return "bg-success";
+                    case "pending":
+                        return "bg-warning text-dark";
+                    case "cancelled":
+                        return "bg-danger";
+                    default:
+                        return "bg-secondary";
+                }
+            }
+
+            function explanationFor(status) {
+                switch ((status || "").toLowerCase()) {
+                    case "confirmed":
+                        return {
+                            text: "Reservation confirmed.",
+                            className: "text-success"
+                        };
+
+                    case "cancelled":
+                        return {
+                            text: "Reservation cancelled.",
+                            className: "text-danger"
+                        };
+
+                    default:
+                        return {
+                            text: "Awaiting staff confirmation.",
+                            className: "text-muted"
+                        };
+                }
+            }
+
+            function updateReservationRow(
+                row,
+                newStatus
+            ) {
+                const oldStatus =
+                    row.dataset.currentStatus;
+
+                const badge =
+                    row.querySelector(
+                        ".reservation-status-badge"
+                    );
+
+                const explanationContainer =
+                    row.querySelector(
+                        ".reservation-status-explanation"
+                    );
+
+                badge.textContent = newStatus;
+
+                badge.className =
+                    "badge reservation-status-badge " +
+                    badgeClassFor(newStatus);
+
+                const explanation =
+                    explanationFor(newStatus);
+
+                explanationContainer.innerHTML =
+                    '<span class="' +
+                    explanation.className +
+                    '">' +
+                    explanation.text +
+                    '</span>';
+
+                row.dataset.currentStatus = newStatus;
+
+                return oldStatus !== newStatus;
+            }
+
+            async function pollReservationStatuses() {
+                try {
+                    const response = await fetch(
+                        "?handler=Statuses",
+                        {
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Reservation status request failed."
+                        );
+                    }
+
+                    const statuses =
+                        await response.json();
+
+                    let anyChanged = false;
+
+                    statuses.forEach(function (item) {
+                        const row =
+                            document.querySelector(
+                                '[data-reservation-id="' +
+                                item.reservationId +
+                                '"]'
+                            );
+
+                        if (!row) {
+                            return;
+                        }
+
+                        if (updateReservationRow(
+                            row,
+                            item.status
+                        )) {
+                            anyChanged = true;
+                        }
+                    });
+
+                    lastCheckElement.textContent =
+                        new Date()
+                            .toLocaleTimeString();
+
+                    pollingError.classList.add("d-none");
+
+                    if (anyChanged) {
+                        changeNotice.classList.remove(
+                            "d-none"
+                        );
+                    }
+                } catch (error) {
+                    pollingError.classList.remove(
+                        "d-none"
+                    );
+                }
+            }
+
+            pollReservationStatuses();
+
+            window.setInterval(
+                pollReservationStatuses,
+                10000
+            );
+        })();
+    </script>
+}

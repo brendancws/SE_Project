@@ -76,6 +76,29 @@ namespace RROMS.Pages.Customer.Reservations
             return RedirectToPage();
         }
 
+        public async Task<IActionResult> OnGetStatusesAsync()
+        {
+            int? customerId = GetCurrentCustomerId();
+
+            if (customerId == null)
+            {
+                return new UnauthorizedResult();
+            }
+
+            // Only return reservations belonging to the current customer.
+            var statuses = await _context.Reservations
+                .AsNoTracking()
+                .Where(r => r.CustomerID == customerId.Value)
+                .Select(r => new
+                {
+                    reservationId = r.ReservationID,
+                    status = r.Status ?? "Pending"
+                })
+                .ToListAsync();
+
+            return new JsonResult(statuses);
+        }
+
         // Pending or Confirmed, and still in the future
         public bool CanCancel(Reservation reservation)
         {

@@ -94,6 +94,29 @@ namespace RROMS.Pages.Customer.Orders
             return Page();
         }
 
+        public async Task<IActionResult> OnGetStatusesAsync()
+        {
+            int? customerId = GetCurrentCustomerId();
+
+            if (customerId == null)
+            {
+                return new UnauthorizedResult();
+            }
+
+            // Only return statuses belonging to the current customer.
+            var statuses = await _context.CustomerOrders
+                .AsNoTracking()
+                .Where(o => o.CustomerID == customerId.Value)
+                .Select(o => new
+                {
+                    orderId = o.OrderID,
+                    status = o.Status ?? "Pending"
+                })
+                .ToListAsync();
+
+            return new JsonResult(statuses);
+        }
+
         private int? GetCurrentCustomerId()
         {
             string? idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

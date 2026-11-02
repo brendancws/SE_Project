@@ -122,15 +122,22 @@ namespace RROMS.Pages.Staff.Reservations
             if (NewStatus != "Cancelled")
             {
 
-                bool conflict = await _context.Reservations
-                    .AnyAsync(r =>
+                TimeSpan slotLength = TimeSpan.FromHours(2);
+                TimeSpan selectedEndTime = ReservationTime.Add(slotLength);
+
+                var sameDayReservations = await _context.Reservations
+                    .AsNoTracking()
+                    .Where(r =>
                         r.ReservationID != id &&
                         r.TableID == TableId &&
                         r.Date >= selectedDate &&
                         r.Date < selectedDate.AddDays(1) &&
-                        r.Time < ReservationTime.Add(TimeSpan.FromHours(2)) &&
-                        ReservationTime < r.Time.Add(TimeSpan.FromHours(2)) &&
-                        r.Status != "Cancelled");
+                        r.Status != "Cancelled")
+                    .ToListAsync();
+
+                bool conflict = sameDayReservations.Any(r =>
+                    r.Time < selectedEndTime &&
+                    ReservationTime < r.Time.Add(slotLength));
 
 
                 if (conflict)
