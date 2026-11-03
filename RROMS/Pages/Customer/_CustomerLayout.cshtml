@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    string currentPage =
+        ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -192,32 +196,44 @@
 
             <nav class="customer-nav">
 
-                <a asp-page="/Customer/Dashboard/Index">
+                <a asp-page="/Customer/Dashboard/Index"
+   class="@(currentPage.StartsWith("/Customer/Dashboard")
+       ? "active" : "")">
                     <span>🏠</span>
                     Home
                 </a>
 
-                <a asp-page="/Customer/Menu/Index">
+                <a asp-page="/Customer/Menu/Index"
+   class="@(currentPage.StartsWith("/Customer/Menu")
+       ? "active" : "")">
                     <span>📖</span>
                     Menu
                 </a>
 
-                <a asp-page="/Customer/Reservations/Index">
+                <a asp-page="/Customer/Reservations/Index"
+   class="@(currentPage.StartsWith("/Customer/Reservations")
+       ? "active" : "")">
                     <span>📅</span>
                     My Reservations
                 </a>
 
-                <a asp-page="/Customer/Orders/Index">
+                <a asp-page="/Customer/Orders/Index"
+   class="@(currentPage.StartsWith("/Customer/Orders")
+       ? "active" : "")">
                     <span>🍽️</span>
                     My Orders
                 </a>
 
-                <a asp-page="/Customer/History/Index">
+                <a asp-page="/Customer/History/Index"
+   class="@(currentPage.StartsWith("/Customer/History")
+       ? "active" : "")">
                     <span>🧾</span>
                     History
                 </a>
 
-                <a asp-page="/Customer/Profile/Index">
+                <a asp-page="/Customer/Profile/Index"
+   class="@(currentPage.StartsWith("/Customer/Profile")
+       ? "active" : "")">
                     <span>👤</span>
                     Profile
                 </a>
