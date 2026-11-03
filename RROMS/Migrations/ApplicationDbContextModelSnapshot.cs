@@ -130,6 +130,35 @@ namespace RROMS.Migrations
                     b.ToTable("CustomerOrder", (string)null);
                 });
 
+            modelBuilder.Entity("RROMS.Models.Feedback", b =>
+                {
+                    b.Property<int>("FeedbackID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeedbackID"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReservationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("FeedbackID");
+
+                    b.HasIndex("ReservationID")
+                        .IsUnique();
+
+                    b.ToTable("Feedback", (string)null);
+                });
+
             modelBuilder.Entity("RROMS.Models.MenuCategory", b =>
                 {
                     b.Property<int>("CategoryID")
@@ -398,6 +427,17 @@ namespace RROMS.Migrations
                     b.Navigation("Reservation");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("RROMS.Models.Feedback", b =>
+                {
+                    b.HasOne("RROMS.Models.Reservation", "Reservation")
+                        .WithOne()
+                        .HasForeignKey("RROMS.Models.Feedback", "ReservationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("RROMS.Models.MenuItem", b =>

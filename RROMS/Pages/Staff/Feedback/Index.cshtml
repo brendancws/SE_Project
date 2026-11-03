@@ -1,0 +1,258 @@
+﻿@page
+@model RROMS.Pages.Staff.Feedback.IndexModel
+@{
+    ViewData["Title"] = "Customer Feedback";
+    Layout = "_StaffLayout";
+}
+
+<div class="feedback-page">
+    <div class="page-header">
+        <div>
+            <h2>Customer Feedback</h2>
+            <p>
+                View ratings and comments submitted after completed
+                dining experiences.
+            </p>
+        </div>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-icon">💬</div>
+
+            <div>
+                <span>Total Feedback</span>
+                <h3>@Model.FeedbackItems.Count</h3>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">★</div>
+
+            <div>
+                <span>Average Rating</span>
+                <h3>
+                    @Model.AverageRating.ToString("0.0") / 5
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-card">
+        <div class="feedback-toolbar">
+            <div>
+                <h4>Submitted Feedback</h4>
+                <p>
+                    Feedback is read-only and linked to the relevant
+                    reservation.
+                </p>
+            </div>
+        </div>
+
+        @if (!Model.FeedbackItems.Any())
+        {
+            <div class="alert alert-info mb-0">
+                No customer feedback has been submitted yet.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle feedback-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Feedback ID</th>
+                            <th>Booking</th>
+                            <th>Customer</th>
+                            <th>Reservation</th>
+                            <th>Table</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var feedback in Model.FeedbackItems)
+                        {
+                            <tr>
+                                <td>@feedback.FeedbackID</td>
+
+                                <td>
+                                    <strong>
+                                        @feedback.BookingReference
+                                    </strong>
+                                </td>
+
+                                <td>@feedback.CustomerName</td>
+
+                                <td>
+                                    @feedback.ReservationDate.ToString(
+                                        "dd MMM yyyy")
+                                    <br />
+
+                                    <small class="text-muted">
+                                        @feedback.ReservationTime.ToString(
+                                            @"hh\:mm")
+                                    </small>
+                                </td>
+
+                                <td>
+                                    Table @feedback.TableNumber
+                                </td>
+
+                                <td>
+                                    <span class="rating-badge">
+                                        @feedback.Rating ★
+                                    </span>
+                                </td>
+
+                                <td class="feedback-comment">
+                                    @(string.IsNullOrWhiteSpace(
+                                        feedback.Comment)
+                                        ? "No written comment."
+                                        : feedback.Comment)
+                                </td>
+
+                                <td>
+                                    @feedback.SubmittedAt.ToString(
+                                        "dd MMM yyyy, HH:mm")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .feedback-page {
+        width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h2 {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #1f2937;
+    }
+
+    .page-header p {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .summary-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 260px));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: #fff7ed;
+        color: #d97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+    }
+
+    .summary-card span {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .summary-card h3 {
+        margin: 3px 0 0;
+        color: #111827;
+        font-weight: 700;
+    }
+
+    .feedback-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .feedback-toolbar {
+        margin-bottom: 20px;
+    }
+
+    .feedback-toolbar h4 {
+        margin-bottom: 3px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .feedback-toolbar p {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .feedback-table thead th {
+        background: #f9fafb;
+        color: #4b5563;
+        border-bottom: none;
+        font-size: 14px;
+        padding: 14px;
+        white-space: nowrap;
+    }
+
+    .feedback-table td {
+        padding: 14px;
+        vertical-align: middle;
+    }
+
+    .feedback-table tbody tr:hover {
+        background: #fffaf0;
+    }
+
+    .rating-badge {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        background: #fef3c7;
+        color: #92400e;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .feedback-comment {
+        min-width: 240px;
+        max-width: 420px;
+        white-space: normal;
+    }
+
+    @@media (max-width: 700px) {
+        .summary-row {
+            grid-template-columns: 1fr;
+        }
+
+        .feedback-card {
+            padding: 15px;
+        }
+    }
+</style>

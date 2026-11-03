@@ -30,6 +30,7 @@ namespace RROMS.Data
 
         public DbSet<Notification> Notifications { get; set; }
 
+        public DbSet<Feedback> Feedbacks { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -66,6 +67,19 @@ namespace RROMS.Data
 
             modelBuilder.Entity<Notification>()
                 .ToTable("Notification");
+
+            modelBuilder.Entity<Feedback>()
+    .ToTable("Feedback");
+
+            modelBuilder.Entity<Feedback>()
+                .HasOne(f => f.Reservation)
+                .WithOne()
+                .HasForeignKey<Feedback>(f => f.ReservationID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Feedback>()
+                .HasIndex(f => f.ReservationID)
+                .IsUnique();
         }
     }
 }

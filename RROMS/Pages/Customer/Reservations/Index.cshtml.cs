@@ -19,6 +19,12 @@ namespace RROMS.Pages.Customer.Reservations
 
         public List<Reservation> MyReservations { get; private set; } = new();
 
+        public HashSet<int> FeedbackEligibleReservationIds { get; private set; }
+    = new();
+
+        public HashSet<int> FeedbackSubmittedReservationIds { get; private set; }
+            = new();
+
         [TempData]
         public string? StatusMessage { get; set; }
 
@@ -40,6 +46,32 @@ namespace RROMS.Pages.Customer.Reservations
                 .OrderByDescending(r => r.Date)
                 .ThenByDescending(r => r.Time)
                 .ToListAsync();
+
+            var reservationIds = MyReservations
+    .Select(r => r.ReservationID)
+    .ToList();
+
+            FeedbackEligibleReservationIds = (
+    await _context.CustomerOrders
+        .AsNoTracking()
+        .Where(o =>
+            o.CustomerID == customerId.Value &&
+            o.ReservationID.HasValue &&
+            reservationIds.Contains(o.ReservationID.Value) &&
+            o.Status == "Completed")
+        .Select(o => o.ReservationID!.Value)
+        .Distinct()
+        .ToListAsync()
+).ToHashSet();
+
+            FeedbackSubmittedReservationIds = (
+                await _context.Feedbacks
+                    .AsNoTracking()
+                    .Where(f =>
+                        reservationIds.Contains(f.ReservationID))
+                    .Select(f => f.ReservationID)
+                    .ToListAsync()
+            ).ToHashSet();
 
             return Page();
         }
@@ -97,6 +129,26 @@ namespace RROMS.Pages.Customer.Reservations
                 .ToListAsync();
 
             return new JsonResult(statuses);
+        }
+
+        public bool CanLeaveFeedback(Reservation reservation)
+        {
+            bool isCancelled = string.Equals(
+                reservation.Status,
+                "Cancelled",
+                StringComparison.OrdinalIgnoreCase);
+
+            return !isCancelled &&
+                   FeedbackEligibleReservationIds.Contains(
+                       reservation.ReservationID) &&
+                   !FeedbackSubmittedReservationIds.Contains(
+                       reservation.ReservationID);
+        }
+
+        public bool HasSubmittedFeedback(Reservation reservation)
+        {
+            return FeedbackSubmittedReservationIds.Contains(
+                reservation.ReservationID);
         }
 
         // Pending or Confirmed, and still in the future

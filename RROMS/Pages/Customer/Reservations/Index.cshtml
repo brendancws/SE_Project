@@ -77,6 +77,21 @@
         </div>
     }
 
+    @if (TempData["FeedbackMessage"] is string feedbackMessage &&
+     !string.IsNullOrWhiteSpace(feedbackMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show"
+         role="alert">
+        @feedbackMessage
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show"
@@ -180,6 +195,23 @@
                                            class="btn btn-sm btn-outline-secondary">
                                             Confirmation
                                         </a>
+
+                                        @if (Model.CanLeaveFeedback(reservation))
+{
+    <a asp-page="/Customer/Reservations/Feedback"
+       asp-route-id="@reservation.ReservationID"
+       class="btn btn-sm btn-outline-success">
+        Leave Feedback
+    </a>
+}
+else if (Model.HasSubmittedFeedback(reservation))
+{
+    <a asp-page="/Customer/Reservations/Feedback"
+       asp-route-id="@reservation.ReservationID"
+       class="btn btn-sm btn-outline-success">
+        View Feedback
+    </a>
+}
 
                                         @if (Model.CanCancel(reservation))
                                         {
