@@ -1,0 +1,170 @@
+﻿@page
+@using System.Globalization
+@model RROMS.Pages.Customer.History.IndexModel
+@{
+    ViewData["Title"] = "History";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">My History</h2>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link @(Model.Tab == "reservations" ? "active" : "")"
+               asp-page="/Customer/History/Index" asp-route-tab="reservations"
+               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Reservations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Tab == "orders" ? "active" : "")"
+               asp-page="/Customer/History/Index" asp-route-tab="orders"
+               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Tab == "payments" ? "active" : "")"
+               asp-page="/Customer/History/Index" asp-route-tab="payments"
+               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Payments</a>
+        </li>
+    </ul>
+
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <input type="hidden" name="tab" value="@Model.Tab" />
+        <div class="col-auto">
+            <label class="form-label small mb-0">From</label>
+            <input type="date" name="from" value="@Model.FromText" class="form-control" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label small mb-0">To</label>
+            <input type="date" name="to" value="@Model.ToText" class="form-control" />
+        </div>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-page="/Customer/History/Index" asp-route-tab="@Model.Tab"
+               class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.FilterError))
+    {
+        <div class="alert alert-danger">@Model.FilterError</div>
+    }
+    else if (Model.TotalCount == 0)
+    {
+        <div class="alert alert-info">No records found for this selection.</div>
+    }
+    else
+    {
+        <p class="text-muted small mb-2">
+            @Model.TotalCount record@(Model.TotalCount == 1 ? "" : "s") found.
+        </p>
+
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                @if (Model.Tab == "reservations")
+                {
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Table</th>
+                                <th>Guests</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Reservations)
+                            {
+                                <tr>
+                                    <td>@row.Date.ToString("dd MMM yyyy")</td>
+                                    <td>@row.Time.ToString(@"hh\:mm")</td>
+                                    <td>@row.TableNumber</td>
+                                    <td>@row.Guests</td>
+                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (Model.Tab == "orders")
+                {
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order</th>
+                                <th>Date</th>
+                                <th>Booking</th>
+                                <th>Status</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Orders)
+                            {
+                                <tr>
+                                    <td>#@row.OrderID</td>
+                                    <td>@(row.OrderDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")</td>
+                                    <td>@row.BookingText</td>
+                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
+                                    <td class="text-end">RM @row.Total.ToString("0.00", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Payment</th>
+                                <th>Order</th>
+                                <th>Date</th>
+                                <th>Method</th>
+                                <th>Transaction No.</th>
+                                <th>Status</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Payments)
+                            {
+                                <tr>
+                                    <td>#@row.PaymentID</td>
+                                    <td>#@row.OrderID</td>
+                                    <td>@(row.PaymentDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")</td>
+                                    <td>@row.Method</td>
+                                    <td>@(row.TransactionNo ?? "-")</td>
+                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
+                                    <td class="text-end">RM @row.Amount.ToString("0.00", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    @if (Model.PageNumber > 1)
+                    {
+                        <a class="btn btn-outline-secondary btn-sm" asp-page="/Customer/History/Index"
+                           asp-route-tab="@Model.Tab" asp-route-from="@Model.FromText" asp-route-to="@Model.ToText"
+                           asp-route-p="@(Model.PageNumber - 1)">Previous</a>
+                    }
+                </div>
+                <span class="text-muted small">Page @Model.PageNumber of @Model.TotalPages</span>
+                <div>
+                    @if (Model.PageNumber < Model.TotalPages)
+                    {
+                        <a class="btn btn-outline-secondary btn-sm" asp-page="/Customer/History/Index"
+                           asp-route-tab="@Model.Tab" asp-route-from="@Model.FromText" asp-route-to="@Model.ToText"
+                           asp-route-p="@(Model.PageNumber + 1)">Next</a>
+                    }
+                </div>
+            </nav>
+        }
+    }
+</div>

@@ -1,0 +1,167 @@
+﻿@page
+@model RROMS.Pages.Customer.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container py-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="mb-1">Notifications</h2>
+            <p class="text-muted mb-0">
+                View reservation, order, and payment updates.
+            </p>
+        </div>
+
+        @if (Model.UnreadCount > 0)
+        {
+            <form method="post"
+                  asp-page-handler="MarkAllRead">
+                <button type="submit"
+                        class="btn btn-outline-primary">
+                    Mark All as Read
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+            @Model.StatusMessage
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">
+                    Unread notifications
+                </span>
+
+                <span class="badge bg-danger">
+                    @Model.UnreadCount
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Notifications.Any())
+    {
+        <div class="alert alert-info">
+            You do not have any notifications yet.
+        </div>
+    }
+    else
+    {
+        <div class="notification-list">
+            @foreach (var notification in Model.Notifications)
+            {
+                bool isUnread =
+                    notification.IsRead != true;
+
+                <article class="notification-item @(isUnread ? "unread" : "read")">
+                    <div class="notification-icon">
+                        🔔
+                    </div>
+
+                    <div class="notification-content">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                @if (isUnread)
+                                {
+                                    <span class="badge bg-primary mb-2">
+                                        New
+                                    </span>
+                                }
+
+                                <p class="notification-message mb-1">
+                                    @notification.Message
+                                </p>
+
+                                <small class="text-muted">
+                                    @(notification.CreatedAt?.ToString(
+                                        "dd MMM yyyy, HH:mm") ?? "-")
+                                </small>
+                            </div>
+
+                            @if (isUnread)
+                            {
+                                <form method="post"
+                                      asp-page-handler="MarkRead"
+                                      asp-route-id="@notification.NotificationID">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-primary">
+                                        Mark as Read
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Read
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .notification-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notification-item {
+        display: flex;
+        gap: 15px;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .notification-item.unread {
+        border-left: 5px solid #0d6efd;
+        background: #f8fbff;
+    }
+
+    .notification-item.read {
+        opacity: 0.78;
+    }
+
+    .notification-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fff7ed;
+        font-size: 20px;
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-message {
+        color: #1f2937;
+        overflow-wrap: anywhere;
+    }
+</style>

@@ -150,13 +150,55 @@ namespace RROMS.Pages.Staff.Reservations
                 }
             }
 
+            // Capture the existing status before applying Staff changes.
+            string previousStatus =
+                reservation.Status ?? "Pending";
+
             // Update reservation
             reservation.Date = selectedDate;
             reservation.Time = ReservationTime;
             reservation.TableID = TableId;
             reservation.Status = NewStatus;
 
-            // Save to SQL Server
+            bool statusChanged =
+                !string.Equals(
+                    previousStatus,
+                    reservation.Status,
+                    StringComparison.OrdinalIgnoreCase);
+
+            if (statusChanged)
+            {
+                string normalizedStatus =
+                    reservation.Status ?? "Pending";
+
+                string statusMessage =
+                    normalizedStatus.ToLowerInvariant() switch
+                    {
+                        "confirmed" =>
+                            $"Reservation RES-{reservation.ReservationID:D6} " +
+                            "has been confirmed.",
+
+                        "cancelled" =>
+                            $"Reservation RES-{reservation.ReservationID:D6} " +
+                            "has been cancelled.",
+
+                        _ =>
+                            $"Reservation RES-{reservation.ReservationID:D6} " +
+                            $"is now {normalizedStatus}."
+                    };
+
+                _context.Notifications.Add(
+                    new Notification
+                    {
+                        UserID = reservation.CustomerID,
+                        UserType = "Customer",
+                        Message = statusMessage,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    });
+            }
+
+            // Reservation and notification are saved together.
             await _context.SaveChangesAsync();
 
             return RedirectToPage(

@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -16,21 +15,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages(options =>
 {
-    // Only authenticated staff can access Staff pages
-    options.Conventions.AuthorizeFolder(
-        "/Staff", "StaffOnly");
+    // Staff authorization
+    options.Conventions.AuthorizeFolder("/Staff", "StaffOnly");
+    options.Conventions.AllowAnonymousToPage("/Staff/Login");
+    options.Conventions.AllowAnonymousToPage("/Staff/ForgotPassword");
+    options.Conventions.AllowAnonymousToPage("/Staff/ResetPassword");
 
-    // Login must remain accessible without signing in
-    options.Conventions.AllowAnonymousToPage(
-        "/Staff/Login");
-
-    // Forgot Password must be accessible without login
-    options.Conventions.AllowAnonymousToPage(
-        "/Staff/ForgotPassword");
-
-    // Reset Password must be accessible without login
-    options.Conventions.AllowAnonymousToPage(
-        "/Staff/ResetPassword");
+    // Customer authorization
+    options.Conventions.AuthorizeFolder("/Customer", "CustomerOnly");
+    options.Conventions.AllowAnonymousToPage("/Customer/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Customer/Account/Register");
+    options.Conventions.AllowAnonymousToPage("/Customer/Dashboard/Index");
 });
 
 // ==========================================
@@ -39,8 +34,7 @@ builder.Services.AddRazorPages(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString(
-            "DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ==========================================
 // 3. PASSWORD HASHING
@@ -50,13 +44,16 @@ builder.Services.AddScoped<
     IPasswordHasher<RROMS.Models.Staff>,
     PasswordHasher<RROMS.Models.Staff>>();
 
+builder.Services.AddScoped<
+    IPasswordHasher<RROMS.Models.Customer>,
+    PasswordHasher<RROMS.Models.Customer>>();
+
 // ==========================================
 // 4. COOKIE AUTHENTICATION
 // ==========================================
 
 builder.Services
-    .AddAuthentication(
-        CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Staff/Login";
@@ -64,101 +61,100 @@ builder.Services
 
         options.Cookie.Name = "Dineflow.Auth";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy =
-            CookieSecurePolicy.Always;
-        options.Cookie.SameSite =
-            SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
 
-        options.ExpireTimeSpan =
-            TimeSpan.FromHours(8);
-
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
+
+        // Send logged-out customers to the Customer login, everyone else to the Staff login
+        options.Events.OnRedirectToLogin = context =>
+        {
+            string loginPath = context.Request.Path.StartsWithSegments("/Customer")
+                ? "/Customer/Account/Login"
+                : "/Staff/Login";
+
+            string returnUrl = Uri.EscapeDataString(
+                context.Request.PathBase + context.Request.Path + context.Request.QueryString);
+
+            context.Response.Redirect($"{context.Request.PathBase}{loginPath}?ReturnUrl={returnUrl}");
+            return Task.CompletedTask;
+        };
 
         // Validate account whenever its cookie is checked
         options.Events.OnValidatePrincipal = async context =>
         {
-            string? staffIdValue =
-                context.Principal?.FindFirstValue(
-                    ClaimTypes.NameIdentifier);
+            var role = context.Principal?.FindFirstValue(ClaimTypes.Role);
+            string? userIdValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            bool isStaffRole =
-                context.Principal?.IsInRole("Staff") == true;
-
-            if (!isStaffRole ||
-                !int.TryParse(staffIdValue, out int staffId) ||
-                staffId <= 0)
+            if (string.IsNullOrEmpty(role) ||
+                !int.TryParse(userIdValue, out int userId) ||
+                userId <= 0)
             {
                 context.RejectPrincipal();
-
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults
-                        .AuthenticationScheme);
-
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return;
             }
 
-            var db = context.HttpContext.RequestServices
-                .GetRequiredService<ApplicationDbContext>();
+            var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 
-            var staff = await db.Staff
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    s => s.StaffID == staffId);
+            if (role == "Staff")
+            {
+                var staff = await db.Staff.AsNoTracking().FirstOrDefaultAsync(s => s.StaffID == userId);
+                if (staff == null ||
+                    !string.Equals(staff.Status, "Active", StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(staff.Role, "Staff", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return;
+                }
 
-            // Reject deleted, disabled or reassigned accounts
-            if (staff == null ||
-                !string.Equals(
-                    staff.Status,
-                    "Active",
-                    StringComparison.OrdinalIgnoreCase) ||
-                !string.Equals(
-                    staff.Role,
-                    "Staff",
-                    StringComparison.OrdinalIgnoreCase))
+                string? cookieName = context.Principal?.FindFirstValue(ClaimTypes.Name);
+                string? cookieEmail = context.Principal?.FindFirstValue(ClaimTypes.Email);
+
+                if (cookieName != staff.Name || cookieEmail != staff.Email)
+                {
+                    var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, staff.StaffID.ToString()));
+                    identity.AddClaim(new Claim(ClaimTypes.Name, staff.Name));
+                    identity.AddClaim(new Claim(ClaimTypes.Email, staff.Email));
+                    identity.AddClaim(new Claim(ClaimTypes.Role, "Staff"));
+
+                    context.ReplacePrincipal(new ClaimsPrincipal(identity));
+                    context.ShouldRenew = true;
+                }
+            }
+            else if (role == "Customer")
+            {
+                var customer = await db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.CustomerID == userId);
+                if (customer == null ||
+                    !string.Equals(customer.Status, "Active", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return;
+                }
+
+                string? cookieName = context.Principal?.FindFirstValue(ClaimTypes.Name);
+                string? cookieEmail = context.Principal?.FindFirstValue(ClaimTypes.Email);
+
+                if (cookieName != customer.Name || cookieEmail != customer.Email)
+                {
+                    var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, customer.CustomerID.ToString()));
+                    identity.AddClaim(new Claim(ClaimTypes.Name, customer.Name));
+                    identity.AddClaim(new Claim(ClaimTypes.Email, customer.Email));
+                    identity.AddClaim(new Claim(ClaimTypes.Role, "Customer"));
+
+                    context.ReplacePrincipal(new ClaimsPrincipal(identity));
+                    context.ShouldRenew = true;
+                }
+            }
+            else
             {
                 context.RejectPrincipal();
-
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults
-                        .AuthenticationScheme);
-
-                return;
-            }
-
-            // Keep displayed name/email consistent with database
-            string? cookieName = context.Principal?
-                .FindFirstValue(ClaimTypes.Name);
-
-            string? cookieEmail = context.Principal?
-                .FindFirstValue(ClaimTypes.Email);
-
-            if (cookieName != staff.Name ||
-                cookieEmail != staff.Email)
-            {
-                var identity = new ClaimsIdentity(
-                    CookieAuthenticationDefaults
-                        .AuthenticationScheme);
-
-                identity.AddClaim(new Claim(
-                    ClaimTypes.NameIdentifier,
-                    staff.StaffID.ToString()));
-
-                identity.AddClaim(new Claim(
-                    ClaimTypes.Name,
-                    staff.Name));
-
-                identity.AddClaim(new Claim(
-                    ClaimTypes.Email,
-                    staff.Email));
-
-                identity.AddClaim(new Claim(
-                    ClaimTypes.Role,
-                    "Staff"));
-
-                context.ReplacePrincipal(
-                    new ClaimsPrincipal(identity));
-
-                context.ShouldRenew = true;
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
         };
     });
@@ -174,6 +170,28 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser();
         policy.RequireRole("Staff");
     });
+
+    options.AddPolicy("CustomerOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Customer");
+    });
+});
+
+// ==========================================
+// 5b. SESSION (customer cart)
+// ==========================================
+
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = "Dineflow.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(2);
 });
 
 // ==========================================
@@ -197,11 +215,11 @@ if (!app.Environment.IsDevelopment())
 // ==========================================
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
 // ==========================================
 // 9. STATIC FILES & RAZOR PAGES

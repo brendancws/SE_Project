@@ -87,9 +87,42 @@ namespace RROMS.Pages.Staff.Orders
                 return Page();
             }
 
-            // Save the new order status
+            // Apply the validated next order status.
             order.Status = NewStatus;
 
+            string notificationMessage =
+                NewStatus.ToLowerInvariant() switch
+                {
+                    "preparing" =>
+                        $"Order ORD-{order.OrderID:D6} is now Preparing.",
+
+                    "ready to serve" =>
+                        $"Order ORD-{order.OrderID:D6} is Ready to Serve.",
+
+                    "served" =>
+                        $"Order ORD-{order.OrderID:D6} has been Served.",
+
+                    "completed" =>
+                        $"Order ORD-{order.OrderID:D6} is Completed.",
+
+                    "cancelled" =>
+                        $"Order ORD-{order.OrderID:D6} has been Cancelled.",
+
+                    _ =>
+                        $"Order ORD-{order.OrderID:D6} is now {NewStatus}."
+                };
+
+            _context.Notifications.Add(
+                new Notification
+                {
+                    UserID = order.CustomerID,
+                    UserType = "Customer",
+                    Message = notificationMessage,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+
+            // Save the order status and notification together.
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] =

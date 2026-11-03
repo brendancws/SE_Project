@@ -1,0 +1,378 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Dineflow</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+            /* Styles copied from _StaffLayout so all roles look the same.
+               If the team changes colours or fonts, update every layout. */
+            body {
+                margin: 0;
+                background: #f6f7f9;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .customer-wrapper {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            .customer-sidebar {
+                width: 250px;
+                background: #1f2937;
+                color: white;
+                padding: 25px 18px;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+            }
+
+            .customer-logo {
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 35px;
+                padding-left: 10px;
+            }
+
+                .customer-logo span {
+                    color: #f59e0b;
+                }
+
+            .customer-nav a {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: #d1d5db;
+                text-decoration: none;
+                padding: 12px 14px;
+                border-radius: 10px;
+                margin-bottom: 8px;
+                transition: 0.2s;
+            }
+
+                .customer-nav a:hover {
+                    background: #374151;
+                    color: white;
+                }
+
+                .customer-nav a.active {
+                    background: #f59e0b;
+                    color: #111827;
+                    font-weight: 600;
+                }
+
+            .customer-main {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+
+            .customer-topbar {
+                height: 70px;
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 32px;
+            }
+
+            .customer-page-content {
+                padding: 30px;
+            }
+
+            .topbar-account-area {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.notification-bell-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #374151;
+    text-decoration: none;
+    background: #f3f4f6;
+    transition: 0.2s;
+}
+
+.notification-bell-link:hover {
+    color: #111827;
+    background: #e5e7eb;
+}
+
+.notification-bell-link:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.35);
+    outline-offset: 2px;
+}
+
+.notification-bell-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.notification-count-badge {
+    position: absolute;
+    top: -4px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #dc3545;
+    color: white;
+    border: 2px solid white;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+}
+
+.notification-count-badge.d-none {
+    display: none !important;
+}
+
+            .profile-area {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .profile-circle {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #1f2937;
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 700;
+            }
+
+                        @@media (max-width: 900px) {
+                .customer-sidebar {
+                    width: 200px;
+                }
+
+                .customer-main {
+                    margin-left: 200px;
+                    width: calc(100% - 200px);
+                }
+            }
+
+                        /* Remove the default bullet from validation error lists */
+            .text-danger ul,
+            .alert-danger ul {
+                list-style: none;
+                padding-left: 0;
+                margin-bottom: 0;
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="customer-wrapper">
+
+        <aside class="customer-sidebar">
+
+            <div class="customer-logo">
+                Dine<span>flow</span>
+            </div>
+
+            <nav class="customer-nav">
+
+                <a asp-page="/Customer/Dashboard/Index">
+                    <span>🏠</span>
+                    Home
+                </a>
+
+                <a asp-page="/Customer/Menu/Index">
+                    <span>📖</span>
+                    Menu
+                </a>
+
+                <a asp-page="/Customer/Reservations/Index">
+                    <span>📅</span>
+                    My Reservations
+                </a>
+
+                <a asp-page="/Customer/Orders/Index">
+                    <span>🍽️</span>
+                    My Orders
+                </a>
+
+                <a asp-page="/Customer/History/Index">
+                    <span>🧾</span>
+                    History
+                </a>
+
+                <a asp-page="/Customer/Profile/Index">
+                    <span>👤</span>
+                    Profile
+                </a>
+
+                <hr style="border-color:#4b5563;" />
+
+                <form method="post" asp-page="/Customer/Logout" class="m-0 p-0">
+    <button type="submit" class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 w-100"
+            style="color: #d1d5db; padding: 12px 14px !important; border-radius: 10px;">
+        <span>🚪</span>
+        Logout
+    </button>
+</form>
+
+            </nav>
+
+        </aside>
+
+        <main class="customer-main">
+
+            <div class="customer-topbar">
+
+                <div>
+                    <strong>Customer Portal</strong>
+                </div>
+
+                <div class="topbar-account-area">
+    <a asp-page="/Customer/Notifications/Index"
+       class="notification-bell-link"
+       aria-label="View notifications"
+       title="Notifications">
+
+        <span class="notification-bell-icon"
+              aria-hidden="true">
+            🔔
+        </span>
+
+        <span id="customerNotificationCount"
+              class="notification-count-badge d-none"
+              aria-label="No unread notifications">
+            0
+        </span>
+    </a>
+
+    <div class="profile-area">
+        <div>
+            <small class="text-muted">
+                Signed in as
+            </small>
+            <br />
+
+            <strong>
+                @(User.Identity?.Name ?? "Customer")
+            </strong>
+        </div>
+
+        @{
+            var displayName = User.Identity?.Name;
+            var initial = string.IsNullOrWhiteSpace(displayName)
+                ? "C"
+                : displayName.Trim()
+                    .Substring(0, 1)
+                    .ToUpperInvariant();
+        }
+
+        <div class="profile-circle">
+            @initial
+        </div>
+    </div>
+</div>
+
+            </div>
+
+            <div class="customer-page-content">
+                @RenderBody()
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    (function () {
+        const badge =
+            document.getElementById(
+                "customerNotificationCount"
+            );
+
+        if (!badge) {
+            return;
+        }
+
+        async function updateNotificationCount() {
+            try {
+                const response = await fetch(
+                    "/Customer/Notifications/Index?handler=UnreadCount",
+                    {
+                        headers: {
+                            "Accept": "application/json"
+                        },
+                        cache: "no-store"
+                    }
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const result = await response.json();
+                const count =
+                    Number(result.unreadCount) || 0;
+
+                if (count <= 0) {
+                    badge.textContent = "0";
+                    badge.classList.add("d-none");
+
+                    badge.setAttribute(
+                        "aria-label",
+                        "No unread notifications"
+                    );
+
+                    return;
+                }
+
+                badge.textContent =
+                    count > 99
+                        ? "99+"
+                        : count.toString();
+
+                badge.classList.remove("d-none");
+
+                badge.setAttribute(
+                    "aria-label",
+                    count === 1
+                        ? "1 unread notification"
+                        : count + " unread notifications"
+                );
+            }
+            catch (error) {
+                // Preserve the last displayed count if polling fails.
+            }
+        }
+
+        updateNotificationCount();
+
+        window.setInterval(
+            updateNotificationCount,
+            30000
+        );
+    })();
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

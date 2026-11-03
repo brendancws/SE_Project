@@ -1,0 +1,454 @@
+﻿@page
+@model RROMS.Pages.Customer.Reservations.IndexModel
+@{
+    ViewData["Title"] = "My Reservations";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">My Reservations</h2>
+        <a asp-page="/Customer/Reservations/Create"
+           class="btn btn-primary">
+            Book a Table
+        </a>
+    </div>
+
+    <div class="card border-0 bg-light mb-4 no-print">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <span class="fw-semibold">
+                    Live reservation tracking:
+                </span>
+
+                <span class="text-success">
+                    On
+                </span>
+
+                <span class="text-muted small ms-2">
+                    Last checked:
+                    <span id="lastReservationStatusCheck">
+                        Not checked yet
+                    </span>
+                </span>
+            </div>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="reservationStatusChangeNotice"
+             class="alert alert-info mt-3 mb-0 d-none"
+             role="status">
+            <strong>Reservation status updated.</strong>
+            Refresh the full page to update table details
+            and available actions.
+
+            <button type="button"
+                    class="btn btn-sm btn-primary ms-2"
+                    onclick="window.location.reload()">
+                Refresh Full Page
+            </button>
+        </div>
+
+        <div id="reservationStatusPollingError"
+             class="alert alert-warning mt-3 mb-0 d-none"
+             role="status">
+            Live reservation updates are temporarily unavailable.
+            Use Refresh Full Page to check the latest information.
+        </div>
+    </div>
+</div>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+            @Model.StatusMessage
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
+
+    @if (TempData["FeedbackMessage"] is string feedbackMessage &&
+     !string.IsNullOrWhiteSpace(feedbackMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show"
+         role="alert">
+        @feedbackMessage
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+            @Model.ErrorMessage
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
+
+    @if (!Model.MyReservations.Any())
+    {
+        <div class="alert alert-info">
+            You have no reservations yet.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Table</th>
+                            <th>Guests</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var reservation in Model.MyReservations)
+                        {
+                            string badgeClass =
+                                (reservation.Status ?? "Pending")
+                                .ToLowerInvariant() switch
+                                {
+                                    "confirmed" => "bg-success",
+                                    "pending" => "bg-warning text-dark",
+                                    "cancelled" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+
+                            <tr data-reservation-id="@reservation.ReservationID"
+    data-current-status="@(reservation.Status ?? "Pending")">
+                                <td>
+                                    @reservation.Date.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @reservation.Time.ToString(@"hh\:mm")
+                                </td>
+
+                                <td>
+                                    @(reservation.Table?.TableNumber ?? "-")
+                                </td>
+
+                                <td>
+                                    @reservation.NumberOfGuests
+                                </td>
+
+                                <td>
+                                    <span class="badge @badgeClass reservation-status-badge">
+    @(reservation.Status ?? "Pending")
+</span>
+
+<div class="reservation-status-explanation small mt-1">
+    @switch ((reservation.Status ?? "Pending").ToLowerInvariant())
+    {
+        case "confirmed":
+            <span class="text-success">
+                Reservation confirmed.
+            </span>
+            break;
+
+        case "cancelled":
+            <span class="text-danger">
+                Reservation cancelled.
+            </span>
+            break;
+
+        default:
+            <span class="text-muted">
+                Awaiting staff confirmation.
+            </span>
+            break;
+    }
+</div>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-page="/Customer/Reservations/Confirmation"
+                                           asp-route-id="@reservation.ReservationID"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Confirmation
+                                        </a>
+
+                                        @if (Model.CanLeaveFeedback(reservation))
+{
+    <a asp-page="/Customer/Reservations/Feedback"
+       asp-route-id="@reservation.ReservationID"
+       class="btn btn-sm btn-outline-success">
+        Leave Feedback
+    </a>
+}
+else if (Model.HasSubmittedFeedback(reservation))
+{
+    <a asp-page="/Customer/Reservations/Feedback"
+       asp-route-id="@reservation.ReservationID"
+       class="btn btn-sm btn-outline-success">
+        View Feedback
+    </a>
+}
+
+                                        @if (Model.CanCancel(reservation))
+                                        {
+                                            <a asp-page="/Customer/Reservations/Edit"
+                                               asp-route-id="@reservation.ReservationID"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Edit
+                                            </a>
+
+                                            <form id="cancelReservationForm-@reservation.ReservationID"
+                                                  method="post"
+                                                  asp-page-handler="Cancel"
+                                                  asp-route-id="@reservation.ReservationID">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#cancelReservationModal-@reservation.ReservationID">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+
+                                    @if (Model.CanCancel(reservation))
+                                    {
+                                        <div class="modal fade"
+                                             id="cancelReservationModal-@reservation.ReservationID"
+                                             tabindex="-1"
+                                             aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID"
+                                             aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content text-start">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title"
+                                                            id="cancelReservationModalLabel-@reservation.ReservationID">
+                                                            Cancel reservation
+                                                        </h5>
+
+                                                        <button type="button"
+                                                                class="btn-close"
+                                                                data-bs-dismiss="modal"
+                                                                aria-label="Close">
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="modal-body">
+                                                        Cancel this reservation on
+                                                        @reservation.Date.ToString("dd MMM yyyy")
+                                                        at
+                                                        @reservation.Time.ToString(@"hh\:mm")?
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <button type="button"
+                                                                class="btn btn-outline-secondary"
+                                                                data-bs-dismiss="modal">
+                                                            Keep reservation
+                                                        </button>
+
+                                                        <button type="submit"
+                                                                class="btn btn-danger"
+                                                                form="cancelReservationForm-@reservation.ReservationID">
+                                                            Yes, cancel reservation
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+                                                        @section Scripts {
+    <script>
+        (function () {
+            const lastCheckElement =
+                document.getElementById(
+                    "lastReservationStatusCheck"
+                );
+
+            const changeNotice =
+                document.getElementById(
+                    "reservationStatusChangeNotice"
+                );
+
+            const pollingError =
+                document.getElementById(
+                    "reservationStatusPollingError"
+                );
+
+            function badgeClassFor(status) {
+                switch ((status || "").toLowerCase()) {
+                    case "confirmed":
+                        return "bg-success";
+                    case "pending":
+                        return "bg-warning text-dark";
+                    case "cancelled":
+                        return "bg-danger";
+                    default:
+                        return "bg-secondary";
+                }
+            }
+
+            function explanationFor(status) {
+                switch ((status || "").toLowerCase()) {
+                    case "confirmed":
+                        return {
+                            text: "Reservation confirmed.",
+                            className: "text-success"
+                        };
+
+                    case "cancelled":
+                        return {
+                            text: "Reservation cancelled.",
+                            className: "text-danger"
+                        };
+
+                    default:
+                        return {
+                            text: "Awaiting staff confirmation.",
+                            className: "text-muted"
+                        };
+                }
+            }
+
+            function updateReservationRow(
+                row,
+                newStatus
+            ) {
+                const oldStatus =
+                    row.dataset.currentStatus;
+
+                const badge =
+                    row.querySelector(
+                        ".reservation-status-badge"
+                    );
+
+                const explanationContainer =
+                    row.querySelector(
+                        ".reservation-status-explanation"
+                    );
+
+                badge.textContent = newStatus;
+
+                badge.className =
+                    "badge reservation-status-badge " +
+                    badgeClassFor(newStatus);
+
+                const explanation =
+                    explanationFor(newStatus);
+
+                explanationContainer.innerHTML =
+                    '<span class="' +
+                    explanation.className +
+                    '">' +
+                    explanation.text +
+                    '</span>';
+
+                row.dataset.currentStatus = newStatus;
+
+                return oldStatus !== newStatus;
+            }
+
+            async function pollReservationStatuses() {
+                try {
+                    const response = await fetch(
+                        "?handler=Statuses",
+                        {
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Reservation status request failed."
+                        );
+                    }
+
+                    const statuses =
+                        await response.json();
+
+                    let anyChanged = false;
+
+                    statuses.forEach(function (item) {
+                        const row =
+                            document.querySelector(
+                                '[data-reservation-id="' +
+                                item.reservationId +
+                                '"]'
+                            );
+
+                        if (!row) {
+                            return;
+                        }
+
+                        if (updateReservationRow(
+                            row,
+                            item.status
+                        )) {
+                            anyChanged = true;
+                        }
+                    });
+
+                    lastCheckElement.textContent =
+                        new Date()
+                            .toLocaleTimeString();
+
+                    pollingError.classList.add("d-none");
+
+                    if (anyChanged) {
+                        changeNotice.classList.remove(
+                            "d-none"
+                        );
+                    }
+                } catch (error) {
+                    pollingError.classList.remove(
+                        "d-none"
+                    );
+                }
+            }
+
+            pollReservationStatuses();
+
+            window.setInterval(
+                pollReservationStatuses,
+                10000
+            );
+        })();
+    </script>
+}
