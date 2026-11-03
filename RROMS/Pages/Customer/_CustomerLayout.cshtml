@@ -85,6 +85,62 @@
                 padding: 30px;
             }
 
+            .topbar-account-area {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.notification-bell-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #374151;
+    text-decoration: none;
+    background: #f3f4f6;
+    transition: 0.2s;
+}
+
+.notification-bell-link:hover {
+    color: #111827;
+    background: #e5e7eb;
+}
+
+.notification-bell-link:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.35);
+    outline-offset: 2px;
+}
+
+.notification-bell-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.notification-count-badge {
+    position: absolute;
+    top: -4px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #dc3545;
+    color: white;
+    border: 2px solid white;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+}
+
+.notification-count-badge.d-none {
+    display: none !important;
+}
+
             .profile-area {
                 display: flex;
                 align-items: center;
@@ -188,22 +244,50 @@
                     <strong>Customer Portal</strong>
                 </div>
 
-                <div class="profile-area">
-                    <div>
-                        <small class="text-muted">Signed in as</small><br />
-                        <strong>@(User.Identity?.Name ?? "Customer")</strong>
-                    </div>
+                <div class="topbar-account-area">
+    <a asp-page="/Customer/Notifications/Index"
+       class="notification-bell-link"
+       aria-label="View notifications"
+       title="Notifications">
 
-                    @{
-    var displayName = User.Identity?.Name;
-    var initial = string.IsNullOrWhiteSpace(displayName)
-        ? "C"
-        : displayName.Trim().Substring(0, 1).ToUpperInvariant();
-}
-<div class="profile-circle">
-    @initial
+        <span class="notification-bell-icon"
+              aria-hidden="true">
+            🔔
+        </span>
+
+        <span id="customerNotificationCount"
+              class="notification-count-badge d-none"
+              aria-label="No unread notifications">
+            0
+        </span>
+    </a>
+
+    <div class="profile-area">
+        <div>
+            <small class="text-muted">
+                Signed in as
+            </small>
+            <br />
+
+            <strong>
+                @(User.Identity?.Name ?? "Customer")
+            </strong>
+        </div>
+
+        @{
+            var displayName = User.Identity?.Name;
+            var initial = string.IsNullOrWhiteSpace(displayName)
+                ? "C"
+                : displayName.Trim()
+                    .Substring(0, 1)
+                    .ToUpperInvariant();
+        }
+
+        <div class="profile-circle">
+            @initial
+        </div>
+    </div>
 </div>
-                </div>
 
             </div>
 
@@ -217,7 +301,78 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+<script>
+    (function () {
+        const badge =
+            document.getElementById(
+                "customerNotificationCount"
+            );
+
+        if (!badge) {
+            return;
+        }
+
+        async function updateNotificationCount() {
+            try {
+                const response = await fetch(
+                    "/Customer/Notifications/Index?handler=UnreadCount",
+                    {
+                        headers: {
+                            "Accept": "application/json"
+                        },
+                        cache: "no-store"
+                    }
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const result = await response.json();
+                const count =
+                    Number(result.unreadCount) || 0;
+
+                if (count <= 0) {
+                    badge.textContent = "0";
+                    badge.classList.add("d-none");
+
+                    badge.setAttribute(
+                        "aria-label",
+                        "No unread notifications"
+                    );
+
+                    return;
+                }
+
+                badge.textContent =
+                    count > 99
+                        ? "99+"
+                        : count.toString();
+
+                badge.classList.remove("d-none");
+
+                badge.setAttribute(
+                    "aria-label",
+                    count === 1
+                        ? "1 unread notification"
+                        : count + " unread notifications"
+                );
+            }
+            catch (error) {
+                // Preserve the last displayed count if polling fails.
+            }
+        }
+
+        updateNotificationCount();
+
+        window.setInterval(
+            updateNotificationCount,
+            30000
+        );
+    })();
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

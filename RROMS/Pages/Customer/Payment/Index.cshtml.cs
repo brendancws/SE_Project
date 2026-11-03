@@ -129,6 +129,19 @@ namespace RROMS.Pages.Customer.Payment
                     Status = "Pending",
                     TransactionNo = null
                 });
+
+                _context.Notifications.Add(
+                    new Notification
+                    {
+                        UserID = customerId.Value,
+                        UserType = "Customer",
+                        Message =
+                            $"Order ORD-{newOrderId:D6} was placed. " +
+                            "Cash payment is pending at the restaurant.",
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    });
+
                 await _context.SaveChangesAsync();
 
                 CartSession.Clear(HttpContext.Session, customerId.Value);
@@ -172,6 +185,19 @@ namespace RROMS.Pages.Customer.Payment
                     Status = "Paid",
                     TransactionNo = $"SIM-{DateTime.Now:yyyyMMddHHmmss}"
                 });
+
+                _context.Notifications.Add(
+                    new Notification
+                    {
+                        UserID = customerId.Value,
+                        UserType = "Customer",
+                        Message =
+                            $"Order ORD-{newOrderId:D6} was placed " +
+                            "and payment was successful.",
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    });
+
                 await _context.SaveChangesAsync();
 
                 CartSession.Clear(HttpContext.Session, customerId.Value);

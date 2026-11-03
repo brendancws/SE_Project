@@ -100,11 +100,26 @@ namespace RROMS.Pages.Customer.Reservations
                 return RedirectToPage();
             }
 
-            // Only the booking changes. Other bookings and the table are untouched.
+            // The reservation and notification are saved together.
             reservation.Status = "Cancelled";
+
+            _context.Notifications.Add(
+                new Notification
+                {
+                    UserID = customerId.Value,
+                    UserType = "Customer",
+                    Message =
+                        $"Reservation RES-{reservation.ReservationID:D6} " +
+                        "has been cancelled.",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+
             await _context.SaveChangesAsync();
 
-            StatusMessage = "Your reservation has been cancelled.";
+            StatusMessage =
+                "Your reservation has been cancelled.";
+
             return RedirectToPage();
         }
 

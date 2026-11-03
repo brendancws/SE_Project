@@ -130,7 +130,10 @@ namespace RROMS.Pages.Customer.Reservations
                 return Page();
             }
 
-            // 5. Save the booking
+            // 5. Save the booking and its notification together
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
             var reservation = new Reservation
             {
                 CustomerID = customerId.Value,
@@ -143,10 +146,33 @@ namespace RROMS.Pages.Customer.Reservations
             };
 
             _context.Reservations.Add(reservation);
+
+            // First save generates ReservationID.
             await _context.SaveChangesAsync();
 
-            StatusMessage = $"Reservation made for table {table.TableNumber} on {date:dd MMM yyyy} at {Input.Time:hh\\:mm}. It is pending confirmation.";
-            return RedirectToPage("/Customer/Reservations/Index");
+            var notification = new Notification
+            {
+                UserID = customerId.Value,
+                UserType = "Customer",
+                Message =
+                    $"Reservation RES-{reservation.ReservationID:D6} " +
+                    "was submitted and is awaiting staff confirmation.",
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            StatusMessage =
+                $"Reservation made for table {table.TableNumber} " +
+                $"on {date:dd MMM yyyy} at {Input.Time:hh\\:mm}. " +
+                "It is pending confirmation.";
+
+            return RedirectToPage(
+                "/Customer/Reservations/Index");
         }
 
         private int? GetCurrentCustomerId()
