@@ -2,16 +2,102 @@
 @model RROMS.Pages.Customer.Reservations.IndexModel
 @{
     ViewData["Title"] = "My Reservations";
+
+    int totalReservations =
+        Model.MyReservations.Count;
+
+    int activeReservations =
+        Model.MyReservations.Count(reservation =>
+            Model.CanCancel(reservation));
+
+    int confirmedReservations =
+        Model.MyReservations.Count(reservation =>
+            string.Equals(
+                reservation.Status,
+                "Confirmed",
+                StringComparison.OrdinalIgnoreCase));
+
+    int cancelledReservations =
+        Model.MyReservations.Count(reservation =>
+            string.Equals(
+                reservation.Status,
+                "Cancelled",
+                StringComparison.OrdinalIgnoreCase));
 }
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">My Reservations</h2>
-        <a asp-page="/Customer/Reservations/Create"
-           class="btn btn-primary">
-            Book a Table
-        </a>
+<header class="reservations-header">
+    <div>
+        <span class="reservations-eyebrow">
+            Dining Reservations
+        </span>
+
+        <h1>My Reservations</h1>
+
+        <p>
+            Manage upcoming visits, track confirmation updates,
+            and review your previous bookings.
+        </p>
     </div>
+
+    <a asp-page="/Customer/Reservations/Create"
+       class="book-table-button">
+        <span aria-hidden="true">+</span>
+        Book a Table
+    </a>
+</header>
+
+<section class="reservation-summary-grid"
+         aria-label="Reservation overview">
+
+    <article class="reservation-summary-card">
+        <span class="summary-label">
+            Total Bookings
+        </span>
+
+        <strong>@totalReservations</strong>
+
+        <small>
+            All reservation records
+        </small>
+    </article>
+
+    <article class="reservation-summary-card">
+        <span class="summary-label">
+            Active Bookings
+        </span>
+
+        <strong>@activeReservations</strong>
+
+        <small>
+            Upcoming and editable
+        </small>
+    </article>
+
+    <article class="reservation-summary-card">
+        <span class="summary-label">
+            Confirmed
+        </span>
+
+        <strong>@confirmedReservations</strong>
+
+        <small>
+            Confirmed by the restaurant
+        </small>
+    </article>
+
+    <article class="reservation-summary-card">
+        <span class="summary-label">
+            Cancelled
+        </span>
+
+        <strong>@cancelledReservations</strong>
+
+        <small>
+            Cancelled reservations
+        </small>
+    </article>
+</section>
 
     <div class="card border-0 bg-light mb-4 no-print">
     <div class="card-body py-3">
@@ -291,7 +377,134 @@ else if (Model.HasSubmittedFeedback(reservation))
     }
 </div>
 
-                                                        @section Scripts {
+<style>
+    .reservations-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .reservations-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .reservations-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .reservations-header p {
+        max-width: 700px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .book-table-button {
+        min-height: 44px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 10px 17px;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        color: #111827;
+        background: #f59e0b;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .book-table-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .book-table-button span {
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .reservation-summary-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .reservation-summary-card {
+        min-width: 0;
+        padding: 19px;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        background: white;
+        box-shadow:
+            0 8px 22px rgba(31, 41, 55, 0.05);
+    }
+
+    .reservation-summary-card span,
+    .reservation-summary-card strong,
+    .reservation-summary-card small {
+        display: block;
+    }
+
+    .summary-label {
+        margin-bottom: 6px;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .reservation-summary-card strong {
+        color: #111827;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .reservation-summary-card small {
+        margin-top: 4px;
+        color: #9ca3af;
+        overflow-wrap: anywhere;
+    }
+
+    @@media (max-width: 1100px) {
+        .reservation-summary-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .reservations-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .book-table-button {
+            width: 100%;
+        }
+
+        .reservation-summary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+    @section Scripts {
     <script>
         (function () {
             const lastCheckElement =
