@@ -1,132 +1,845 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.Cart.IndexModel
+
 @{
     ViewData["Title"] = "My Cart";
+
+    int totalQuantity =
+        Model.Lines.Sum(line => line.Quantity);
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">My Cart</h2>
-        <a asp-page="/Customer/Menu/Index" class="btn btn-outline-secondary">Continue Browsing Menu</a>
-    </div>
+<div class="cart-page">
+    <section class="cart-header">
+        <div>
+            <span class="cart-eyebrow">
+                Your Selection
+            </span>
 
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+            <h1>My Cart</h1>
+
+            <p>
+                Review your dishes and quantities before proceeding
+                to checkout.
+            </p>
+        </div>
+
+        <a asp-page="/Customer/Menu/Index"
+           class="continue-menu-button">
+            <span aria-hidden="true">←</span>
+            Continue Browsing Menu
+        </a>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+            <strong>Cart updated.</strong>
             @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
         </div>
     }
 
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+            <strong>Unable to update cart.</strong>
             @Model.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
         </div>
     }
 
     @if (!Model.Lines.Any())
     {
-        <div class="alert alert-info">
-            Your cart is empty. Browse the menu and add some items.
-        </div>
-        <a asp-page="/Customer/Menu/Index" class="btn btn-primary">Browse Menu</a>
+        <section class="cart-empty-state">
+            <div class="empty-cart-icon"
+                 aria-hidden="true">
+                🛒
+            </div>
+
+            <h2>Your cart is empty</h2>
+
+            <p>
+                Discover freshly prepared dishes and add something
+                delicious to your order.
+            </p>
+
+            <a asp-page="/Customer/Menu/Index"
+               class="cart-primary-button">
+                Browse the Menu
+            </a>
+        </section>
     }
     else
     {
         @if (Model.HasUnavailable)
         {
-            <div class="alert alert-warning">
-                Some items in your cart are currently unavailable. Please remove them before placing an order.
+            <div class="availability-warning"
+                 role="alert">
+                <span class="warning-icon"
+                      aria-hidden="true">
+                    !
+                </span>
+
+                <div>
+                    <strong>
+                        One or more items are unavailable
+                    </strong>
+
+                    <p>
+                        Remove unavailable items before proceeding
+                        to checkout.
+                    </p>
+                </div>
             </div>
         }
 
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Item</th>
-                            <th>Price</th>
-                            <th style="width: 220px;">Quantity</th>
-                            <th class="text-end">Subtotal</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var line in Model.Lines)
-                        {
-                            <tr>
-                                <td>
-                                    @line.Name
-                                    @if (!line.IsAvailable)
-                                    {
-                                        <span class="badge bg-secondary ms-1">Unavailable</span>
-                                    }
-                                </td>
-                                <td>RM @line.UnitPrice.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                <td>
-                                    <form method="post" asp-page-handler="Update" class="d-flex gap-2">
-                                        <input type="hidden" name="menuItemId" value="@line.MenuItemID" />
-                                        <input type="number" name="quantity" value="@line.Quantity"
-                                               min="0" max="20" class="form-control form-control-sm" style="width: 80px;" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+        <div class="cart-layout">
+            <section class="cart-items-panel">
+                <div class="cart-panel-heading">
+                    <div>
+                        <span class="cart-eyebrow">
+                            Order Items
+                        </span>
+
+                        <h2>
+                            @totalQuantity
+                            @(totalQuantity == 1 ? "item" : "items")
+                        </h2>
+                    </div>
+
+                   
+                </div>
+
+                <div class="cart-item-list">
+                    @foreach (var line in Model.Lines)
+                    {
+                        <article class="cart-item @(line.IsAvailable ? "" : "cart-item-unavailable")">
+                            <div class="cart-item-visual"
+                                 aria-hidden="true">
+                                @GetMenuInitials(line.Name)
+                            </div>
+
+                            <div class="cart-item-details">
+                                <div class="cart-item-title-row">
+                                    <div>
+                                        <h3>@line.Name</h3>
+
+                                        @if (line.IsAvailable)
+                                        {
+                                            <span class="cart-availability available">
+                                                Available
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="cart-availability unavailable">
+                                                Unavailable
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <strong class="cart-item-subtotal">
+                                        RM
+                                        @line.Subtotal.ToString(
+                                            "0.00",
+                                            CultureInfo.InvariantCulture)
+                                    </strong>
+                                </div>
+
+                                <p class="cart-unit-price">
+                                    RM
+                                    @line.UnitPrice.ToString(
+                                        "0.00",
+                                        CultureInfo.InvariantCulture)
+                                    each
+                                </p>
+
+                                <div class="cart-item-actions">
+                                    <form method="post"
+                                          asp-page-handler="Update"
+                                          class="quantity-update-form">
+                                        <input type="hidden"
+                                               name="menuItemId"
+                                               value="@line.MenuItemID" />
+
+                                        <div class="quantity-field">
+                                            <label for="quantity-@line.MenuItemID">
+                                                Quantity
+                                            </label>
+
+                                            <input id="quantity-@line.MenuItemID"
+                                                   type="number"
+                                                   name="quantity"
+                                                   value="@line.Quantity"
+                                                   min="0"
+                                                   max="20"
+                                                   inputmode="numeric"
+                                                   class="form-control" />
+                                        </div>
+
+                                        <button type="submit"
+                                                class="update-cart-button">
+                                            Update
+                                        </button>
                                     </form>
-                                </td>
-                                <td class="text-end">RM @line.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                <td class="text-end">
-                                    <form method="post" asp-page-handler="Remove">
-                                        <input type="hidden" name="menuItemId" value="@line.MenuItemID" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+
+                                    <form method="post"
+                                          asp-page-handler="Remove">
+                                        <input type="hidden"
+                                               name="menuItemId"
+                                               value="@line.MenuItemID" />
+
+                                        <button type="submit"
+                                                class="remove-cart-button"
+                                                aria-label="Remove @line.Name from cart">
+                                            Remove
+                                        </button>
                                     </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="3" class="text-end">Total</th>
-                            <th class="text-end">RM @Model.Total.ToString("0.00", CultureInfo.InvariantCulture)</th>
-                            <th></th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                                </div>
+
+                                <small class="quantity-help">
+                                    Set quantity to 0 to remove this item.
+                                </small>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+
+            <aside class="cart-summary-panel">
+                <div class="summary-heading">
+                    <span class="cart-eyebrow">
+                        Summary
+                    </span>
+
+                    <h2>Order Summary</h2>
+                </div>
+
+                <div class="summary-lines">
+    <div>
+        <span>Total items</span>
+        <strong>@totalQuantity</strong>
+    </div>
+</div>
+
+                <div class="summary-total">
+                    <span>Total</span>
+
+                    <strong>
+                        RM
+                        @Model.Total.ToString(
+                            "0.00",
+                            CultureInfo.InvariantCulture)
+                    </strong>
+                </div>
+
+                <p class="summary-note">
+                    Final availability and pricing will be checked
+                    again during checkout.
+                </p>
+
+                @if (Model.HasUnavailable)
+                {
+                    <button type="button"
+                            class="checkout-button"
+                            disabled>
+                        Checkout Unavailable
+                    </button>
+
+                    <p class="checkout-warning-text">
+                        Remove unavailable items to continue.
+                    </p>
+                }
+                else
+                {
+                    <a asp-page="/Customer/Cart/Checkout"
+                       class="checkout-button">
+                        Proceed to Checkout
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+
+                <a asp-page="/Customer/Menu/Index"
+                   class="summary-continue-link">
+                    Add More Items
+                </a>
+
+                <form id="clearCartForm"
+                      method="post"
+                      asp-page-handler="Clear">
+                    <button type="button"
+                            class="clear-cart-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#clearCartConfirmModal">
+                        Clear Cart
+                    </button>
+                </form>
+            </aside>
         </div>
 
-        <div class="d-flex gap-2 mt-3">
-            <form id="clearCartForm" method="post" asp-page-handler="Clear">
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clearCartConfirmModal">Clear Cart</button>
-            </form>
-
-            @if (Model.HasUnavailable)
-            {
-                <button type="button" class="btn btn-primary" disabled>Proceed to Checkout</button>
-            }
-            else
-            {
-                <a asp-page="/Customer/Cart/Checkout" class="btn btn-primary">Proceed to Checkout</a>
-            }
-        </div>
-
-        <div class="modal fade" id="clearCartConfirmModal" tabindex="-1" aria-labelledby="clearCartConfirmModalLabel" aria-hidden="true">
+        <div class="modal fade"
+             id="clearCartConfirmModal"
+             tabindex="-1"
+             aria-labelledby="clearCartConfirmModalLabel"
+             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+                <div class="modal-content cart-modal">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="clearCartConfirmModalLabel">Clear cart</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h2 class="modal-title fs-5"
+                            id="clearCartConfirmModalLabel">
+                            Clear your cart?
+                        </h2>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
                     </div>
+
                     <div class="modal-body">
-                        Remove everything from your cart?
+                        All dishes will be removed from your cart.
+                        This action cannot be undone.
                     </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger" form="clearCartForm">Yes, clear cart</button>
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Keep Items
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger"
+                                form="clearCartForm">
+                            Yes, Clear Cart
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     }
 </div>
+
+@functions {
+    private static string GetMenuInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "DF";
+        }
+
+        string[] words = name.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length == 1)
+        {
+            return words[0]
+                .Substring(
+                    0,
+                    Math.Min(2, words[0].Length))
+                .ToUpperInvariant();
+        }
+
+        return string.Concat(
+            words.Take(2)
+                .Select(word =>
+                    char.ToUpperInvariant(word[0])));
+    }
+}
+
+<style>
+    .cart-page {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .cart-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .cart-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .cart-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .cart-header p {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .continue-menu-button,
+    .cart-primary-button,
+    .checkout-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 44px;
+        padding: 10px 17px;
+        border-radius: 10px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .continue-menu-button {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: white;
+    }
+
+    .continue-menu-button:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .cart-primary-button,
+    .checkout-button {
+        border: 1px solid #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .cart-primary-button:hover,
+    .checkout-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .cart-empty-state {
+        padding: 80px 30px;
+        border: 1px dashed #d1d5db;
+        border-radius: 20px;
+        background: white;
+        text-align: center;
+        box-shadow:
+            0 10px 28px rgba(31, 41, 55, 0.05);
+    }
+
+    .empty-cart-icon {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        border-radius: 20px;
+        background: #fff7ed;
+        font-size: 31px;
+    }
+
+    .cart-empty-state h2 {
+        margin-bottom: 8px;
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    .cart-empty-state p {
+        max-width: 520px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+    }
+
+    .availability-warning {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+        border: 1px solid #fcd34d;
+        border-radius: 14px;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .warning-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        flex: 0 0 34px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #d97706;
+        font-weight: 900;
+    }
+
+    .availability-warning strong {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .availability-warning p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .cart-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.55fr)
+            minmax(300px, 0.45fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .cart-items-panel,
+    .cart-summary-panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 9px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .cart-items-panel {
+        padding: 24px;
+    }
+
+    .cart-panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .cart-panel-heading h2,
+    .summary-heading h2 {
+        margin: 0;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .cart-line-count {
+        padding: 7px 11px;
+        border-radius: 999px;
+        color: #4b5563;
+        background: #f3f4f6;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .cart-item-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 82px minmax(0, 1fr);
+        gap: 18px;
+        padding: 22px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .cart-item:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .cart-item-visual {
+        width: 82px;
+        height: 82px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        color: #92400e;
+        background:
+            linear-gradient(
+                135deg,
+                #ffedd5,
+                #fde68a
+            );
+        font-size: 21px;
+        font-weight: 850;
+    }
+
+    .cart-item-unavailable {
+        opacity: 0.72;
+    }
+
+    .cart-item-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .cart-item-title-row h3 {
+        margin: 0 0 7px;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .cart-availability {
+        display: inline-flex;
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .cart-availability.available {
+        color: #065f46;
+        background: #d1fae5;
+    }
+
+    .cart-availability.unavailable {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .cart-item-subtotal {
+        color: #b45309;
+        font-size: 17px;
+        white-space: nowrap;
+    }
+
+    .cart-unit-price {
+        margin: 9px 0 14px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .cart-item-actions {
+        display: flex;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .quantity-update-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 9px;
+    }
+
+    .quantity-field {
+        width: 92px;
+    }
+
+    .quantity-field label {
+        display: block;
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .quantity-field .form-control {
+        min-height: 40px;
+        text-align: center;
+    }
+
+    .update-cart-button,
+    .remove-cart-button {
+        min-height: 40px;
+        padding: 8px 13px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .update-cart-button {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: white;
+    }
+
+    .update-cart-button:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .remove-cart-button {
+        border: 1px solid transparent;
+        color: #b91c1c;
+        background: #fef2f2;
+    }
+
+    .remove-cart-button:hover {
+        border-color: #fecaca;
+        color: white;
+        background: #dc2626;
+    }
+
+    .quantity-help {
+        display: block;
+        margin-top: 8px;
+        color: #9ca3af;
+    }
+
+    .cart-summary-panel {
+        position: sticky;
+        top: 94px;
+        padding: 24px;
+    }
+
+    .summary-heading {
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+        padding: 20px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-lines div,
+    .summary-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .summary-lines span {
+        color: #6b7280;
+    }
+
+    .summary-total {
+        padding: 20px 0;
+    }
+
+    .summary-total span {
+        font-size: 16px;
+        font-weight: 750;
+    }
+
+    .summary-total strong {
+        color: #b45309;
+        font-size: 24px;
+    }
+
+    .summary-note {
+        margin: 0 0 18px;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .checkout-button {
+        width: 100%;
+    }
+
+    .checkout-button:disabled {
+        border-color: #d1d5db;
+        color: #9ca3af;
+        background: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    .checkout-warning-text {
+        margin: 9px 0 0;
+        color: #b45309;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .summary-continue-link,
+    .clear-cart-button {
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        color: #4b5563;
+        background: transparent;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .clear-cart-button {
+        padding: 8px;
+        border: none;
+        color: #b91c1c;
+    }
+
+    .summary-continue-link:hover {
+        color: #92400e;
+        text-decoration: underline;
+    }
+
+    .clear-cart-button:hover {
+        color: #991b1b;
+        text-decoration: underline;
+    }
+
+    .cart-modal {
+        border: none;
+        border-radius: 16px;
+        box-shadow:
+            0 18px 50px rgba(31, 41, 55, 0.18);
+    }
+
+    @@media (max-width: 1050px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-summary-panel {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .cart-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .continue-menu-button {
+            width: 100%;
+        }
+
+        .cart-item {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-item-visual {
+            width: 100%;
+            height: 110px;
+        }
+    }
+</style>
