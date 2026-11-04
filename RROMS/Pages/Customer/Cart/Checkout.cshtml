@@ -1,88 +1,678 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.Cart.CheckoutModel
+
 @{
     ViewData["Title"] = "Checkout";
+
+    int totalQuantity =
+        Model.Lines.Sum(line => line.Quantity);
 }
 
-<div class="container py-4" style="max-width: 800px;">
-    <h2 class="mb-4">Checkout</h2>
+<div class="checkout-page">
+    <header class="checkout-header">
+        <div>
+            <span class="checkout-eyebrow">
+                Final Review
+            </span>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">Your Order</div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Item</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th class="text-end">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var line in Model.Lines)
-                    {
-                        <tr>
-                            <td>
-                                @line.Name
-                                @if (!line.IsAvailable)
-                                {
-                                    <span class="badge bg-secondary ms-1">Unavailable</span>
-                                }
-                            </td>
-                            <td>RM @line.UnitPrice.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                            <td>@line.Quantity</td>
-                            <td class="text-end">RM @line.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="3" class="text-end">Total</th>
-                        <th class="text-end">RM @Model.Total.ToString("0.00", CultureInfo.InvariantCulture)</th>
-                    </tr>
-                </tfoot>
-            </table>
+            <h1>Checkout</h1>
+
+            <p>
+                Review your order and select the reservation
+                connected to this dining experience.
+            </p>
+        </div>
+
+        <a asp-page="/Customer/Cart/Index"
+           class="back-cart-button">
+            <span aria-hidden="true">←</span>
+            Back to Cart
+        </a>
+    </header>
+
+    <div class="checkout-progress"
+         aria-label="Checkout progress">
+        <div class="progress-step completed">
+            <span>1</span>
+            <div>
+                <strong>Cart</strong>
+                <small>Items selected</small>
+            </div>
+        </div>
+
+        <div class="progress-line completed"></div>
+
+        <div class="progress-step active">
+            <span>2</span>
+            <div>
+                <strong>Reservation</strong>
+                <small>Link your booking</small>
+            </div>
+        </div>
+
+        <div class="progress-line"></div>
+
+        <div class="progress-step">
+            <span>3</span>
+            <div>
+                <strong>Payment</strong>
+                <small>Choose payment method</small>
+            </div>
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header fw-semibold">Which booking is this order for?</div>
-        <div class="card-body">
+    <div class="checkout-layout">
+        <section class="reservation-panel">
+            <div class="panel-heading">
+                <span class="checkout-eyebrow">
+                    Dining Reservation
+                </span>
+
+                <h2>Which booking is this order for?</h2>
+
+                <p>
+                    Your order must be linked to one of your current
+                    reservations.
+                </p>
+            </div>
+
             @if (!Model.ReservationOptions.Any())
             {
-                <div class="alert alert-warning">
-                    You have no current reservation to link this order to. Please book a table first.
-                </div>
-                <div class="d-flex gap-2">
-                    <a asp-page="/Customer/Reservations/Create" class="btn btn-primary">Book a Table</a>
-                    <a asp-page="/Customer/Cart/Index" class="btn btn-outline-secondary">Back to Cart</a>
+                <div class="no-reservation-state">
+                    <div class="reservation-empty-icon"
+                         aria-hidden="true">
+                        📅
+                    </div>
+
+                    <h3>No current reservation</h3>
+
+                    <p>
+                        Book a table before placing your food order.
+                        Once created, the reservation will appear here.
+                    </p>
+
+                    <div class="empty-actions">
+                        <a asp-page="/Customer/Reservations/Create"
+                           class="checkout-primary-button">
+                            Book a Table
+                        </a>
+
+                        <a asp-page="/Customer/Cart/Index"
+                           class="checkout-secondary-button">
+                            Return to Cart
+                        </a>
+                    </div>
                 </div>
             }
             else
             {
-                <form method="post" novalidate>
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <form method="post"
+                      novalidate
+                      class="reservation-form">
 
-                    <div class="mb-3">
-                        <label asp-for="ReservationId" class="form-label"></label>
-                        <select asp-for="ReservationId" class="form-select">
-                            <option value="">-- Select a reservation --</option>
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger">
+                    </div>
+
+                    <div class="reservation-field">
+                        <label asp-for="ReservationId"
+                               class="form-label">
+                            Select Reservation
+                        </label>
+
+                        <select asp-for="ReservationId"
+                                class="form-select">
+                            <option value="">
+                                Choose your reservation
+                            </option>
+
                             @foreach (var option in Model.ReservationOptions)
                             {
-                                <option value="@option.ReservationID">@option.Text</option>
+                                <option value="@option.ReservationID">
+                                    @option.Text
+                                </option>
                             }
                         </select>
-                        <span asp-validation-for="ReservationId" class="text-danger small"></span>
+
+                        <span asp-validation-for="ReservationId"
+                              class="text-danger small">
+                        </span>
+
+                        <div class="form-help">
+                            Only active reservations that have not
+                            ended are available.
+                        </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Place Order</button>
-                        <a asp-page="/Customer/Cart/Index" class="btn btn-outline-secondary">Back to Cart</a>
+                    <div class="reservation-information">
+                        <div class="information-icon"
+                             aria-hidden="true">
+                            i
+                        </div>
+
+                        <div>
+                            <strong>
+                                Why is a reservation required?
+                            </strong>
+
+                            <p>
+                                Linking the order allows restaurant
+                                Staff to prepare and serve it for the
+                                correct table and dining time.
+                            </p>
+                        </div>
                     </div>
+
+                    <button type="submit"
+                            class="continue-payment-button">
+                        Continue to Payment
+                        <span aria-hidden="true">→</span>
+                    </button>
                 </form>
             }
-        </div>
+        </section>
+
+        <aside class="checkout-summary">
+            <div class="summary-heading">
+                <span class="checkout-eyebrow">
+                    Your Order
+                </span>
+
+                <h2>Order Summary</h2>
+            </div>
+
+            <div class="checkout-item-list">
+                @foreach (var line in Model.Lines)
+                {
+                    <div class="checkout-item">
+                        <div>
+                            <div class="item-name-row">
+                                <strong>@line.Name</strong>
+
+                                @if (!line.IsAvailable)
+                                {
+                                    <span class="unavailable-badge">
+                                        Unavailable
+                                    </span>
+                                }
+                            </div>
+
+                            <small>
+                                @line.Quantity × RM
+                                @line.UnitPrice.ToString(
+                                    "0.00",
+                                    CultureInfo.InvariantCulture)
+                            </small>
+                        </div>
+
+                        <strong class="item-subtotal">
+                            RM
+                            @line.Subtotal.ToString(
+                                "0.00",
+                                CultureInfo.InvariantCulture)
+                        </strong>
+                    </div>
+                }
+            </div>
+
+            <div class="summary-information">
+                <div>
+                    <span>Total items</span>
+                    <strong>@totalQuantity</strong>
+                </div>
+            </div>
+
+            <div class="checkout-total">
+                <span>Total</span>
+
+                <strong>
+                    RM
+                    @Model.Total.ToString(
+                        "0.00",
+                        CultureInfo.InvariantCulture)
+                </strong>
+            </div>
+
+            <p class="checkout-note">
+                Current prices and availability will be verified
+                again before the order is created.
+            </p>
+
+            <a asp-page="/Customer/Cart/Index"
+               class="edit-cart-link">
+                Edit Cart
+            </a>
+        </aside>
     </div>
 </div>
+
+<style>
+    .checkout-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .checkout-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .checkout-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .checkout-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .checkout-header p,
+    .panel-heading p {
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .back-cart-button,
+    .checkout-secondary-button,
+    .checkout-primary-button,
+    .continue-payment-button {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 10px 17px;
+        border-radius: 10px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .back-cart-button,
+    .checkout-secondary-button {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: white;
+    }
+
+    .back-cart-button:hover,
+    .checkout-secondary-button:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .checkout-primary-button,
+    .continue-payment-button {
+        border: 1px solid #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .checkout-primary-button:hover,
+    .continue-payment-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .checkout-progress {
+        display: flex;
+        align-items: center;
+        padding: 18px 24px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+        box-shadow:
+            0 8px 24px rgba(31, 41, 55, 0.05);
+    }
+
+    .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #9ca3af;
+    }
+
+    .progress-step > span {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        flex: 0 0 34px;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #d1d5db;
+        border-radius: 50%;
+        background: white;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .progress-step strong,
+    .progress-step small {
+        display: block;
+    }
+
+    .progress-step strong {
+        font-size: 14px;
+    }
+
+    .progress-step small {
+        margin-top: 2px;
+        font-size: 11px;
+    }
+
+    .progress-step.completed,
+    .progress-step.active {
+        color: #111827;
+    }
+
+    .progress-step.completed > span {
+        border-color: #10b981;
+        color: white;
+        background: #10b981;
+    }
+
+    .progress-step.active > span {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .progress-line {
+        height: 2px;
+        flex: 1;
+        margin: 0 18px;
+        background: #e5e7eb;
+    }
+
+    .progress-line.completed {
+        background: #10b981;
+    }
+
+    .checkout-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.15fr)
+            minmax(340px, 0.85fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .reservation-panel,
+    .checkout-summary {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 9px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .reservation-panel {
+        padding: 28px;
+    }
+
+    .panel-heading {
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .panel-heading h2,
+    .summary-heading h2 {
+        margin: 0 0 7px;
+        color: #111827;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .reservation-form {
+        padding-top: 24px;
+    }
+
+    .reservation-field label {
+        margin-bottom: 8px;
+        color: #374151;
+        font-weight: 750;
+    }
+
+    .reservation-field .form-select {
+        min-height: 48px;
+    }
+
+    .form-help {
+        margin-top: 7px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .reservation-information {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+        padding: 15px;
+        margin-top: 22px;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .information-icon {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        flex: 0 0 28px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #2563eb;
+        font-weight: 850;
+    }
+
+    .reservation-information strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .reservation-information p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .continue-payment-button {
+        width: 100%;
+        margin-top: 22px;
+    }
+
+    .no-reservation-state {
+        padding: 55px 20px 25px;
+        text-align: center;
+    }
+
+    .reservation-empty-icon {
+        width: 62px;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 17px;
+        border-radius: 18px;
+        background: #fff7ed;
+        font-size: 28px;
+    }
+
+    .no-reservation-state h3 {
+        margin-bottom: 8px;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .no-reservation-state p {
+        max-width: 460px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+    }
+
+    .empty-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .checkout-summary {
+        position: sticky;
+        top: 94px;
+        padding: 24px;
+    }
+
+    .summary-heading {
+        padding-bottom: 17px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .checkout-item-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .checkout-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 16px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .checkout-item strong {
+        color: #111827;
+    }
+
+    .checkout-item small {
+        display: block;
+        margin-top: 4px;
+        color: #6b7280;
+    }
+
+    .item-name-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .unavailable-badge {
+        padding: 4px 7px;
+        border-radius: 999px;
+        color: #991b1b;
+        background: #fee2e2;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    .item-subtotal {
+        color: #b45309 !important;
+        white-space: nowrap;
+    }
+
+    .summary-information {
+        padding: 17px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-information div,
+    .checkout-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .summary-information span {
+        color: #6b7280;
+    }
+
+    .checkout-total {
+        padding: 20px 0;
+    }
+
+    .checkout-total span {
+        font-size: 16px;
+        font-weight: 750;
+    }
+
+    .checkout-total strong {
+        color: #b45309;
+        font-size: 24px;
+    }
+
+    .checkout-note {
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .edit-cart-link {
+        display: block;
+        margin-top: 16px;
+        color: #92400e;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .edit-cart-link:hover {
+        text-decoration: underline;
+    }
+
+    @@media (max-width: 1000px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .checkout-summary {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .checkout-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-cart-button {
+            width: 100%;
+        }
+
+        .checkout-progress {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-line {
+            width: 2px;
+            height: 22px;
+            flex: none;
+            margin: 0 0 0 16px;
+        }
+    }
+</style>
