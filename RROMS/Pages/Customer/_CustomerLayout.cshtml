@@ -1,613 +1,1068 @@
 ﻿@{
     string currentPage =
-        ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+        ViewContext.RouteData.Values["page"]?.ToString()
+        ?? string.Empty;
+
+    string pageTitle =
+        ViewData["Title"]?.ToString()
+        ?? "Dashboard";
+
+    string? displayName =
+        User.Identity?.Name;
+
+    string initial =
+        string.IsNullOrWhiteSpace(displayName)
+            ? "C"
+            : displayName
+                .Trim()
+                .Substring(0, 1)
+                .ToUpperInvariant();
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Dineflow</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@pageTitle - Dineflow</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <style>
-    :root {
-        --customer-navy-950: #111827;
-        --customer-navy-900: #182333;
-        --customer-navy-800: #1f2937;
-        --customer-navy-700: #374151;
-        --customer-amber-500: #f59e0b;
-        --customer-amber-600: #d97706;
-        --customer-page: #f4f6f8;
-        --customer-surface: #ffffff;
-        --customer-border: #e5e7eb;
-        --customer-text: #111827;
-        --customer-muted: #6b7280;
-        --customer-danger: #dc3545;
-        --customer-sidebar-width: 250px;
-    }
-
-    * {
-        box-sizing: border-box;
-    }
-
-    html {
-        min-height: 100%;
-    }
-
-    body {
-        min-height: 100vh;
-        margin: 0;
-        background: var(--customer-page);
-        color: var(--customer-text);
-        font-family:
-            "Segoe UI",
-            Arial,
-            Helvetica,
-            sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    a,
-    button,
-    input,
-    select,
-    textarea {
-        transition:
-            color 0.18s ease,
-            background-color 0.18s ease,
-            border-color 0.18s ease,
-            box-shadow 0.18s ease,
-            transform 0.18s ease;
-    }
-
-    a:focus-visible,
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible {
-        outline: 3px solid rgba(245, 158, 11, 0.3);
-        outline-offset: 2px;
-    }
-
-    .customer-wrapper {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    .customer-sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        z-index: 1000;
-        width: var(--customer-sidebar-width);
-        padding: 28px 18px 22px;
-        overflow-y: auto;
-        color: white;
-        background:
-            linear-gradient(
-                180deg,
-                var(--customer-navy-900) 0%,
-                var(--customer-navy-800) 100%
-            );
-        box-shadow: 8px 0 30px rgba(17, 24, 39, 0.08);
-    }
-
-    .customer-logo {
-        padding: 0 10px;
-        margin-bottom: 30px;
-        color: white;
-        font-size: 25px;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-    }
-
-    .customer-logo span {
-        color: var(--customer-amber-500);
-    }
-
-    .customer-nav {
-        display: flex;
-        min-height: calc(100vh - 92px);
-        flex-direction: column;
-    }
-
-    .customer-nav a,
-    .customer-logout-btn {
-        display: flex;
-        width: 100%;
-        min-height: 46px;
-        align-items: center;
-        gap: 12px;
-        padding: 11px 14px;
-        margin-bottom: 6px;
-        border: 1px solid transparent;
-        border-radius: 11px;
-        color: #d1d5db;
-        background: transparent;
-        font-family: inherit;
-        font-size: 15px;
-        font-weight: 500;
-        line-height: 1.2;
-        text-align: left;
-        text-decoration: none;
-    }
-
-    .customer-nav a:hover,
-    .customer-logout-btn:hover {
-        color: white;
-        background: rgba(255, 255, 255, 0.08);
-    }
-
-    .customer-nav a.active {
-        color: #111827;
-        background: var(--customer-amber-500);
-        box-shadow: 0 8px 18px rgba(245, 158, 11, 0.18);
-        font-weight: 700;
-    }
-
-    .customer-nav a span,
-    .customer-logout-btn span {
-        width: 20px;
-        display: inline-flex;
-        flex: 0 0 20px;
-        justify-content: center;
-        font-size: 16px;
-    }
-
-    .customer-nav-divider {
-        margin: 16px 0;
-        border: 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
-        opacity: 1;
-    }
-
-    .customer-logout-form {
-        margin-top: auto;
-    }
-
-    .customer-logout-btn {
-        border: none;
-        cursor: pointer;
-    }
-
-    .customer-main {
-        width: calc(100% - var(--customer-sidebar-width));
-        min-width: 0;
-        margin-left: var(--customer-sidebar-width);
-    }
-
-    .customer-topbar {
-        position: sticky;
-        top: 0;
-        z-index: 900;
-        min-height: 72px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        padding: 12px 32px;
-        border-bottom: 1px solid var(--customer-border);
-        background: rgba(255, 255, 255, 0.96);
-        box-shadow: 0 4px 18px rgba(31, 41, 55, 0.035);
-        backdrop-filter: blur(10px);
-    }
-
-    .customer-topbar-title {
-        color: var(--customer-navy-900);
-        font-weight: 750;
-    }
-
-    .customer-page-content {
-        width: 100%;
-        max-width: 1680px;
-        padding: 30px;
-        margin: 0 auto;
-    }
-
-    .topbar-account-area {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-    }
-
-    .notification-bell-link {
-        position: relative;
-        width: 42px;
-        height: 42px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--customer-border);
-        border-radius: 50%;
-        color: var(--customer-navy-700);
-        background: #f9fafb;
-        text-decoration: none;
-    }
-
-    .notification-bell-link:hover {
-        border-color: #fcd34d;
-        color: var(--customer-navy-950);
-        background: #fff7ed;
-        transform: translateY(-1px);
-    }
-
-    .notification-bell-icon {
-        font-size: 19px;
-        line-height: 1;
-    }
-
-    .notification-count-badge {
-        position: absolute;
-        top: -5px;
-        right: -6px;
-        min-width: 20px;
-        height: 20px;
-        padding: 0 5px;
-        border: 2px solid white;
-        border-radius: 999px;
-        color: white;
-        background: var(--customer-danger);
-        font-size: 11px;
-        font-weight: 800;
-        line-height: 16px;
-        text-align: center;
-    }
-
-    .notification-count-badge.d-none {
-        display: none !important;
-    }
-
-    .profile-area {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-    }
-
-    .profile-area small {
-        color: var(--customer-muted) !important;
-        font-size: 12px;
-    }
-
-    .profile-area strong {
-        display: inline-block;
-        max-width: 190px;
-        color: var(--customer-text);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .profile-circle {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        flex: 0 0 40px;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid #f3f4f6;
-        border-radius: 50%;
-        color: white;
-        background: var(--customer-navy-900);
-        font-weight: 800;
-    }
-
-    .customer-page-content .card {
-        border-color: var(--customer-border);
-        border-radius: 16px;
-    }
-
-    .customer-page-content .shadow-sm,
-    .customer-page-content .shadow {
-        box-shadow: 0 8px 24px rgba(31, 41, 55, 0.06) !important;
-    }
-
-    .customer-page-content .form-control,
-    .customer-page-content .form-select {
-        min-height: 42px;
-        border-color: #d1d5db;
-        border-radius: 9px;
-    }
-
-    .customer-page-content textarea.form-control {
-        min-height: auto;
-    }
-
-    .customer-page-content .form-control:focus,
-    .customer-page-content .form-select:focus {
-        border-color: var(--customer-amber-500);
-        box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.14);
-    }
-
-    .customer-page-content .btn {
-        border-radius: 9px;
-        font-weight: 650;
-    }
-
-    .customer-page-content .table {
-        margin-bottom: 0;
-    }
-
-    .customer-page-content .table thead th {
-        color: #4b5563;
-        background: #f9fafb;
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .customer-page-content .table td,
-    .customer-page-content .table th {
-        vertical-align: middle;
-    }
-
-    .customer-page-content .alert {
-        border-radius: 12px;
-    }
-
-    .customer-page-content .badge {
-        padding: 0.45em 0.7em;
-        border-radius: 999px;
-        font-weight: 700;
-    }
-
-    .text-danger ul,
-    .alert-danger ul {
-        padding-left: 0;
-        margin-bottom: 0;
-        list-style: none;
-    }
-
-    @@media (max-width: 1100px) {
         :root {
-            --customer-sidebar-width: 220px;
+            --df-navy-950: #0b1220;
+            --df-navy-900: #111b2d;
+            --df-navy-850: #162238;
+            --df-navy-800: #1c2a40;
+            --df-navy-700: #334155;
+
+            --df-amber-400: #fbbf24;
+            --df-amber-500: #f59e0b;
+            --df-amber-600: #d97706;
+
+            --df-page: #f3f5f8;
+            --df-surface: #ffffff;
+            --df-surface-soft: #f8fafc;
+            --df-border: #e2e8f0;
+            --df-border-strong: #cfd7e3;
+
+            --df-text: #0f172a;
+            --df-muted: #64748b;
+            --df-danger: #dc2626;
+
+            --df-sidebar-width: 268px;
+
+            --df-radius-sm: 10px;
+            --df-radius-md: 16px;
+            --df-radius-lg: 22px;
+
+            --df-shadow-sm:
+                0 6px 18px rgba(15, 23, 42, 0.055);
+
+            --df-shadow-md:
+                0 16px 38px rgba(15, 23, 42, 0.09);
         }
 
-        .customer-page-content {
-            padding: 24px;
+        * {
+            box-sizing: border-box;
         }
-    }
 
-    @@media (max-width: 800px) {
-        :root {
-            --customer-sidebar-width: 190px;
+        html {
+            min-height: 100%;
         }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--df-text);
+            background:
+                radial-gradient(
+                    circle at 88% 2%,
+                    rgba(245, 158, 11, 0.055),
+                    transparent 25%
+                ),
+                linear-gradient(
+                    180deg,
+                    #f8fafc 0,
+                    var(--df-page) 340px
+                );
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a,
+        button,
+        input,
+        select,
+        textarea {
+            transition:
+                color 0.18s ease,
+                background-color 0.18s ease,
+                border-color 0.18s ease,
+                box-shadow 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 3px solid
+                rgba(245, 158, 11, 0.28);
+            outline-offset: 2px;
+        }
+
+        ::selection {
+            color: #111827;
+            background: #fde68a;
+        }
+
+        .customer-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* =====================================================
+           Sidebar
+           ===================================================== */
 
         .customer-sidebar {
-            padding-right: 12px;
-            padding-left: 12px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 1000;
+            width: var(--df-sidebar-width);
+            padding: 27px 18px 20px;
+            overflow-y: auto;
+            color: white;
+            background:
+                radial-gradient(
+                    circle at 14% 4%,
+                    rgba(245, 158, 11, 0.16),
+                    transparent 25%
+                ),
+                linear-gradient(
+                    180deg,
+                    var(--df-navy-900) 0%,
+                    var(--df-navy-950) 100%
+                );
+            border-right:
+                1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                12px 0 40px rgba(15, 23, 42, 0.10);
+        }
+
+        .customer-brand {
+            position: relative;
+            padding: 0 12px 24px;
+            margin-bottom: 18px;
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .customer-brand::after {
+            position: absolute;
+            bottom: -1px;
+            left: 12px;
+            width: 52px;
+            height: 2px;
+            border-radius: 999px;
+            content: "";
+            background: var(--df-amber-500);
+        }
+
+        .customer-logo {
+            margin: 0;
+            color: white;
+            font-size: 29px;
+            font-weight: 850;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+        }
+
+        .customer-logo span {
+            color: var(--df-amber-500);
+        }
+
+        .customer-brand-caption {
+            margin-top: 6px;
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 750;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .customer-nav {
+            display: flex;
+            min-height: calc(100vh - 117px);
+            flex-direction: column;
+        }
+
+        .customer-nav-label {
+            padding: 0 12px;
+            margin: 5px 0 9px;
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .customer-nav-label-secondary {
+            margin-top: 18px;
+        }
+
+        .customer-nav a,
+        .customer-logout-btn {
+            position: relative;
+            display: flex;
+            width: 100%;
+            min-height: 47px;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            margin-bottom: 5px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: #b8c2d1;
+            background: transparent;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .customer-nav a::before {
+            position: absolute;
+            top: 50%;
+            left: -18px;
+            width: 3px;
+            height: 0;
+            border-radius: 0 999px 999px 0;
+            content: "";
+            background: var(--df-amber-500);
+            transform: translateY(-50%);
+            transition: height 0.18s ease;
+        }
+
+        .customer-nav a:hover,
+        .customer-logout-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateX(2px);
+        }
+
+        .customer-nav a.active {
+            border-color:
+                rgba(245, 158, 11, 0.22);
+            color: white;
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(245, 158, 11, 0.19),
+                    rgba(245, 158, 11, 0.075)
+                );
+            font-weight: 750;
+        }
+
+        .customer-nav a.active::before {
+            height: 25px;
+        }
+
+        .customer-nav-icon,
+.customer-logout-icon {
+    width: 31px;
+    height: 31px;
+    display: inline-flex;
+    flex: 0 0 31px;
+    align-items: center;
+    justify-content: center;
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 9px;
+    color: #cbd5e1;
+    background:
+        rgba(255, 255, 255, 0.045);
+}
+
+.customer-nav-icon svg,
+.customer-logout-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+        .customer-nav a.active
+        .customer-nav-icon {
+            border-color:
+                rgba(245, 158, 11, 0.30);
+            color: #fde68a;
+            background:
+                rgba(245, 158, 11, 0.16);
+        }
+
+        .customer-nav-divider {
+            margin: 17px 10px 15px;
+            border: 0;
+            border-top:
+                1px solid rgba(255, 255, 255, 0.09);
+            opacity: 1;
+        }
+
+        .customer-logout-form {
+            margin-top: auto;
+        }
+
+        .customer-logout-btn {
+            border: 0;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .customer-logout-btn:hover {
+            color: #fecaca;
+            background:
+                rgba(220, 38, 38, 0.10);
+        }
+
+        .customer-logout-btn:hover
+        .customer-logout-icon {
+            border-color:
+                rgba(248, 113, 113, 0.18);
+            color: #fecaca;
+            background:
+                rgba(220, 38, 38, 0.10);
+        }
+
+        /* =====================================================
+           Main shell and topbar
+           ===================================================== */
+
+        .customer-main {
+            width:
+                calc(100% - var(--df-sidebar-width));
+            min-width: 0;
+            margin-left: var(--df-sidebar-width);
         }
 
         .customer-topbar {
-            padding-right: 20px;
-            padding-left: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 12px 34px;
+            border-bottom:
+                1px solid rgba(226, 232, 240, 0.92);
+            background:
+                rgba(255, 255, 255, 0.93);
+            box-shadow:
+                0 5px 20px
+                rgba(15, 23, 42, 0.035);
+            backdrop-filter: blur(14px);
+        }
+
+        .customer-topbar-heading span,
+        .customer-topbar-heading strong {
+            display: block;
+        }
+
+        .customer-topbar-heading span {
+            margin-bottom: 3px;
+            color: var(--df-muted);
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: 0.11em;
+            text-transform: uppercase;
+        }
+
+        .customer-topbar-heading strong {
+            color: var(--df-navy-950);
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.015em;
+        }
+
+        .topbar-account-area {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .notification-bell-link {
+            position: relative;
+            width: 43px;
+            height: 43px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--df-border);
+            border-radius: 12px;
+            color: var(--df-navy-700);
+            background: var(--df-surface-soft);
+            box-shadow:
+                inset 0 1px 0
+                rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+        }
+
+        .notification-bell-link:hover {
+            border-color: #fcd34d;
+            color: #92400e;
+            background: #fffbeb;
+            box-shadow:
+                0 7px 17px
+                rgba(15, 23, 42, 0.07);
+            transform: translateY(-1px);
+        }
+
+        .notification-bell-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .notification-count-badge {
+            position: absolute;
+            top: -6px;
+            right: -7px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 5px;
+            border: 2px solid white;
+            border-radius: 999px;
+            color: white;
+            background: var(--df-danger);
+            box-shadow:
+                0 3px 9px
+                rgba(220, 38, 38, 0.25);
+            font-size: 10px;
+            font-weight: 850;
+            line-height: 16px;
+            text-align: center;
+        }
+
+        .notification-count-badge.d-none {
+            display: none !important;
+        }
+
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .customer-account-card {
+            min-height: 50px;
+            padding: 5px 7px 5px 13px;
+            border: 1px solid var(--df-border);
+            border-radius: 13px;
+            background: var(--df-surface);
+            box-shadow: var(--df-shadow-sm);
+        }
+
+        .profile-area small {
+            display: inline-block;
+            margin-bottom: 2px;
+            color: var(--df-muted) !important;
+            font-size: 9px;
+            font-weight: 750;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .profile-area strong {
+            display: inline-block;
+            max-width: 190px;
+            color: var(--df-text);
+            font-size: 12px;
+            font-weight: 800;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-circle {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            flex: 0 0 38px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            color: #111827;
+            background:
+                linear-gradient(
+                    135deg,
+                    #fde68a,
+                    var(--df-amber-500)
+                );
+            box-shadow:
+                inset 0 1px 0
+                rgba(255, 255, 255, 0.60);
+            font-size: 13px;
+            font-weight: 850;
         }
 
         .customer-page-content {
+            width: 100%;
+            max-width: 1580px;
+            padding: 34px 38px 48px;
+            margin: 0 auto;
+        }
+
+        .customer-page-content .container {
+            max-width: 100%;
+        }
+
+        /* =====================================================
+           Shared Bootstrap component treatment
+           ===================================================== */
+
+        .customer-page-content .card {
+            border: 1px solid var(--df-border);
+            border-radius: var(--df-radius-md);
+            background: var(--df-surface);
+            box-shadow: var(--df-shadow-sm);
+        }
+
+        .customer-page-content .card-header {
+            padding: 16px 19px;
+            border-bottom-color: var(--df-border);
+            background: var(--df-surface-soft);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .customer-page-content .card-body {
             padding: 20px;
         }
 
-        .profile-area > div:first-child {
-            display: none;
+        .customer-page-content .shadow-sm,
+        .customer-page-content .shadow {
+            box-shadow:
+                var(--df-shadow-sm) !important;
         }
-    }
-</style>
+
+        .customer-page-content h1,
+        .customer-page-content h2,
+        .customer-page-content h3,
+        .customer-page-content h4 {
+            color: var(--df-text);
+            letter-spacing: -0.018em;
+        }
+
+        .customer-page-content .form-label {
+            margin-bottom: 7px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .customer-page-content .form-control,
+        .customer-page-content .form-select {
+            min-height: 45px;
+            border-color: var(--df-border-strong);
+            border-radius: var(--df-radius-sm);
+            color: var(--df-text);
+            background-color: white;
+            font-size: 13px;
+        }
+
+        .customer-page-content
+        textarea.form-control {
+            min-height: auto;
+        }
+
+        .customer-page-content
+        .form-control:hover,
+        .customer-page-content
+        .form-select:hover {
+            border-color: #b8c1cd;
+        }
+
+        .customer-page-content
+        .form-control:focus,
+        .customer-page-content
+        .form-select:focus {
+            border-color: var(--df-amber-500);
+            box-shadow:
+                0 0 0 3px
+                rgba(245, 158, 11, 0.13);
+        }
+
+        .customer-page-content .btn {
+            min-height: 41px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 15px;
+            border-radius: var(--df-radius-sm);
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .customer-page-content .btn-primary,
+        .customer-page-content .btn-warning {
+            border-color: var(--df-amber-500);
+            color: #111827;
+            background: var(--df-amber-500);
+        }
+
+        .customer-page-content .btn-primary:hover,
+        .customer-page-content .btn-warning:hover {
+            border-color: var(--df-amber-600);
+            color: white;
+            background: var(--df-amber-600);
+            transform: translateY(-1px);
+        }
+
+        .customer-page-content
+        .btn-outline-secondary {
+            border-color: var(--df-border-strong);
+            color: #475569;
+            background: white;
+        }
+
+        .customer-page-content
+        .btn-outline-secondary:hover {
+            border-color: #94a3b8;
+            color: var(--df-text);
+            background: #f8fafc;
+        }
+
+        .customer-page-content
+        .table-responsive {
+            border: 1px solid var(--df-border);
+            border-radius: var(--df-radius-md);
+            background: white;
+            box-shadow: var(--df-shadow-sm);
+        }
+
+        .customer-page-content .table {
+            margin-bottom: 0;
+        }
+
+        .customer-page-content
+        .table thead th {
+            padding: 13px 15px;
+            border-bottom-width: 1px;
+            border-bottom-color: var(--df-border);
+            color: #475569;
+            background: var(--df-surface-soft);
+            font-size: 10px;
+            font-weight: 850;
+            letter-spacing: 0.055em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .customer-page-content
+        .table tbody td {
+            padding: 14px 15px;
+            border-color: #edf1f5;
+            color: #334155;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        .customer-page-content
+        .table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .customer-page-content .alert {
+            padding: 13px 15px;
+            border-radius: var(--df-radius-sm);
+            font-size: 12px;
+            box-shadow: var(--df-shadow-sm);
+        }
+
+        .customer-page-content .alert-success {
+            border-color: #a7f3d0;
+            color: #065f46;
+            background: #ecfdf5;
+        }
+
+        .customer-page-content .alert-danger {
+            border-color: #fecaca;
+            color: #991b1b;
+            background: #fef2f2;
+        }
+
+        .customer-page-content .alert-warning {
+            border-color: #fde68a;
+            color: #78350f;
+            background: #fffbeb;
+        }
+
+        .customer-page-content .badge {
+            padding: 0.48em 0.75em;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: 0.025em;
+        }
+
+        .customer-page-content .modal-content {
+            overflow: hidden;
+            border: 1px solid var(--df-border);
+            border-radius: var(--df-radius-lg);
+            box-shadow: var(--df-shadow-md);
+        }
+
+        .customer-page-content .modal-header {
+            border-bottom-color: var(--df-border);
+            background: var(--df-surface-soft);
+        }
+
+        .text-danger ul,
+        .alert-danger ul {
+            padding-left: 0;
+            margin-bottom: 0;
+            list-style: none;
+        }
+
+        @@media (max-width: 1250px) {
+            :root {
+                --df-sidebar-width: 244px;
+            }
+
+            .customer-page-content {
+                padding-right: 26px;
+                padding-left: 26px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-
     <div class="customer-wrapper">
-
         <aside class="customer-sidebar">
+            <div class="customer-brand">
+                <div class="customer-logo">
+                    Dine<span>flow</span>
+                </div>
 
-            <div class="customer-logo">
-                Dine<span>flow</span>
+                <div class="customer-brand-caption">
+                    Restaurant Customer Portal
+                </div>
             </div>
 
             <nav class="customer-nav">
+                <div class="customer-nav-label">
+                    Dining
+                </div>
 
                 <a asp-page="/Customer/Dashboard/Index"
-   class="@(currentPage.StartsWith("/Customer/Dashboard")
-       ? "active" : "")">
-                    <span aria-hidden="true">🏠</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Dashboard")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M3 11.5 12 4l9 7.5" />
+        <path d="M5.5 10v10h13V10" />
+        <path d="M9.5 20v-6h5v6" />
+    </svg>
+</span>
+
                     Home
                 </a>
 
                 <a asp-page="/Customer/Menu/Index"
-   class="@(currentPage.StartsWith("/Customer/Menu")
-       ? "active" : "")">
-                    <span aria-hidden="true">📖</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Menu")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22Z" />
+        <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5A2.5 2.5 0 0 1 20 22Z" />
+    </svg>
+</span>
+
                     Menu
                 </a>
 
                 <a asp-page="/Customer/Reservations/Index"
-   class="@(currentPage.StartsWith("/Customer/Reservations")
-       ? "active" : "")">
-                    <span aria-hidden="true">📅</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Reservations")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M8 3v4M16 3v4M3 10h18" />
+        <path d="m9 15 2 2 4-4" />
+    </svg>
+</span>
+
+
                     My Reservations
                 </a>
 
                 <a asp-page="/Customer/Orders/Index"
-   class="@(currentPage.StartsWith("/Customer/Orders")
-       ? "active" : "")">
-                    <span aria-hidden="true">🍽️</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Orders")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M4 18h16" />
+        <path d="M6 18a6 6 0 0 1 12 0" />
+        <path d="M12 9V6" />
+        <path d="M10 6h4" />
+        <path d="M3 21h18" />
+    </svg>
+</span>
+
                     My Orders
                 </a>
 
                 <a asp-page="/Customer/History/Index"
-   class="@(currentPage.StartsWith("/Customer/History")
-       ? "active" : "")">
-                    <span aria-hidden="true">🧾</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/History")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 3-6.7" />
+        <path d="M3 4v5h5" />
+        <path d="M12 7v5l3 2" />
+    </svg>
+</span>
+
                     History
                 </a>
 
+                <div class="customer-nav-label
+                            customer-nav-label-secondary">
+                    Support and Account
+                </div>
+
                 <a asp-page="/Customer/Help/Index"
-   class="@(currentPage.StartsWith("/Customer/Help")
-       ? "active" : "")">
-    <span aria-hidden="true">💬</span>
-    Help Assistant
-</a>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Help")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+        <path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.9.7-1.7 1.1-1.7 2.2" />
+        <path d="M12 16h.01" />
+    </svg>
+</span>
+
+                    Help Assistant
+                </a>
 
                 <a asp-page="/Customer/Profile/Index"
-   class="@(currentPage.StartsWith("/Customer/Profile")
-       ? "active" : "")">
-                    <span aria-hidden="true">👤</span>
+                   class="@(currentPage.StartsWith(
+                       "/Customer/Profile")
+                       ? "active"
+                       : "")">
+
+                    <span class="customer-nav-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+    </svg>
+</span>
+
                     Profile
                 </a>
 
                 <hr class="customer-nav-divider" />
 
                 <form method="post"
-      asp-page="/Customer/Logout"
-      class="customer-logout-form">
-    <button type="submit"
-            class="customer-logout-btn">
-        <span aria-hidden="true">🚪</span>
-        Logout
-    </button>
-</form>
+                      asp-page="/Customer/Logout"
+                      class="customer-logout-form">
 
+                    <button type="submit"
+                            class="customer-logout-btn">
+
+                        <span class="customer-logout-icon"
+      aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M10 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5" />
+        <path d="M14 8l4 4-4 4" />
+        <path d="M18 12H9" />
+    </svg>
+</span>
+
+                        Logout
+                    </button>
+                </form>
             </nav>
-
         </aside>
 
         <main class="customer-main">
-
             <div class="customer-topbar">
-
-                <div class="customer-topbar-title">
-    Customer Portal
-</div>
+                <div class="customer-topbar-heading">
+                    <span>Dineflow Customer Portal</span>
+                    <strong>@pageTitle</strong>
+                </div>
 
                 <div class="topbar-account-area">
-    <a asp-page="/Customer/Notifications/Index"
-       class="notification-bell-link"
-       aria-label="View notifications"
-       title="Notifications">
+                    <a asp-page="/Customer/Notifications/Index"
+                       class="notification-bell-link"
+                       aria-label="View notifications"
+                       title="Notifications">
 
-        <span class="notification-bell-icon"
-              aria-hidden="true">
-            🔔
-        </span>
+                        <span class="notification-bell-icon"
+                              aria-hidden="true">
+                            🔔
+                        </span>
 
-        <span id="customerNotificationCount"
-              class="notification-count-badge d-none"
-              aria-label="No unread notifications">
-            0
-        </span>
-    </a>
+                        <span id="customerNotificationCount"
+                              class="notification-count-badge d-none"
+                              aria-label="No unread notifications">
+                            0
+                        </span>
+                    </a>
 
-    <div class="profile-area">
-        <div>
-            <small class="text-muted">
-                Signed in as
-            </small>
-            <br />
+                    <div class="profile-area
+                                customer-account-card">
 
-            <strong>
-                @(User.Identity?.Name ?? "Customer")
-            </strong>
-        </div>
+                        <div>
+                            <small>Signed in as</small>
+                            <br />
 
-        @{
-            var displayName = User.Identity?.Name;
-            var initial = string.IsNullOrWhiteSpace(displayName)
-                ? "C"
-                : displayName.Trim()
-                    .Substring(0, 1)
-                    .ToUpperInvariant();
-        }
+                            <strong>
+                                @(displayName ?? "Customer")
+                            </strong>
+                        </div>
 
-        <div class="profile-circle">
-            @initial
-        </div>
-    </div>
-</div>
-
+                        <div class="profile-circle">
+                            @initial
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="customer-page-content">
                 @RenderBody()
             </div>
-
         </main>
-
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js">
+    </script>
 
-<script>
-    (function () {
-        const badge =
-            document.getElementById(
-                "customerNotificationCount"
-            );
-
-        if (!badge) {
-            return;
-        }
-
-        async function updateNotificationCount() {
-            try {
-                const response = await fetch(
-                    "/Customer/Notifications/Index?handler=UnreadCount",
-                    {
-                        headers: {
-                            "Accept": "application/json"
-                        },
-                        cache: "no-store"
-                    }
+    <script>
+        (function () {
+            const badge =
+                document.getElementById(
+                    "customerNotificationCount"
                 );
 
-                if (!response.ok) {
-                    return;
-                }
+            if (!badge) {
+                return;
+            }
 
-                const result = await response.json();
-                const count =
-                    Number(result.unreadCount) || 0;
+            async function updateNotificationCount() {
+                try {
+                    const response = await fetch(
+                        "/Customer/Notifications/Index" +
+                        "?handler=UnreadCount",
+                        {
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
 
-                if (count <= 0) {
-                    badge.textContent = "0";
-                    badge.classList.add("d-none");
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const result =
+                        await response.json();
+
+                    const count =
+                        Number(result.unreadCount) || 0;
+
+                    if (count <= 0) {
+                        badge.textContent = "0";
+                        badge.classList.add("d-none");
+
+                        badge.setAttribute(
+                            "aria-label",
+                            "No unread notifications"
+                        );
+
+                        return;
+                    }
+
+                    badge.textContent =
+                        count > 99
+                            ? "99+"
+                            : count.toString();
+
+                    badge.classList.remove("d-none");
 
                     badge.setAttribute(
                         "aria-label",
-                        "No unread notifications"
+                        count === 1
+                            ? "1 unread notification"
+                            : count +
+                              " unread notifications"
                     );
-
-                    return;
                 }
-
-                badge.textContent =
-                    count > 99
-                        ? "99+"
-                        : count.toString();
-
-                badge.classList.remove("d-none");
-
-                badge.setAttribute(
-                    "aria-label",
-                    count === 1
-                        ? "1 unread notification"
-                        : count + " unread notifications"
-                );
+                catch (error) {
+                    // Preserve the last displayed count
+                    // when notification polling fails.
+                }
             }
-            catch (error) {
-                // Preserve the last displayed count if polling fails.
-            }
-        }
 
-        updateNotificationCount();
+            updateNotificationCount();
 
-        window.setInterval(
-            updateNotificationCount,
-            30000
-        );
-    })();
-</script>
+            window.setInterval(
+                updateNotificationCount,
+                30000
+            );
+        })();
+    </script>
 
-@await RenderSectionAsync("Scripts", required: false)
-
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
 </body>
 </html>
