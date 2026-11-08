@@ -3,168 +3,1164 @@
 @model RROMS.Pages.Customer.History.IndexModel
 @{
     ViewData["Title"] = "History";
+
+    string activeTabTitle =
+        Model.Tab switch
+        {
+            "orders" => "Order History",
+            "payments" => "Payment History",
+            _ => "Reservation History"
+        };
+
+    string activeTabDescription =
+        Model.Tab switch
+        {
+            "orders" =>
+                "Review your previous food orders, booking details, totals, and statuses.",
+
+            "payments" =>
+                "Review payment attempts and completed transactions associated with your orders.",
+
+            _ =>
+                "Review your previous and current restaurant reservation records."
+        };
 }
 
-<div class="container py-4">
-    <h2 class="mb-4">My History</h2>
+<div class="container py-4 customer-history-page">
+    <header class="history-header">
+        <div>
+            <span class="history-eyebrow">
+                Customer Records
+            </span>
 
-    <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-            <a class="nav-link @(Model.Tab == "reservations" ? "active" : "")"
-               asp-page="/Customer/History/Index" asp-route-tab="reservations"
-               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Reservations</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link @(Model.Tab == "orders" ? "active" : "")"
-               asp-page="/Customer/History/Index" asp-route-tab="orders"
-               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Orders</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link @(Model.Tab == "payments" ? "active" : "")"
-               asp-page="/Customer/History/Index" asp-route-tab="payments"
-               asp-route-from="@Model.FromText" asp-route-to="@Model.ToText">Payments</a>
-        </li>
-    </ul>
+            <h1>My History</h1>
 
-    <form method="get" class="row g-2 align-items-end mb-3">
-        <input type="hidden" name="tab" value="@Model.Tab" />
-        <div class="col-auto">
-            <label class="form-label small mb-0">From</label>
-            <input type="date" name="from" value="@Model.FromText" class="form-control" />
+            <p>
+                Review your reservations, food orders, and payment
+                transactions from one place.
+            </p>
         </div>
-        <div class="col-auto">
-            <label class="form-label small mb-0">To</label>
-            <input type="date" name="to" value="@Model.ToText" class="form-control" />
+
+        <a asp-page="/Customer/Dashboard"
+           class="history-dashboard-link">
+            Back to Dashboard
+        </a>
+    </header>
+
+    <nav class="history-tabs"
+         aria-label="History categories">
+
+        <a class="history-tab @(Model.Tab == "reservations" ? "active" : "")"
+           asp-page="/Customer/History/Index"
+           asp-route-tab="reservations"
+           asp-route-from="@Model.FromText"
+           asp-route-to="@Model.ToText">
+
+            <span class="history-tab-icon"
+                  aria-hidden="true">
+                R
+            </span>
+
+            <span>
+                <strong>Reservations</strong>
+                <small>Booking records</small>
+            </span>
+        </a>
+
+        <a class="history-tab @(Model.Tab == "orders" ? "active" : "")"
+           asp-page="/Customer/History/Index"
+           asp-route-tab="orders"
+           asp-route-from="@Model.FromText"
+           asp-route-to="@Model.ToText">
+
+            <span class="history-tab-icon"
+                  aria-hidden="true">
+                O
+            </span>
+
+            <span>
+                <strong>Orders</strong>
+                <small>Dining purchases</small>
+            </span>
+        </a>
+
+        <a class="history-tab @(Model.Tab == "payments" ? "active" : "")"
+           asp-page="/Customer/History/Index"
+           asp-route-tab="payments"
+           asp-route-from="@Model.FromText"
+           asp-route-to="@Model.ToText">
+
+            <span class="history-tab-icon"
+                  aria-hidden="true">
+                P
+            </span>
+
+            <span>
+                <strong>Payments</strong>
+                <small>Transaction records</small>
+            </span>
+        </a>
+    </nav>
+
+    <section class="history-filter-card">
+        <div class="history-filter-heading">
+            <div>
+                <span class="history-filter-label">
+                    Date Filter
+                </span>
+
+                <h2>@activeTabTitle</h2>
+
+                <p>@activeTabDescription</p>
+            </div>
+
+            @if (string.IsNullOrEmpty(Model.FilterError))
+            {
+                <span class="history-record-count">
+                    @Model.TotalCount
+                    @(Model.TotalCount == 1 ? "record" : "records")
+                </span>
+            }
         </div>
-        <div class="col-auto d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a asp-page="/Customer/History/Index" asp-route-tab="@Model.Tab"
-               class="btn btn-outline-secondary">Clear</a>
-        </div>
-    </form>
+
+        <form method="get"
+              class="history-filter-form">
+
+            <input type="hidden"
+                   name="tab"
+                   value="@Model.Tab" />
+
+            <div class="history-filter-field">
+                <label for="historyFromDate">
+                    From
+                </label>
+
+                <input id="historyFromDate"
+                       type="date"
+                       name="from"
+                       value="@Model.FromText"
+                       class="form-control history-date-input" />
+            </div>
+
+            <div class="history-filter-field">
+                <label for="historyToDate">
+                    To
+                </label>
+
+                <input id="historyToDate"
+                       type="date"
+                       name="to"
+                       value="@Model.ToText"
+                       class="form-control history-date-input" />
+            </div>
+
+            <div class="history-filter-actions">
+                <button type="submit"
+                        class="apply-filter-button">
+                    Apply Filter
+                </button>
+
+                <a asp-page="/Customer/History/Index"
+                   asp-route-tab="@Model.Tab"
+                   class="clear-filter-link">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </section>
 
     @if (!string.IsNullOrEmpty(Model.FilterError))
     {
-        <div class="alert alert-danger">@Model.FilterError</div>
+        <div class="history-message history-message-error"
+             role="alert">
+
+            <strong>Check the selected dates</strong>
+            <span>@Model.FilterError</span>
+        </div>
     }
     else if (Model.TotalCount == 0)
     {
-        <div class="alert alert-info">No records found for this selection.</div>
+        <section class="history-empty-state">
+            <div class="history-empty-icon"
+                 aria-hidden="true">
+                @switch (Model.Tab)
+                {
+                    case "orders":
+                        <span>O</span>
+                        break;
+
+                    case "payments":
+                        <span>P</span>
+                        break;
+
+                    default:
+                        <span>R</span>
+                        break;
+                }
+            </div>
+
+            <h2>No @Model.Tab found</h2>
+
+            <p>
+                No records match the selected history category and
+                date range. Try clearing the filter or selecting a
+                different period.
+            </p>
+
+            <a asp-page="/Customer/History/Index"
+               asp-route-tab="@Model.Tab"
+               class="empty-clear-link">
+                Clear Date Filter
+            </a>
+        </section>
     }
     else
     {
-        <p class="text-muted small mb-2">
-            @Model.TotalCount record@(Model.TotalCount == 1 ? "" : "s") found.
-        </p>
+        <section class="history-records-section">
+            @if (Model.Tab == "reservations")
+            {
+                <div class="history-record-list">
+                    @foreach (var row in Model.Reservations)
+                    {
+                        string reservationStatus =
+                            row.Status ?? "Pending";
 
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                @if (Model.Tab == "reservations")
-                {
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Table</th>
-                                <th>Guests</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var row in Model.Reservations)
+                        string reservationStatusClass =
+                            reservationStatus.ToLowerInvariant() switch
                             {
-                                <tr>
-                                    <td>@row.Date.ToString("dd MMM yyyy")</td>
-                                    <td>@row.Time.ToString(@"hh\:mm")</td>
-                                    <td>@row.TableNumber</td>
-                                    <td>@row.Guests</td>
-                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-                else if (Model.Tab == "orders")
-                {
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Order</th>
-                                <th>Date</th>
-                                <th>Booking</th>
-                                <th>Status</th>
-                                <th class="text-end">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var row in Model.Orders)
+                                "confirmed" => "confirmed",
+                                "cancelled" => "cancelled",
+                                "pending" => "pending",
+                                _ => "other"
+                            };
+
+                        <article class="history-record-card">
+                            <div class="history-date-block">
+                                <strong>
+                                    @row.Date.ToString("dd")
+                                </strong>
+
+                                <span>
+                                    @row.Date.ToString("MMM")
+                                </span>
+
+                                <small>
+                                    @row.Date.ToString("yyyy")
+                                </small>
+                            </div>
+
+                            <div class="history-record-content">
+                                <div class="history-record-top">
+                                    <div>
+                                        <span class="history-record-type">
+                                            Reservation
+                                        </span>
+
+                                        <h3>
+                                            @row.Date.ToString(
+                                                "dddd, dd MMMM yyyy")
+                                        </h3>
+                                    </div>
+
+                                    <span class="history-status-pill @reservationStatusClass">
+                                        @reservationStatus
+                                    </span>
+                                </div>
+
+                                <div class="history-detail-grid">
+                                    <div class="history-detail">
+                                        <span>Time</span>
+                                        <strong>
+                                            @row.Time.ToString(@"hh\:mm")
+                                        </strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Table</span>
+                                        <strong>@row.TableNumber</strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Guests</span>
+                                        <strong>@row.Guests</strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Status</span>
+                                        <strong>@reservationStatus</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+            else if (Model.Tab == "orders")
+            {
+                <div class="history-record-list">
+                    @foreach (var row in Model.Orders)
+                    {
+                        string orderStatus =
+                            row.Status ?? "Pending";
+
+                        string orderStatusClass =
+                            orderStatus.ToLowerInvariant() switch
                             {
-                                <tr>
-                                    <td>#@row.OrderID</td>
-                                    <td>@(row.OrderDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")</td>
-                                    <td>@row.BookingText</td>
-                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
-                                    <td class="text-end">RM @row.Total.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Payment</th>
-                                <th>Order</th>
-                                <th>Date</th>
-                                <th>Method</th>
-                                <th>Transaction No.</th>
-                                <th>Status</th>
-                                <th class="text-end">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var row in Model.Payments)
+                                "completed" => "completed",
+                                "cancelled" => "cancelled",
+                                "preparing" => "preparing",
+                                "ready to serve" => "ready",
+                                "served" => "served",
+                                "pending" => "pending",
+                                _ => "other"
+                            };
+
+                        <article class="history-record-card order-record">
+                            <div class="history-reference-block">
+                                <span>Order</span>
+                                <strong>#@row.OrderID</strong>
+                            </div>
+
+                            <div class="history-record-content">
+                                <div class="history-record-top">
+                                    <div>
+                                        <span class="history-record-type">
+                                            Food Order
+                                        </span>
+
+                                        <h3>Order #@row.OrderID</h3>
+                                    </div>
+
+                                    <span class="history-status-pill @orderStatusClass">
+                                        @orderStatus
+                                    </span>
+                                </div>
+
+                                <div class="history-detail-grid order-details">
+                                    <div class="history-detail">
+                                        <span>Order Date</span>
+
+                                        <strong>
+                                            @(row.OrderDate?.ToString(
+                                                "dd MMM yyyy, HH:mm")
+                                                ?? "Not recorded")
+                                        </strong>
+                                    </div>
+
+                                    <div class="history-detail booking-detail">
+                                        <span>Booking</span>
+                                        <strong>@row.BookingText</strong>
+                                    </div>
+
+                                    <div class="history-detail amount-detail">
+                                        <span>Total</span>
+
+                                        <strong>
+                                            RM @row.Total.ToString(
+                                                "0.00",
+                                                CultureInfo.InvariantCulture)
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="history-record-list">
+                    @foreach (var row in Model.Payments)
+                    {
+                        string paymentStatus =
+                            row.Status ?? "Pending";
+
+                        string paymentStatusClass =
+                            paymentStatus.ToLowerInvariant() switch
                             {
-                                <tr>
-                                    <td>#@row.PaymentID</td>
-                                    <td>#@row.OrderID</td>
-                                    <td>@(row.PaymentDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")</td>
-                                    <td>@row.Method</td>
-                                    <td>@(row.TransactionNo ?? "-")</td>
-                                    <td><span class="badge @RROMS.Pages.Customer.History.IndexModel.BadgeClass(row.Status)">@row.Status</span></td>
-                                    <td class="text-end">RM @row.Amount.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-            </div>
-        </div>
+                                "paid" => "paid",
+                                "failed" => "failed",
+                                "cancelled" => "cancelled",
+                                "pending" => "pending",
+                                _ => "other"
+                            };
+
+                        <article class="history-record-card payment-record">
+                            <div class="history-reference-block payment-reference">
+                                <span>Payment</span>
+                                <strong>#@row.PaymentID</strong>
+                            </div>
+
+                            <div class="history-record-content">
+                                <div class="history-record-top">
+                                    <div>
+                                        <span class="history-record-type">
+                                            Payment Transaction
+                                        </span>
+
+                                        <h3>Payment #@row.PaymentID</h3>
+                                    </div>
+
+                                    <span class="history-status-pill @paymentStatusClass">
+                                        @paymentStatus
+                                    </span>
+                                </div>
+
+                                <div class="history-detail-grid payment-details">
+                                    <div class="history-detail">
+                                        <span>Order</span>
+                                        <strong>#@row.OrderID</strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Payment Date</span>
+
+                                        <strong>
+                                            @(row.PaymentDate?.ToString(
+                                                "dd MMM yyyy, HH:mm")
+                                                ?? "Not recorded")
+                                        </strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Method</span>
+                                        <strong>@row.Method</strong>
+                                    </div>
+
+                                    <div class="history-detail">
+                                        <span>Transaction No.</span>
+
+                                        <strong>
+                                            @(row.TransactionNo ?? "-")
+                                        </strong>
+                                    </div>
+
+                                    <div class="history-detail amount-detail">
+                                        <span>Amount</span>
+
+                                        <strong>
+                                            RM @row.Amount.ToString(
+                                                "0.00",
+                                                CultureInfo.InvariantCulture)
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
 
         @if (Model.TotalPages > 1)
         {
-            <nav class="d-flex justify-content-between align-items-center mt-3">
+            <nav class="history-pagination"
+                 aria-label="History pages">
+
                 <div>
                     @if (Model.PageNumber > 1)
                     {
-                        <a class="btn btn-outline-secondary btn-sm" asp-page="/Customer/History/Index"
-                           asp-route-tab="@Model.Tab" asp-route-from="@Model.FromText" asp-route-to="@Model.ToText"
-                           asp-route-p="@(Model.PageNumber - 1)">Previous</a>
+                        <a class="history-page-link"
+                           asp-page="/Customer/History/Index"
+                           asp-route-tab="@Model.Tab"
+                           asp-route-from="@Model.FromText"
+                           asp-route-to="@Model.ToText"
+                           asp-route-p="@(Model.PageNumber - 1)">
+                            Previous
+                        </a>
                     }
                 </div>
-                <span class="text-muted small">Page @Model.PageNumber of @Model.TotalPages</span>
+
+                <span>
+                    Page
+                    <strong>@Model.PageNumber</strong>
+                    of
+                    <strong>@Model.TotalPages</strong>
+                </span>
+
                 <div>
                     @if (Model.PageNumber < Model.TotalPages)
                     {
-                        <a class="btn btn-outline-secondary btn-sm" asp-page="/Customer/History/Index"
-                           asp-route-tab="@Model.Tab" asp-route-from="@Model.FromText" asp-route-to="@Model.ToText"
-                           asp-route-p="@(Model.PageNumber + 1)">Next</a>
+                        <a class="history-page-link"
+                           asp-page="/Customer/History/Index"
+                           asp-route-tab="@Model.Tab"
+                           asp-route-from="@Model.FromText"
+                           asp-route-to="@Model.ToText"
+                           asp-route-p="@(Model.PageNumber + 1)">
+                            Next
+                        </a>
                     }
                 </div>
             </nav>
         }
     }
 </div>
+
+<style>
+    .customer-history-page {
+        max-width: 1120px;
+    }
+
+    .history-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 23px;
+    }
+
+    .history-eyebrow,
+    .history-filter-label,
+    .history-record-type {
+        display: block;
+        color: #d97706;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .history-eyebrow {
+        margin-bottom: 7px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+    }
+
+    .history-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .history-header p {
+        max-width: 690px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .history-dashboard-link {
+        min-height: 42px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        color: #374151;
+        background: white;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .history-dashboard-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .history-tabs {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        margin-bottom: 18px;
+    }
+
+    .history-tab {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        color: #4b5563;
+        background: white;
+        text-decoration: none;
+        box-shadow:
+            0 7px 20px rgba(31, 41, 55, 0.04);
+    }
+
+    .history-tab:hover {
+        border-color: #fcd34d;
+        color: #111827;
+        background: #fffdf8;
+    }
+
+    .history-tab.active {
+        border-color: #f59e0b;
+        color: #78350f;
+        background:
+            linear-gradient(
+                135deg,
+                #fffbeb,
+                #fff7ed
+            );
+    }
+
+    .history-tab-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 13px;
+        font-weight: 850;
+    }
+
+    .history-tab strong,
+    .history-tab small {
+        display: block;
+    }
+
+    .history-tab strong {
+        margin-bottom: 2px;
+        color: inherit;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .history-tab small {
+        color: #9ca3af;
+        font-size: 11px;
+    }
+
+    .history-filter-card {
+        margin-bottom: 18px;
+        padding: 20px 22px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+        box-shadow:
+            0 8px 23px rgba(31, 41, 55, 0.05);
+    }
+
+    .history-filter-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .history-filter-label {
+        margin-bottom: 5px;
+    }
+
+    .history-filter-heading h2 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .history-filter-heading p {
+        max-width: 720px;
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .history-record-count {
+        flex-shrink: 0;
+        padding: 7px 12px;
+        border: 1px solid #fde68a;
+        border-radius: 999px;
+        color: #92400e;
+        background: #fffbeb;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .history-filter-form {
+        display: grid;
+        grid-template-columns:
+            minmax(170px, 0.7fr)
+            minmax(170px, 0.7fr)
+            auto;
+        gap: 13px;
+        align-items: end;
+    }
+
+    .history-filter-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #4b5563;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .history-date-input {
+        min-height: 43px;
+        border-color: #d1d5db;
+        border-radius: 9px;
+    }
+
+    .history-date-input:focus {
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 0 0.2rem rgba(245, 158, 11, 0.15);
+    }
+
+    .history-filter-actions {
+        display: flex;
+        gap: 9px;
+    }
+
+    .apply-filter-button,
+    .clear-filter-link,
+    .empty-clear-link,
+    .history-page-link {
+        min-height: 43px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .apply-filter-button {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .apply-filter-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .clear-filter-link,
+    .empty-clear-link,
+    .history-page-link {
+        border-color: #d1d5db;
+        color: #4b5563;
+        background: white;
+    }
+
+    .clear-filter-link:hover,
+    .empty-clear-link:hover,
+    .history-page-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .history-message {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 18px;
+        padding: 15px 17px;
+        border: 1px solid;
+        border-radius: 12px;
+    }
+
+    .history-message strong {
+        font-size: 13px;
+    }
+
+    .history-message span {
+        font-size: 12px;
+    }
+
+    .history-message-error {
+        border-color: #fecaca;
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
+    .history-empty-state {
+        padding: 65px 28px;
+        border: 1px dashed #d1d5db;
+        border-radius: 18px;
+        background: white;
+        text-align: center;
+        box-shadow:
+            0 9px 26px rgba(31, 41, 55, 0.05);
+    }
+
+    .history-empty-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        border-radius: 18px;
+        color: #92400e;
+        background: #fff7ed;
+        font-size: 21px;
+        font-weight: 850;
+    }
+
+    .history-empty-state h2 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 22px;
+        font-weight: 800;
+        text-transform: capitalize;
+    }
+
+    .history-empty-state p {
+        max-width: 570px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .history-record-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .history-record-card {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+        box-shadow:
+            0 8px 24px rgba(31, 41, 55, 0.05);
+    }
+
+    .history-date-block,
+    .history-reference-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 18px 12px;
+        color: #92400e;
+        background:
+            linear-gradient(
+                145deg,
+                #fffbeb,
+                #fef3c7
+            );
+        text-align: center;
+    }
+
+    .history-date-block strong {
+        font-size: 29px;
+        font-weight: 850;
+        line-height: 1;
+    }
+
+    .history-date-block span {
+        margin-top: 5px;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .history-date-block small {
+        margin-top: 2px;
+        font-size: 10px;
+    }
+
+    .history-reference-block {
+        color: #1e3a8a;
+        background:
+            linear-gradient(
+                145deg,
+                #eff6ff,
+                #dbeafe
+            );
+    }
+
+    .payment-reference {
+        color: #065f46;
+        background:
+            linear-gradient(
+                145deg,
+                #ecfdf5,
+                #d1fae5
+            );
+    }
+
+    .history-reference-block span,
+    .history-reference-block strong {
+        display: block;
+    }
+
+    .history-reference-block span {
+        margin-bottom: 5px;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .history-reference-block strong {
+        font-size: 18px;
+        font-weight: 850;
+    }
+
+    .history-record-content {
+        min-width: 0;
+        padding: 18px 20px;
+    }
+
+    .history-record-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .history-record-type {
+        margin-bottom: 4px;
+    }
+
+    .history-record-top h3 {
+        margin: 0;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .history-status-pill {
+        flex-shrink: 0;
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: #374151;
+        background: #e5e7eb;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: capitalize;
+    }
+
+    .history-status-pill.pending {
+        color: #78350f;
+        background: #fef3c7;
+    }
+
+    .history-status-pill.confirmed,
+    .history-status-pill.paid,
+    .history-status-pill.served {
+        color: #065f46;
+        background: #d1fae5;
+    }
+
+    .history-status-pill.cancelled,
+    .history-status-pill.failed {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .history-status-pill.preparing {
+        color: #075985;
+        background: #e0f2fe;
+    }
+
+    .history-status-pill.ready {
+        color: #1e3a8a;
+        background: #dbeafe;
+    }
+
+    .history-status-pill.completed {
+        color: #374151;
+        background: #e5e7eb;
+    }
+
+    .history-detail-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .order-details {
+        grid-template-columns:
+            minmax(150px, 0.8fr)
+            minmax(260px, 1.6fr)
+            minmax(120px, 0.6fr);
+    }
+
+    .payment-details {
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+    }
+
+    .history-detail {
+        min-width: 0;
+        padding: 11px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .history-detail span,
+    .history-detail strong {
+        display: block;
+    }
+
+    .history-detail span {
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .history-detail strong {
+        color: #1f2937;
+        font-size: 12px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .amount-detail strong {
+        color: #047857;
+    }
+
+    .history-pagination {
+        display: grid;
+        grid-template-columns:
+            minmax(100px, 1fr)
+            auto
+            minmax(100px, 1fr);
+        align-items: center;
+        gap: 16px;
+        margin-top: 18px;
+        padding: 14px 0;
+    }
+
+    .history-pagination > div:last-child {
+        text-align: right;
+    }
+
+    .history-pagination > span {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .history-pagination > span strong {
+        color: #111827;
+    }
+
+    @@media (max-width: 900px) {
+        .payment-details {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .order-details {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .booking-detail {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .history-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .history-dashboard-link {
+            width: 100%;
+        }
+
+        .history-tabs {
+            grid-template-columns: 1fr;
+        }
+
+        .history-filter-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .history-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .history-filter-actions,
+        .apply-filter-button,
+        .clear-filter-link {
+            width: 100%;
+        }
+
+        .history-record-card {
+            grid-template-columns: 1fr;
+        }
+
+        .history-date-block,
+        .history-reference-block {
+            min-height: 58px;
+            align-items: baseline;
+            justify-content: flex-start;
+            flex-direction: row;
+            gap: 7px;
+            padding: 13px 18px;
+        }
+
+        .history-date-block strong {
+            font-size: 22px;
+        }
+
+        .history-date-block span {
+            margin-top: 0;
+        }
+
+        .history-reference-block span {
+            margin-bottom: 0;
+        }
+
+        .history-record-top {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-detail-grid,
+        .order-details,
+        .payment-details {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-detail {
+            grid-column: auto;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .history-filter-actions {
+            flex-direction: column;
+        }
+
+        .history-pagination {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .history-pagination > div,
+        .history-pagination > div:last-child {
+            text-align: center;
+        }
+
+        .history-page-link {
+            width: 100%;
+        }
+    }
+</style>
