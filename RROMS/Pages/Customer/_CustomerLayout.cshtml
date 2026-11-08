@@ -441,6 +441,13 @@
                     History
                 </a>
 
+                <a asp-page="/Customer/Help/Index"
+   class="@(currentPage.StartsWith("/Customer/Help")
+       ? "active" : "")">
+    <span aria-hidden="true">💬</span>
+    Help Assistant
+</a>
+
                 <a asp-page="/Customer/Profile/Index"
    class="@(currentPage.StartsWith("/Customer/Profile")
        ? "active" : "")">
