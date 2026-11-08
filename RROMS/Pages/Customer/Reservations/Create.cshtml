@@ -4,45 +4,573 @@
     ViewData["Title"] = "Book a Table";
 }
 
-<div class="container py-4" style="max-width: 600px;">
-    <h2 class="mb-4">Book a Table</h2>
+<div class="container py-4 reservation-create-page">
+    <header class="booking-header">
+        <div>
+            <span class="booking-eyebrow">
+                Dining Reservations
+            </span>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form method="post" novalidate>
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <h1>Book a Table</h1>
 
-                <div class="mb-3">
-                    <label asp-for="Input.Date" class="form-label"></label>
-                    <input asp-for="Input.Date" type="date" class="form-control"
-                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                    <span asp-validation-for="Input.Date" class="text-danger small"></span>
+            <p>
+                Choose your preferred date, time, and party size.
+                Dineflow will assign the best available table for
+                your booking.
+            </p>
+        </div>
+
+        <a asp-page="/Customer/Reservations/Index"
+           class="back-reservations-link">
+            Back to My Reservations
+        </a>
+    </header>
+
+    <div class="booking-layout">
+        <section class="booking-form-card">
+            <div class="booking-card-heading">
+                <div class="booking-step-icon"
+                     aria-hidden="true">
+                    1
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Input.Time" class="form-label"></label>
-                    <input asp-for="Input.Time" type="time" class="form-control" />
-                    <span asp-validation-for="Input.Time" class="text-danger small"></span>
+                <div>
+                    <span>Reservation details</span>
+
+                    <h2>Plan your visit</h2>
+                </div>
+            </div>
+
+            <form method="post"
+                  novalidate
+                  class="booking-form">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger validation-summary">
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Input.NumberOfGuests" class="form-label"></label>
-                    <input asp-for="Input.NumberOfGuests" type="number" min="1" class="form-control" />
-                    <span asp-validation-for="Input.NumberOfGuests" class="text-danger small"></span>
+                <div class="booking-fields-grid">
+                    <div class="booking-field">
+                        <label asp-for="Input.Date"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.Date"
+                               type="date"
+                               class="form-control booking-input"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                        <span asp-validation-for="Input.Date"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Select today or a future date.
+                        </small>
+                    </div>
+
+                    <div class="booking-field">
+                        <label asp-for="Input.Time"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.Time"
+                               type="time"
+                               class="form-control booking-input" />
+
+                        <span asp-validation-for="Input.Time"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Choose your preferred arrival time.
+                        </small>
+                    </div>
+
+                    <div class="booking-field booking-field-full">
+                        <label asp-for="Input.NumberOfGuests"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.NumberOfGuests"
+                               type="number"
+                               min="1"
+                               class="form-control booking-input" />
+
+                        <span asp-validation-for="Input.NumberOfGuests"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Enter the total number of guests,
+                            including yourself.
+                        </small>
+                    </div>
                 </div>
 
-                <p class="text-muted small">
-                    Each booking is for a 2-hour slot. We will choose the best available table for your party.
-                </p>
+                <div class="booking-information">
+                    <div class="information-icon"
+                         aria-hidden="true">
+                        i
+                    </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Book Table</button>
-                    <a asp-page="/Customer/Reservations/Index" class="btn btn-outline-secondary">Back</a>
+                    <div>
+                        <strong>How table assignment works</strong>
+
+                        <p>
+                            Each reservation covers a two-hour dining
+                            slot. Dineflow automatically selects the
+                            best available table for your party size.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="booking-actions">
+                    <button type="submit"
+                            class="confirm-booking-button">
+                        Book Table
+                    </button>
+
+                    <a asp-page="/Customer/Reservations/Index"
+                       class="cancel-booking-link">
+                        Cancel
+                    </a>
                 </div>
             </form>
-        </div>
+        </section>
+
+        <aside class="booking-guide"
+               aria-label="Booking information">
+
+            <span class="booking-eyebrow">
+                Before You Book
+            </span>
+
+            <h2>What happens next?</h2>
+
+            <div class="booking-guide-list">
+                <div class="booking-guide-item">
+                    <span class="guide-number">1</span>
+
+                    <div>
+                        <strong>Submit your request</strong>
+
+                        <p>
+                            Enter your preferred visit details and
+                            submit the reservation.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="booking-guide-item">
+                    <span class="guide-number">2</span>
+
+                    <div>
+                        <strong>Table assignment</strong>
+
+                        <p>
+                            Dineflow selects a suitable available table
+                            for your party size.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="booking-guide-item">
+                    <span class="guide-number">3</span>
+
+                    <div>
+                        <strong>Restaurant confirmation</strong>
+
+                        <p>
+                            Track the reservation status from your
+                            My Reservations page.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-duration-note">
+                <span>Dining duration</span>
+                <strong>2 hours</strong>
+            </div>
+        </aside>
     </div>
 </div>
+
+<style>
+    .reservation-create-page {
+        max-width: 1040px;
+    }
+
+    .booking-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .booking-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .booking-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .booking-header p {
+        max-width: 650px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .back-reservations-link {
+        min-height: 42px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        color: #374151;
+        background: white;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .back-reservations-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .booking-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.55fr)
+            minmax(270px, 0.75fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .booking-form-card,
+    .booking-guide {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 10px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .booking-form-card {
+        overflow: hidden;
+    }
+
+    .booking-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 21px 23px;
+        border-bottom: 1px solid #f3f4f6;
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #fffbeb
+            );
+    }
+
+    .booking-step-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: #78350f;
+        background: #fde68a;
+        font-size: 16px;
+        font-weight: 850;
+    }
+
+    .booking-card-heading span {
+        display: block;
+        margin-bottom: 3px;
+        color: #d97706;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .booking-card-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .booking-form {
+        padding: 24px;
+    }
+
+    .validation-summary:empty {
+        display: none;
+    }
+
+    .booking-fields-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .booking-field {
+        min-width: 0;
+    }
+
+    .booking-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .booking-field .form-label {
+        margin-bottom: 7px;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .booking-input {
+        min-height: 46px;
+        border-color: #d1d5db;
+        border-radius: 10px;
+        color: #111827;
+        background: #ffffff;
+    }
+
+    .booking-input:focus {
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 0 0.2rem rgba(245, 158, 11, 0.16);
+    }
+
+    .field-help {
+        display: block;
+        margin-top: 6px;
+        color: #9ca3af;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .booking-information {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 22px;
+        padding: 15px;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .information-icon {
+        width: 26px;
+        height: 26px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #2563eb;
+        font-family: Georgia, serif;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .booking-information strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .booking-information p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .booking-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .confirm-booking-button,
+    .cancel-booking-link {
+        min-height: 43px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .confirm-booking-button {
+        border: 1px solid #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .confirm-booking-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .cancel-booking-link {
+        border: 1px solid #d1d5db;
+        color: #4b5563;
+        background: white;
+        text-decoration: none;
+    }
+
+    .cancel-booking-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .booking-guide {
+        padding: 24px;
+    }
+
+    .booking-guide h2 {
+        margin: 0 0 20px;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .booking-guide-list {
+        display: grid;
+        gap: 17px;
+    }
+
+    .booking-guide-item {
+        display: grid;
+        grid-template-columns: 31px minmax(0, 1fr);
+        gap: 11px;
+        align-items: start;
+    }
+
+    .guide-number {
+        width: 31px;
+        height: 31px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .booking-guide-item strong {
+        display: block;
+        margin-bottom: 3px;
+        color: #374151;
+        font-size: 13px;
+    }
+
+    .booking-guide-item p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .booking-duration-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 23px;
+        padding: 13px 14px;
+        border-radius: 11px;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .booking-duration-note span {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .booking-duration-note strong {
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    @@media (max-width: 860px) {
+        .booking-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-guide {
+            order: 2;
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .booking-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-reservations-link {
+            width: 100%;
+        }
+
+        .booking-fields-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-field-full {
+            grid-column: auto;
+        }
+
+        .booking-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .confirm-booking-button,
+        .cancel-booking-link {
+            width: 100%;
+        }
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
