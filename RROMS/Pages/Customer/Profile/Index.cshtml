@@ -2,102 +2,1145 @@
 @model RROMS.Pages.Customer.Profile.IndexModel
 @{
     ViewData["Title"] = "My Profile";
-    // Use the SAME Layout line as Pages/Customer/Menu/Index.cshtml (if it sets one)
+
+    string customerInitials =
+        GetCustomerInitials(Model.Input.Name);
 }
 
-<div class="container py-4">
-    <h2 class="mb-4">My Profile</h2>
+<div class="container py-4 profile-page">
+    <header class="profile-header">
+        <div>
+            <span class="profile-eyebrow">
+                Customer Account
+            </span>
 
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+            <h1>My Profile</h1>
+
+            <p>
+                Manage your personal details, dining preferences,
+                special requests, and account password.
+            </p>
+        </div>
+
+        <a asp-page="/Customer/Dashboard/Index"
+           class="profile-dashboard-link">
+            Back to Dashboard
+        </a>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="profile-success-message"
+             role="status">
+
+            <div class="success-message-icon"
+                 aria-hidden="true">
+                ✓
+            </div>
+
+            <div>
+                <strong>Changes saved</strong>
+                <span>@Model.StatusMessage</span>
+            </div>
+
+            <button type="button"
+                    class="success-message-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+                ×
+            </button>
         </div>
     }
 
-    <div class="row g-4">
-        <!-- Account info (read-only) -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header fw-semibold">Account Information</div>
-                <div class="card-body">
-                    <p class="mb-1 text-muted small">Email (login)</p>
-                    <p class="fw-semibold">@Model.Email</p>
+    <div class="profile-layout">
+        <aside class="profile-sidebar">
+            <section class="profile-identity-card">
+                <div class="profile-avatar"
+                     aria-hidden="true">
+                    @customerInitials
+                </div>
 
-                    <p class="mb-1 text-muted small">Member since</p>
-                    <p class="fw-semibold mb-0">
-                        @(Model.DateRegistered?.ToString("dd MMM yyyy") ?? "Not recorded")
+                <h2>
+                    @(string.IsNullOrWhiteSpace(Model.Input.Name)
+                        ? "Customer"
+                        : Model.Input.Name)
+                </h2>
+
+                <p>@Model.Email</p>
+
+                <span class="account-status">
+                    Active Customer
+                </span>
+            </section>
+
+            <section class="account-information-card">
+                <div class="sidebar-card-heading">
+                    <span class="profile-eyebrow">
+                        Account
+                    </span>
+
+                    <h2>Account Information</h2>
+                </div>
+
+                <div class="account-detail">
+                    <span>Email Address</span>
+                    <strong>@Model.Email</strong>
+                    <small>Used to sign in to Dineflow</small>
+                </div>
+
+                <div class="account-detail">
+                    <span>Member Since</span>
+
+                    <strong>
+                        @(Model.DateRegistered?.ToString(
+                            "dd MMMM yyyy")
+                            ?? "Not recorded")
+                    </strong>
+
+                    <small>Your Dineflow registration date</small>
+                </div>
+
+                <div class="account-security-note">
+                    <span class="security-note-icon"
+                          aria-hidden="true">
+                        🔒
+                    </span>
+
+                    <p>
+                        Your email address cannot be changed from this
+                        page. Your password can be updated securely
+                        below.
                     </p>
                 </div>
-            </div>
-        </div>
+            </section>
+        </aside>
 
-        <!-- Editable profile form -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header fw-semibold">Edit Profile</div>
-                <div class="card-body">
-                    <form method="post" novalidate>
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <main class="profile-content">
+            <section class="profile-form-card">
+                <div class="profile-card-heading">
+                    <div class="profile-heading-icon"
+                         aria-hidden="true">
+                        P
+                    </div>
 
-                        <h6 class="text-muted mb-3">Personal Details</h6>
-
-                        <div class="mb-3">
-                            <label asp-for="Input.Name" class="form-label"></label>
-                            <span class="text-danger">*</span>
-                            <input asp-for="Input.Name" class="form-control" />
-                            <span asp-validation-for="Input.Name" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Input.Phone" class="form-label"></label>
-                            <input asp-for="Input.Phone" class="form-control" placeholder="e.g. 012-345 6789" />
-                            <span asp-validation-for="Input.Phone" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Input.Address" class="form-label"></label>
-                            <textarea asp-for="Input.Address" class="form-control" rows="2"></textarea>
-                            <span asp-validation-for="Input.Address" class="text-danger small"></span>
-                        </div>
-
-                        <h6 class="text-muted mb-3">Dining Preferences</h6>
-
-                        <div class="mb-3">
-                            <label asp-for="Input.DiningPreference" class="form-label"></label>
-                            <input asp-for="Input.DiningPreference" class="form-control"
-                                   list="diningPreferenceOptions"
-                                   placeholder="e.g. Vegetarian, Halal, No seafood" />
-                            <datalist id="diningPreferenceOptions">
-                                <option value="Vegetarian"></option>
-                                <option value="Vegan"></option>
-                                <option value="Halal"></option>
-                                <option value="No seafood"></option>
-                                <option value="Window seat"></option>
-                                <option value="Non-smoking area"></option>
-                            </datalist>
-                            <span asp-validation-for="Input.DiningPreference" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Input.SpecialRequest" class="form-label"></label>
-                            <textarea asp-for="Input.SpecialRequest" class="form-control" rows="3"
-                                      placeholder="Allergies, accessibility needs, celebrations..."></textarea>
-                            <span asp-validation-for="Input.SpecialRequest" class="text-danger small"></span>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a asp-page="/Customer/Profile/Index" class="btn btn-outline-secondary">Cancel</a>
-                        </div>
-                    </form>
+                    <div>
+                        <span>Profile Details</span>
+                        <h2>Personal Information</h2>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <form method="post"
+                      novalidate
+                      class="profile-form">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger validation-summary">
+                    </div>
+
+                    <section class="profile-form-section">
+                        <div class="form-section-heading">
+                            <h3>Contact Details</h3>
+
+                            <p>
+                                Keep your personal information accurate
+                                so the restaurant can contact you when
+                                necessary.
+                            </p>
+                        </div>
+
+                        <div class="profile-fields-grid">
+                            <div class="profile-field full-width">
+                                <label asp-for="Input.Name"
+                                       class="form-label">
+                                </label>
+
+                                <span class="required-indicator"
+                                      aria-hidden="true">
+                                    *
+                                </span>
+
+                                <input asp-for="Input.Name"
+                                       class="form-control profile-input"
+                                       autocomplete="name" />
+
+                                <span asp-validation-for="Input.Name"
+                                      class="text-danger small">
+                                </span>
+
+                                <small class="field-help">
+                                    Enter the name used for your
+                                    reservations and orders.
+                                </small>
+                            </div>
+
+                            <div class="profile-field full-width">
+                                <label asp-for="Input.Phone"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Input.Phone"
+                                       class="form-control profile-input"
+                                       placeholder="e.g. 012-345 6789"
+                                       autocomplete="tel" />
+
+                                <span asp-validation-for="Input.Phone"
+                                      class="text-danger small">
+                                </span>
+
+                                <small class="field-help">
+                                    Digits, spaces, dashes, and an
+                                    optional leading + are accepted.
+                                </small>
+                            </div>
+
+                            <div class="profile-field full-width">
+                                <label asp-for="Input.Address"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="Input.Address"
+                                          class="form-control profile-input"
+                                          rows="3"
+                                          autocomplete="street-address"
+                                          placeholder="Enter your address">
+                                </textarea>
+
+                                <span asp-validation-for="Input.Address"
+                                      class="text-danger small">
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="profile-form-section dining-section">
+                        <div class="form-section-heading">
+                            <h3>Dining Preferences</h3>
+
+                            <p>
+                                Save general dining preferences and
+                                requests that may help the restaurant
+                                prepare for your visits.
+                            </p>
+                        </div>
+
+                        <div class="profile-fields-grid">
+                            <div class="profile-field full-width">
+                                <label asp-for="Input.DiningPreference"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Input.DiningPreference"
+                                       class="form-control profile-input"
+                                       list="diningPreferenceOptions"
+                                       placeholder="e.g. Vegetarian, Halal, No seafood" />
+
+                                <datalist id="diningPreferenceOptions">
+                                    <option value="Vegetarian"></option>
+                                    <option value="Vegan"></option>
+                                    <option value="Halal"></option>
+                                    <option value="No seafood"></option>
+                                    <option value="Window seat"></option>
+                                    <option value="Non-smoking area"></option>
+                                </datalist>
+
+                                <span asp-validation-for="Input.DiningPreference"
+                                      class="text-danger small">
+                                </span>
+
+                                <small class="field-help">
+                                    Select a suggestion or enter your
+                                    own preference.
+                                </small>
+                            </div>
+
+                            <div class="profile-field full-width">
+                                <label asp-for="Input.SpecialRequest"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="Input.SpecialRequest"
+                                          class="form-control profile-input"
+                                          rows="4"
+                                          placeholder="Allergies, accessibility needs, celebrations...">
+                                </textarea>
+
+                                <span asp-validation-for="Input.SpecialRequest"
+                                      class="text-danger small">
+                                </span>
+
+                                <small class="field-help">
+                                    These are general account
+                                    preferences. Confirm critical
+                                    requirements directly with the
+                                    restaurant when necessary.
+                                </small>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="profile-actions">
+                        <button type="submit"
+                                class="save-profile-button">
+                            Save Profile Changes
+                        </button>
+
+                        <a asp-page="/Customer/Profile/Index"
+                           class="cancel-profile-link">
+                            Reset Form
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            <section class="password-card">
+                <div class="profile-card-heading password-heading">
+                    <div class="profile-heading-icon password-icon"
+                         aria-hidden="true">
+                        🔒
+                    </div>
+
+                    <div>
+                        <span>Account Security</span>
+                        <h2>Change Password</h2>
+                    </div>
+                </div>
+
+                <form method="post"
+      asp-page="/Customer/Profile/Index"
+      asp-page-handler="ChangePassword"
+      novalidate
+      class="password-form"
+      id="changePasswordForm">
+
+                    <div asp-validation-summary="All"
+     class="alert alert-danger validation-summary"
+     id="passwordValidationSummary">
+</div>
+
+                    <div class="password-introduction">
+                        <strong>Protect your Dineflow account</strong>
+
+                        <p>
+                            Enter your current password before choosing
+                            a new password with at least eight
+                            characters.
+                        </p>
+                    </div>
+
+                    <div class="password-fields-grid">
+                        <div class="profile-field full-width">
+                            <label asp-for="PasswordInput.CurrentPassword"
+                                   class="form-label">
+                            </label>
+
+                            <div class="password-input-wrapper">
+                                <input asp-for="PasswordInput.CurrentPassword"
+                                       class="form-control profile-input"
+                                       autocomplete="current-password" />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        data-password-toggle="PasswordInput_CurrentPassword"
+                                        aria-label="Show current password">
+                                    Show
+                                </button>
+                            </div>
+
+                            <span asp-validation-for="PasswordInput.CurrentPassword"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="profile-field">
+                            <label asp-for="PasswordInput.NewPassword"
+                                   class="form-label">
+                            </label>
+
+                            <div class="password-input-wrapper">
+                                <input asp-for="PasswordInput.NewPassword"
+                                       class="form-control profile-input"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        data-password-toggle="PasswordInput_NewPassword"
+                                        aria-label="Show new password">
+                                    Show
+                                </button>
+                            </div>
+
+                            <span asp-validation-for="PasswordInput.NewPassword"
+                                  class="text-danger small">
+                            </span>
+
+                            <small class="field-help">
+                                Use at least eight characters.
+                            </small>
+                        </div>
+
+                        <div class="profile-field">
+                            <label asp-for="PasswordInput.ConfirmPassword"
+                                   class="form-label">
+                            </label>
+
+                            <div class="password-input-wrapper">
+                                <input asp-for="PasswordInput.ConfirmPassword"
+                                       class="form-control profile-input"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        data-password-toggle="PasswordInput_ConfirmPassword"
+                                        aria-label="Show password confirmation">
+                                    Show
+                                </button>
+                            </div>
+
+                            <span asp-validation-for="PasswordInput.ConfirmPassword"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="password-guidance">
+                        <div>
+                            <span aria-hidden="true">✓</span>
+                            <p>Minimum of eight characters</p>
+                        </div>
+
+                        <div>
+                            <span aria-hidden="true">✓</span>
+                            <p>
+                                Must differ from your current password
+                            </p>
+                        </div>
+
+                        <div>
+                            <span aria-hidden="true">✓</span>
+                            <p>
+                                Confirmation must match the new
+                                password
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="password-actions">
+                        <button type="submit"
+                                class="change-password-button">
+                            Change Password
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
     </div>
 </div>
 
+@functions {
+    private static string GetCustomerInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "CU";
+        }
+
+        string[] words =
+            name.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length == 1)
+        {
+            return words[0]
+                .Substring(
+                    0,
+                    Math.Min(2, words[0].Length))
+                .ToUpperInvariant();
+        }
+
+        return string.Concat(
+            words.Take(2)
+                .Select(word =>
+                    char.ToUpperInvariant(word[0])));
+    }
+}
+
+<style>
+    .profile-page {
+        max-width: 1120px;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .profile-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .profile-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .profile-header p {
+        max-width: 690px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .profile-dashboard-link {
+        min-height: 42px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        color: #374151;
+        background: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .profile-dashboard-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .profile-success-message {
+        display: grid;
+        grid-template-columns:
+            34px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 19px;
+        padding: 14px 16px;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        color: #065f46;
+        background: #ecfdf5;
+    }
+
+    .success-message-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #059669;
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .profile-success-message strong,
+    .profile-success-message span {
+        display: block;
+    }
+
+    .profile-success-message strong {
+        margin-bottom: 2px;
+        font-size: 13px;
+    }
+
+    .profile-success-message span {
+        font-size: 12px;
+    }
+
+    .success-message-close {
+        border: 0;
+        color: #047857;
+        background: transparent;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .profile-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(260px, 0.72fr)
+            minmax(0, 1.8fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .profile-sidebar,
+    .profile-content {
+        display: grid;
+        gap: 18px;
+    }
+
+    .profile-identity-card,
+    .account-information-card,
+    .profile-form-card,
+    .password-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 9px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .profile-identity-card {
+        padding: 27px 22px;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 82px;
+        height: 82px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        border-radius: 24px;
+        color: #92400e;
+        background:
+            linear-gradient(
+                135deg,
+                #ffedd5,
+                #fde68a
+            );
+        font-size: 25px;
+        font-weight: 850;
+        letter-spacing: 0.04em;
+    }
+
+    .profile-identity-card h2 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 20px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-identity-card p {
+        margin: 0 0 13px;
+        color: #6b7280;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .account-status {
+        display: inline-flex;
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: #065f46;
+        background: #d1fae5;
+        font-size: 10px;
+        font-weight: 850;
+    }
+
+    .account-information-card {
+        padding: 22px;
+    }
+
+    .sidebar-card-heading {
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sidebar-card-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .account-detail {
+        padding: 16px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .account-detail span,
+    .account-detail strong,
+    .account-detail small {
+        display: block;
+    }
+
+    .account-detail span {
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .account-detail strong {
+        color: #1f2937;
+        font-size: 12px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .account-detail small {
+        margin-top: 4px;
+        color: #9ca3af;
+        font-size: 10px;
+    }
+
+    .account-security-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 17px;
+        padding: 13px;
+        border-radius: 11px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .security-note-icon {
+        flex-shrink: 0;
+        font-size: 15px;
+    }
+
+    .account-security-note p {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .profile-form-card,
+    .password-card {
+        overflow: hidden;
+    }
+
+    .profile-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 20px 23px;
+        border-bottom: 1px solid #f3f4f6;
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #fffbeb
+            );
+    }
+
+    .password-heading {
+        background:
+            linear-gradient(
+                135deg,
+                #f8fbff,
+                #eff6ff
+            );
+    }
+
+    .profile-heading-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: #78350f;
+        background: #fde68a;
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .password-icon {
+        color: #1e3a8a;
+        background: #dbeafe;
+    }
+
+    .profile-card-heading span {
+        display: block;
+        margin-bottom: 3px;
+        color: #d97706;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .password-heading span {
+        color: #2563eb;
+    }
+
+    .profile-card-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .profile-form,
+    .password-form {
+        padding: 24px;
+    }
+
+    .validation-summary.validation-summary-valid {
+    display: none;
+}
+
+    .profile-form-section + .profile-form-section {
+        margin-top: 27px;
+        padding-top: 25px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-section-heading {
+        margin-bottom: 19px;
+    }
+
+    .form-section-heading h3 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .form-section-heading p {
+        max-width: 690px;
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .profile-fields-grid,
+    .password-fields-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .profile-field {
+        min-width: 0;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .profile-field .form-label {
+        margin-bottom: 7px;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .required-indicator {
+        color: #dc2626;
+    }
+
+    .profile-input {
+        min-height: 45px;
+        border-color: #d1d5db;
+        border-radius: 10px;
+        color: #111827;
+        background: white;
+    }
+
+    textarea.profile-input {
+        min-height: auto;
+        resize: vertical;
+    }
+
+    .profile-input:focus {
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 0 0.2rem rgba(245, 158, 11, 0.15);
+    }
+
+    .field-help {
+        display: block;
+        margin-top: 6px;
+        color: #9ca3af;
+        font-size: 10px;
+        line-height: 1.45;
+    }
+
+    .profile-actions,
+    .password-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .save-profile-button,
+    .change-password-button,
+    .cancel-profile-link {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 16px;
+        border: 1px solid;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .save-profile-button {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .save-profile-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .cancel-profile-link {
+        border-color: #d1d5db;
+        color: #4b5563;
+        background: white;
+        text-decoration: none;
+    }
+
+    .cancel-profile-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .password-introduction {
+        margin-bottom: 20px;
+        padding: 14px 15px;
+        border: 1px solid #bfdbfe;
+        border-radius: 11px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .password-introduction strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .password-introduction p {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .password-input-wrapper {
+        position: relative;
+    }
+
+    .password-input-wrapper .profile-input {
+        padding-right: 63px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        min-width: 45px;
+        padding: 5px 7px;
+        border: 0;
+        border-radius: 6px;
+        color: #2563eb;
+        background: #eff6ff;
+        font-size: 9px;
+        font-weight: 800;
+        transform: translateY(-50%);
+    }
+
+    .password-toggle:hover {
+        color: white;
+        background: #2563eb;
+    }
+
+    .password-guidance {
+        display: grid;
+        gap: 8px;
+        margin-top: 19px;
+    }
+
+    .password-guidance div {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    .password-guidance span {
+        color: #059669;
+        font-weight: 900;
+    }
+
+    .password-guidance p {
+        margin: 0;
+    }
+
+    .change-password-button {
+        border-color: #2563eb;
+        color: white;
+        background: #2563eb;
+    }
+
+    .change-password-button:hover {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+    }
+
+    @@media (max-width: 960px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-sidebar {
+            grid-template-columns:
+                minmax(0, 0.75fr)
+                minmax(0, 1.25fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .profile-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .profile-dashboard-link {
+            width: 100%;
+        }
+
+        .profile-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-fields-grid,
+        .password-fields-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: auto;
+        }
+
+        .profile-actions,
+        .password-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .save-profile-button,
+        .change-password-button,
+        .cancel-profile-link {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .profile-success-message {
+            grid-template-columns:
+                34px minmax(0, 1fr);
+        }
+
+        .success-message-close {
+            grid-column: 1 / -1;
+            justify-self: end;
+        }
+
+        .profile-form,
+        .password-form {
+            padding: 19px;
+        }
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            document
+                .querySelectorAll(
+                    "[data-password-toggle]"
+                )
+                .forEach(function (button) {
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            const inputId =
+                                button.getAttribute(
+                                    "data-password-toggle"
+                                );
+
+                            const input =
+                                document.getElementById(
+                                    inputId
+                                );
+
+                            if (!input) {
+                                return;
+                            }
+
+                            const shouldShow =
+                                input.type === "password";
+
+                            input.type =
+                                shouldShow
+                                    ? "text"
+                                    : "password";
+
+                            button.textContent =
+                                shouldShow
+                                    ? "Hide"
+                                    : "Show";
+
+                            button.setAttribute(
+                                "aria-label",
+                                shouldShow
+                                    ? "Hide password"
+                                    : "Show password"
+                            );
+                        }
+                    );
+                });
+
+            const passwordValidationSummary =
+                document.getElementById(
+                    "passwordValidationSummary"
+                );
+
+            if (
+                passwordValidationSummary &&
+                passwordValidationSummary
+                    .textContent
+                    .trim()
+            ) {
+                passwordValidationSummary.scrollIntoView({
+                    behavior: "auto",
+                    block: "center"
+                });
+            }
+        })();
+    </script>
 }
