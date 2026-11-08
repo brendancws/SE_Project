@@ -99,16 +99,82 @@
                     </div>
                 </div>
 
-                <div class="alert alert-light border mt-4 mb-0">
-                    Please keep this confirmation for reference when contacting the restaurant.
-                    A Pending reservation is awaiting staff confirmation.
-                </div>
+                @{
+    string reservationStatus =
+        Model.Reservation.Status ?? "Pending";
+
+    string statusMessage =
+        reservationStatus.ToLowerInvariant() switch
+        {
+            "confirmed" =>
+                "Your reservation has been confirmed by the restaurant.",
+
+            "cancelled" =>
+                "This reservation has been cancelled.",
+
+            _ =>
+                "This reservation is awaiting confirmation from the restaurant."
+        };
+
+    string statusAlertClass =
+        reservationStatus.ToLowerInvariant() switch
+        {
+            "confirmed" => "confirmation-note confirmed",
+            "cancelled" => "confirmation-note cancelled",
+            _ => "confirmation-note pending"
+        };
+}
+
+<div class="@statusAlertClass">
+    <strong>@statusMessage</strong>
+
+    <span>
+        Please keep this confirmation for reference when contacting
+        the restaurant.
+    </span>
+</div>
             </div>
         </div>
     </div>
 }
 
 <style>
+        .confirmation-note {
+        display: grid;
+        gap: 5px;
+        margin-top: 24px;
+        padding: 15px 17px;
+        border: 1px solid;
+        border-radius: 12px;
+    }
+
+    .confirmation-note strong {
+        font-size: 14px;
+    }
+
+    .confirmation-note span {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .confirmation-note.pending {
+        border-color: #fde68a;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .confirmation-note.confirmed {
+        border-color: #a7f3d0;
+        color: #065f46;
+        background: #ecfdf5;
+    }
+
+    .confirmation-note.cancelled {
+        border-color: #fecaca;
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
     @@media print {
         body {
             background: white !important;
