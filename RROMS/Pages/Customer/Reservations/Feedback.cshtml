@@ -2,209 +2,1068 @@
 @model RROMS.Pages.Customer.Reservations.FeedbackModel
 @{
     ViewData["Title"] = "Dining Feedback";
+
+    string[] ratingLabels =
+    {
+        "Poor",
+        "Fair",
+        "Good",
+        "Very Good",
+        "Excellent"
+    };
 }
 
-<div class="container py-4" style="max-width: 720px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 feedback-page">
+    <header class="feedback-header">
         <div>
-            <h2 class="mb-1">Dining Feedback</h2>
-            <p class="text-muted mb-0">
-                Share feedback about your completed dining experience.
+            <span class="feedback-eyebrow">
+                Dining Experience
+            </span>
+
+            <h1>Dining Feedback</h1>
+
+            <p>
+                Share your experience and help Dineflow improve its
+                food, service, and restaurant experience.
             </p>
         </div>
 
         <a asp-page="/Customer/Reservations/Index"
-           class="btn btn-outline-secondary">
-            Back
+           class="back-reservations-link">
+            Back to Reservations
         </a>
-    </div>
+    </header>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">
-            @Model.BookingReference
+    <section class="reservation-summary-card">
+        <div class="reservation-reference">
+            <span>Booking</span>
+            <strong>@Model.BookingReference</strong>
         </div>
 
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <small class="text-muted d-block">
-                        Reservation Date
-                    </small>
+        <div class="reservation-summary-content">
+            <div class="reservation-summary-heading">
+                <span>Completed Dining Experience</span>
+
+                <h2>
+                    @Model.ReservationDate.ToString(
+                        "dddd, dd MMMM yyyy")
+                </h2>
+            </div>
+
+            <div class="reservation-detail-grid">
+                <div>
+                    <span>Date</span>
 
                     <strong>
-                        @Model.ReservationDate.ToString("dd MMM yyyy")
+                        @Model.ReservationDate.ToString(
+                            "dd MMM yyyy")
                     </strong>
                 </div>
 
-                <div class="col-md-4">
-                    <small class="text-muted d-block">
-                        Reservation Time
-                    </small>
+                <div>
+                    <span>Time</span>
 
                     <strong>
-                        @Model.ReservationTime.ToString(@"hh\:mm")
+                        @Model.ReservationTime.ToString(
+                            @"hh\:mm")
                     </strong>
                 </div>
 
-                <div class="col-md-4">
-                    <small class="text-muted d-block">
-                        Table
-                    </small>
-
+                <div>
+                    <span>Table</span>
                     <strong>@Model.TableNumber</strong>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     @if (Model.AlreadySubmitted)
     {
-        <div class="alert alert-success">
-            Feedback has already been submitted for this reservation.
-        </div>
+        <section class="submitted-feedback-card">
+            <div class="submitted-feedback-heading">
+                <div class="submitted-icon"
+                     aria-hidden="true">
+                    ✓
+                </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h3 class="h5 mb-3">Your Feedback</h3>
-
-                <p class="mb-2">
-                    <strong>Rating:</strong>
-                    @Model.ExistingRating / 5
-                </p>
-
-                <p class="mb-2">
-                    <strong>Submitted:</strong>
-                    @(Model.ExistingSubmittedAt?.ToString(
-                        "dd MMM yyyy, HH:mm") ?? "-")
-                </p>
-
-                <p class="mb-0">
-                    <strong>Comment:</strong>
-                    @(string.IsNullOrWhiteSpace(Model.ExistingComment)
-                        ? "No written comment."
-                        : Model.ExistingComment)
-                </p>
+                <div>
+                    <span>Feedback Submitted</span>
+                    <h2>Thank you for sharing your experience</h2>
+                </div>
             </div>
-        </div>
+
+            <p class="submitted-description">
+                Feedback has already been submitted for this
+                reservation. The submitted response is shown below.
+            </p>
+
+            <div class="existing-rating-panel">
+                <span>Your Rating</span>
+
+                <div class="existing-stars"
+                     aria-label="@Model.ExistingRating out of 5 stars">
+
+                    @for (int star = 1; star <= 5; star++)
+                    {
+                        bool isFilled =
+                            star <= Model.ExistingRating;
+
+                        <span class="@(isFilled ? "filled" : "")"
+                              aria-hidden="true">
+                            ★
+                        </span>
+                    }
+                </div>
+
+                <strong>
+                    @Model.ExistingRating / 5
+                </strong>
+            </div>
+
+            <div class="existing-feedback-grid">
+                <div class="existing-feedback-detail">
+                    <span>Submitted</span>
+
+                    <strong>
+                        @(Model.ExistingSubmittedAt?.ToString(
+                            "dd MMM yyyy, HH:mm")
+                            ?? "Not recorded")
+                    </strong>
+                </div>
+
+                <div class="existing-feedback-detail comment-detail">
+                    <span>Comment</span>
+
+                    <p>
+                        @(string.IsNullOrWhiteSpace(
+                            Model.ExistingComment)
+                            ? "No written comment was provided."
+                            : Model.ExistingComment)
+                    </p>
+                </div>
+            </div>
+
+            <div class="submitted-actions">
+                <a asp-page="/Customer/Reservations/Index"
+                   class="feedback-primary-link">
+                    Return to Reservations
+                </a>
+
+                <a asp-page="/Customer/History/Index"
+                   asp-route-tab="reservations"
+                   class="feedback-secondary-link">
+                    View Reservation History
+                </a>
+            </div>
+        </section>
     }
     else
     {
-        <div class="card shadow-sm">
-            <div class="card-header fw-semibold">
-                Rate Your Experience
+        <section class="feedback-form-card">
+            <div class="feedback-card-heading">
+                <div class="feedback-heading-icon"
+                     aria-hidden="true">
+                    ★
+                </div>
+
+                <div>
+                    <span>Your Experience</span>
+                    <h2>Rate Your Visit</h2>
+                </div>
             </div>
 
-            <div class="card-body">
-                <form method="post">
-                    <input type="hidden" asp-for="Id" />
+            <form method="post"
+                  novalidate
+                  class="feedback-form">
 
-                    <div asp-validation-summary="ModelOnly"
-                         class="alert alert-danger">
+                <input type="hidden"
+                       asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger validation-summary">
+                </div>
+
+                <fieldset class="rating-fieldset">
+                    <legend>Overall Rating</legend>
+
+                    <p class="rating-instruction">
+                        Select the option that best represents your
+                        overall dining experience.
+                    </p>
+
+                    <div class="rating-options">
+                        @for (int rating = 1;
+                             rating <= 5;
+                             rating++)
+                        {
+                            string ratingId =
+                                $"rating-{rating}";
+
+                            string ratingLabel =
+                                ratingLabels[rating - 1];
+
+                            <label class="rating-option"
+                                   for="@ratingId">
+
+                                <input asp-for="Rating"
+                                       type="radio"
+                                       value="@rating"
+                                       id="@ratingId" />
+
+                                <span class="rating-stars"
+                                      aria-hidden="true">
+                                    @for (int star = 1;
+                                         star <= 5;
+                                         star++)
+                                    {
+                                        <span class="@(star <= rating ? "filled" : "")">
+                                            ★
+                                        </span>
+                                    }
+                                </span>
+
+                                <strong>
+                                    @rating / 5
+                                </strong>
+
+                                <small>@ratingLabel</small>
+
+                                <span class="rating-selected"
+                                      aria-hidden="true">
+                                    ✓
+                                </span>
+                            </label>
+                        }
                     </div>
 
-                    <fieldset class="mb-4">
-                        <legend class="form-label fw-semibold">
-                            Overall Rating
-                        </legend>
+                    <span asp-validation-for="Rating"
+                          class="text-danger small rating-error">
+                    </span>
 
-                        <div class="rating-options">
-                            @for (int rating = 1; rating <= 5; rating++)
-                            {
-                                string ratingId = $"rating-{rating}";
+                    <div id="selectedRatingText"
+                         class="selected-rating-text"
+                         aria-live="polite">
+                        Choose a rating from 1 to 5.
+                    </div>
+                </fieldset>
 
-                                <div class="form-check form-check-inline">
-                                    <input asp-for="Rating"
-                                           class="form-check-input"
-                                           type="radio"
-                                           value="@rating"
-                                           id="@ratingId" />
+                <section class="comment-section">
+                    <div class="comment-heading">
+                        <div>
+                            <label asp-for="Comment">
+                                Written Feedback
+                            </label>
 
-                                    <label class="form-check-label"
-                                           for="@ratingId">
-                                        @rating ★
-                                    </label>
-                                </div>
-                            }
+                            <span>Optional</span>
                         </div>
 
-                        <span asp-validation-for="Rating"
-                              class="text-danger small">
-                        </span>
-
-                        <div class="form-text">
-                            1 star means poor and 5 stars means excellent.
-                        </div>
-                    </fieldset>
-
-                    <div class="mb-3">
-                        <label asp-for="Comment"
-                               class="form-label fw-semibold">
-                            Comment
-                            <span class="text-muted fw-normal">
-                                (optional)
-                            </span>
-                        </label>
-
-                        <textarea asp-for="Comment"
-                                  class="form-control"
-                                  rows="5"
-                                  maxlength="1000"
-                                  placeholder="Tell us about the food, service, or overall dining experience.">
-                        </textarea>
-
-                        <div class="d-flex justify-content-between mt-1">
-                            <span asp-validation-for="Comment"
-                                  class="text-danger small">
-                            </span>
-
-                            <span class="text-muted small">
-                                Maximum 1,000 characters
-                            </span>
+                        <div class="character-counter"
+                             aria-live="polite">
+                            <strong id="commentCharacterCount">
+                                0
+                            </strong>
+                            / 1,000
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit"
-                                class="btn btn-primary">
-                            Submit Feedback
-                        </button>
+                    <textarea asp-for="Comment"
+                              class="form-control feedback-comment"
+                              rows="6"
+                              maxlength="1000"
+                              placeholder="Tell us about the food, service, atmosphere, or overall dining experience.">
+                    </textarea>
 
-                        <a asp-page="/Customer/Reservations/Index"
-                           class="btn btn-outline-secondary">
-                            Cancel
-                        </a>
+                    <span asp-validation-for="Comment"
+                          class="text-danger small">
+                    </span>
+
+                    <small class="comment-help">
+                        Please avoid including payment-card details,
+                        passwords, or other sensitive information.
+                    </small>
+                </section>
+
+                <div class="feedback-guidance">
+                    <div>
+                        <span aria-hidden="true">✓</span>
+
+                        <p>
+                            Feedback is linked only to this completed
+                            reservation.
+                        </p>
                     </div>
-                </form>
-            </div>
-        </div>
+
+                    <div>
+                        <span aria-hidden="true">✓</span>
+
+                        <p>
+                            One feedback submission is accepted per
+                            reservation.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feedback-actions">
+                    <button type="submit"
+                            class="submit-feedback-button">
+                        Submit Feedback
+                    </button>
+
+                    <a asp-page="/Customer/Reservations/Index"
+                       class="cancel-feedback-link">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </section>
     }
 </div>
 
 <style>
-    .rating-options {
+    .feedback-page {
+        max-width: 900px;
+    }
+
+    .feedback-header {
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 21px;
     }
 
-    .rating-options .form-check {
+    .feedback-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .feedback-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .feedback-header p {
+        max-width: 650px;
         margin: 0;
-        padding: 10px 14px 10px 36px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        background: white;
+        color: #6b7280;
+        line-height: 1.55;
     }
 
-    .rating-options .form-check:has(input:checked) {
+    .back-reservations-link,
+    .feedback-secondary-link,
+    .cancel-feedback-link {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        color: #374151;
+        background: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .back-reservations-link {
+        flex-shrink: 0;
+    }
+
+    .back-reservations-link:hover,
+    .feedback-secondary-link:hover,
+    .cancel-feedback-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .reservation-summary-card,
+    .submitted-feedback-card,
+    .feedback-form-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 10px 29px rgba(31, 41, 55, 0.06);
+    }
+
+    .reservation-summary-card {
+        display: grid;
+        grid-template-columns:
+            125px minmax(0, 1fr);
+        overflow: hidden;
+        margin-bottom: 19px;
+    }
+
+    .reservation-reference {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 24px 15px;
+        color: #92400e;
+        background:
+            linear-gradient(
+                145deg,
+                #fffbeb,
+                #fef3c7
+            );
+        text-align: center;
+    }
+
+    .reservation-reference span,
+    .reservation-reference strong {
+        display: block;
+    }
+
+    .reservation-reference span {
+        margin-bottom: 5px;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .reservation-reference strong {
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .reservation-summary-content {
+        padding: 20px 22px;
+    }
+
+    .reservation-summary-heading span {
+        display: block;
+        margin-bottom: 4px;
+        color: #d97706;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .reservation-summary-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .reservation-detail-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    .reservation-detail-grid div {
+        min-width: 0;
+        padding: 10px;
+        border-radius: 9px;
+        background: #f9fafb;
+    }
+
+    .reservation-detail-grid span,
+    .reservation-detail-grid strong {
+        display: block;
+    }
+
+    .reservation-detail-grid span {
+        margin-bottom: 3px;
+        color: #6b7280;
+        font-size: 8px;
+        font-weight: 750;
+        text-transform: uppercase;
+    }
+
+    .reservation-detail-grid strong {
+        color: #1f2937;
+        font-size: 11px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .feedback-form-card,
+    .submitted-feedback-card {
+        overflow: hidden;
+    }
+
+    .feedback-card-heading,
+    .submitted-feedback-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 20px 23px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .feedback-card-heading {
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #fffbeb
+            );
+    }
+
+    .submitted-feedback-heading {
+        background:
+            linear-gradient(
+                135deg,
+                #f4fff9,
+                #ecfdf5
+            );
+    }
+
+    .feedback-heading-icon,
+    .submitted-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 850;
+    }
+
+    .feedback-heading-icon {
+        color: #92400e;
+        background: #fde68a;
+    }
+
+    .submitted-icon {
+        color: white;
+        background: #059669;
+    }
+
+    .feedback-card-heading span,
+    .submitted-feedback-heading span {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .feedback-card-heading span {
+        color: #d97706;
+    }
+
+    .submitted-feedback-heading span {
+        color: #047857;
+    }
+
+    .feedback-card-heading h2,
+    .submitted-feedback-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .feedback-form {
+        padding: 24px;
+    }
+
+    .validation-summary.validation-summary-valid {
+        display: none;
+    }
+
+    .rating-fieldset {
+        margin: 0;
+        padding: 0 0 24px;
+        border: 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .rating-fieldset legend {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .rating-instruction {
+        margin: 0 0 17px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .rating-options {
+        display: grid;
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .rating-option {
+        position: relative;
+        min-width: 0;
+        padding: 14px 8px 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f9fafb;
+        text-align: center;
+        cursor: pointer;
+        transition:
+            border-color 0.15s ease,
+            background 0.15s ease,
+            transform 0.15s ease;
+    }
+
+    .rating-option:hover {
+        border-color: #fcd34d;
+        background: #fffdf8;
+        transform: translateY(-2px);
+    }
+
+    .rating-option:has(input:checked) {
         border-color: #f59e0b;
+        background: #fffbeb;
+        box-shadow:
+            0 0 0 3px rgba(245, 158, 11, 0.11);
+    }
+
+    .rating-option input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .rating-stars {
+        display: flex;
+        justify-content: center;
+        gap: 1px;
+        margin-bottom: 7px;
+        color: #d1d5db;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .rating-stars .filled,
+    .existing-stars .filled {
+        color: #f59e0b;
+    }
+
+    .rating-option strong,
+    .rating-option small {
+        display: block;
+    }
+
+    .rating-option strong {
+        color: #111827;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .rating-option small {
+        margin-top: 3px;
+        color: #6b7280;
+        font-size: 9px;
+    }
+
+    .rating-selected {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        width: 18px;
+        height: 18px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #f59e0b;
+        font-size: 9px;
+        font-weight: 900;
+    }
+
+    .rating-option:has(input:checked)
+    .rating-selected {
+        display: flex;
+    }
+
+    .rating-error {
+        display: block;
+        margin-top: 9px;
+    }
+
+    .selected-rating-text {
+        margin-top: 9px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+    .comment-section {
+        padding-top: 23px;
+    }
+
+    .comment-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 8px;
+    }
+
+    .comment-heading label {
+        color: #111827;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .comment-heading div:first-child > span {
+        margin-left: 5px;
+        color: #9ca3af;
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+    .character-counter {
+        color: #6b7280;
+        font-size: 10px;
+    }
+
+    .feedback-comment {
+        min-height: 140px;
+        border-color: #d1d5db;
+        border-radius: 10px;
+        resize: vertical;
+    }
+
+    .feedback-comment:focus {
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 0 0.2rem rgba(245, 158, 11, 0.15);
+    }
+
+    .comment-help {
+        display: block;
+        margin-top: 6px;
+        color: #9ca3af;
+        font-size: 10px;
+        line-height: 1.45;
+    }
+
+    .feedback-guidance {
+        display: grid;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 11px;
+        background: #f9fafb;
+    }
+
+    .feedback-guidance div {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    .feedback-guidance span {
+        color: #059669;
+        font-weight: 900;
+    }
+
+    .feedback-guidance p {
+        margin: 0;
+    }
+
+    .feedback-actions,
+    .submitted-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .submit-feedback-button,
+    .feedback-primary-link {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 16px;
+        border: 1px solid #f59e0b;
+        border-radius: 9px;
+        color: #111827;
+        background: #f59e0b;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .submit-feedback-button:hover,
+    .feedback-primary-link:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .submitted-description {
+        margin: 0;
+        padding: 21px 23px 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .existing-rating-panel {
+        display: grid;
+        grid-template-columns:
+            minmax(110px, auto)
+            minmax(0, 1fr)
+            auto;
+        gap: 14px;
+        align-items: center;
+        margin: 19px 23px 0;
+        padding: 16px;
+        border-radius: 12px;
         background: #fffbeb;
     }
 
-    .rating-options label {
-        cursor: pointer;
+    .existing-rating-panel > span {
+        color: #78350f;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .existing-stars {
+        display: flex;
+        gap: 4px;
+        color: #d1d5db;
+        font-size: 22px;
+    }
+
+    .existing-rating-panel > strong {
+        color: #92400e;
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    .existing-feedback-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(170px, 0.55fr)
+            minmax(0, 1.45fr);
+        gap: 11px;
+        padding: 19px 23px 0;
+    }
+
+    .existing-feedback-detail {
+        padding: 13px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .existing-feedback-detail span {
+        display: block;
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .existing-feedback-detail strong,
+    .existing-feedback-detail p {
+        color: #1f2937;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .existing-feedback-detail p {
+        margin: 0;
+        line-height: 1.55;
+        white-space: pre-wrap;
+    }
+
+    .submitted-actions {
+        margin: 21px 23px 23px;
+    }
+
+    @@media (max-width: 760px) {
+        .feedback-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-reservations-link {
+            width: 100%;
+        }
+
+        .reservation-summary-card {
+            grid-template-columns: 1fr;
+        }
+
+        .reservation-reference {
+            align-items: baseline;
+            justify-content: flex-start;
+            flex-direction: row;
+            gap: 7px;
+            padding: 13px 18px;
+        }
+
+        .reservation-reference span {
+            margin-bottom: 0;
+        }
+
+        .rating-options {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .rating-option:last-child {
+            grid-column: 1 / -1;
+        }
+
+        .existing-feedback-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .feedback-actions,
+        .submitted-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .submit-feedback-button,
+        .feedback-primary-link,
+        .feedback-secondary-link,
+        .cancel-feedback-link {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .reservation-detail-grid,
+        .rating-options {
+            grid-template-columns: 1fr;
+        }
+
+        .rating-option:last-child {
+            grid-column: auto;
+        }
+
+        .comment-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .existing-rating-panel {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .existing-stars {
+            justify-content: center;
+        }
+
+        .feedback-form {
+            padding: 19px;
+        }
     }
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const ratingLabels = {
+                "1": "Poor",
+                "2": "Fair",
+                "3": "Good",
+                "4": "Very Good",
+                "5": "Excellent"
+            };
+
+            const selectedRatingText =
+                document.getElementById(
+                    "selectedRatingText"
+                );
+
+            const ratingInputs =
+                document.querySelectorAll(
+                    'input[name="Rating"]'
+                );
+
+            function updateSelectedRating() {
+                const selected =
+                    document.querySelector(
+                        'input[name="Rating"]:checked'
+                    );
+
+                if (!selectedRatingText) {
+                    return;
+                }
+
+                if (!selected) {
+                    selectedRatingText.textContent =
+                        "Choose a rating from 1 to 5.";
+
+                    return;
+                }
+
+                selectedRatingText.textContent =
+                    selected.value +
+                    " out of 5: " +
+                    ratingLabels[selected.value];
+            }
+
+            ratingInputs.forEach(function (input) {
+                input.addEventListener(
+                    "change",
+                    updateSelectedRating
+                );
+            });
+
+            updateSelectedRating();
+
+            const comment =
+                document.getElementById("Comment");
+
+            const commentCharacterCount =
+                document.getElementById(
+                    "commentCharacterCount"
+                );
+
+            function updateCharacterCount() {
+                if (!comment ||
+                    !commentCharacterCount) {
+                    return;
+                }
+
+                commentCharacterCount.textContent =
+                    comment.value.length.toString();
+            }
+
+            comment?.addEventListener(
+                "input",
+                updateCharacterCount
+            );
+
+            updateCharacterCount();
+        })();
+    </script>
 }

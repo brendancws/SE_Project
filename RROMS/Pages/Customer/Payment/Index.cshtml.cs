@@ -12,8 +12,10 @@ namespace RROMS.Pages.Customer.Payment
     // Protected by the "CustomerOnly" folder convention in Program.cs
     public class IndexModel : PageModel
     {
-        // Every booking is a fixed 2-hour slot (same rule as Checkout/Reservations)
-        private static readonly TimeSpan SlotLength = TimeSpan.FromHours(2);
+        // Every booking is a fixed 2-hour slot
+        // (same rule as Checkout/Reservations)
+        private static readonly TimeSpan SlotLength =
+            TimeSpan.FromHours(2);
 
         private readonly ApplicationDbContext _context;
 
@@ -25,54 +27,87 @@ namespace RROMS.Pages.Customer.Payment
         public class PaymentLine
         {
             public int MenuItemID { get; set; }
-            public string Name { get; set; } = string.Empty;
+
+            public string Name { get; set; } =
+                string.Empty;
+
             public decimal UnitPrice { get; set; }
+
             public int Quantity { get; set; }
+
             public bool IsAvailable { get; set; }
-            public decimal Subtotal => UnitPrice * Quantity;
+
+            public decimal Subtotal =>
+                UnitPrice * Quantity;
         }
 
         [BindProperty(SupportsGet = true)]
         public int ReservationId { get; set; }
 
-        public List<PaymentLine> Lines { get; private set; } = new();
-        public decimal Total => Lines.Sum(l => l.Subtotal);
-        public bool HasUnavailable => Lines.Any(l => !l.IsAvailable);
+        public List<PaymentLine> Lines { get; private set; } =
+            new();
 
-        public Reservation? SelectedReservation { get; private set; }
+        public decimal Total =>
+            Lines.Sum(line => line.Subtotal);
+
+        public bool HasUnavailable =>
+            Lines.Any(line => !line.IsAvailable);
+
+        public Reservation? SelectedReservation
+        {
+            get;
+            private set;
+        }
 
         [BindProperty]
-        [Required(ErrorMessage = "Please choose a payment method.")]
-        public string Method { get; set; } = string.Empty;
+        [Required(
+            ErrorMessage =
+                "Please choose a payment method.")]
+        public string Method { get; set; } =
+            string.Empty;
 
         [BindProperty]
         public string? CardNumber { get; set; }
 
         public string? ResultMessage { get; private set; }
+
         public bool? LastAttemptSucceeded { get; private set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            await LoadLinesAsync(customerId.Value);
+            await LoadLinesAsync(
+                customerId.Value);
 
             if (!Lines.Any())
             {
-                TempData["ErrorMessage"] = "Your cart is empty. Add some items before checking out.";
-                return RedirectToPage("/Customer/Cart/Index");
+                TempData["ErrorMessage"] =
+                    "Your cart is empty. Add some items " +
+                    "before checking out.";
+
+                return RedirectToPage(
+                    "/Customer/Cart/Index");
             }
 
-            SelectedReservation = await LoadReservationAsync(customerId.Value);
+            SelectedReservation =
+                await LoadReservationAsync(
+                    customerId.Value);
 
             if (SelectedReservation == null)
             {
-                TempData["ErrorMessage"] = "Please choose one of your current reservations.";
-                return RedirectToPage("/Customer/Cart/Checkout");
+                TempData["ErrorMessage"] =
+                    "Please choose one of your current " +
+                    "reservations.";
+
+                return RedirectToPage(
+                    "/Customer/Cart/Checkout");
             }
 
             return Page();
@@ -80,32 +115,50 @@ namespace RROMS.Pages.Customer.Payment
 
         public async Task<IActionResult> OnPostAsync()
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            await LoadLinesAsync(customerId.Value);
+            await LoadLinesAsync(
+                customerId.Value);
 
             if (!Lines.Any())
             {
-                TempData["ErrorMessage"] = "Your cart is empty. Add some items before checking out.";
-                return RedirectToPage("/Customer/Cart/Index");
+                TempData["ErrorMessage"] =
+                    "Your cart is empty. Add some items " +
+                    "before checking out.";
+
+                return RedirectToPage(
+                    "/Customer/Cart/Index");
             }
 
-            SelectedReservation = await LoadReservationAsync(customerId.Value);
+            SelectedReservation =
+                await LoadReservationAsync(
+                    customerId.Value);
 
             if (SelectedReservation == null)
             {
-                TempData["ErrorMessage"] = "Please choose one of your current reservations.";
-                return RedirectToPage("/Customer/Cart/Checkout");
+                TempData["ErrorMessage"] =
+                    "Please choose one of your current " +
+                    "reservations.";
+
+                return RedirectToPage(
+                    "/Customer/Cart/Checkout");
             }
 
-            if (Lines.Any(l => !l.IsAvailable))
+            if (Lines.Any(line =>
+                !line.IsAvailable))
             {
-                ModelState.AddModelError("",
-                    "Some items in your cart are no longer available. Please remove them from your cart first.");
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Some items in your cart are no longer " +
+                    "available. Please remove them from your " +
+                    "cart first.");
+
                 return Page();
             }
 
@@ -114,180 +167,357 @@ namespace RROMS.Pages.Customer.Payment
                 return Page();
             }
 
-            decimal amount = Total;
+            decimal amount =
+                Total;
 
-            if (Method == "Cash")
+            if (string.Equals(
+                Method,
+                "Cash",
+                StringComparison.OrdinalIgnoreCase))
             {
-                int newOrderId = await CreateOrderAndItemsAsync(customerId.Value, SelectedReservation);
+                await using var transaction =
+                    await _context.Database
+                        .BeginTransactionAsync();
 
-                _context.Payments.Add(new RROMS.Models.Payment
+                try
                 {
-                    OrderID = newOrderId,
-                    PaymentDate = DateTime.Now,
-                    Amount = amount,
-                    Method = "Cash",
-                    Status = "Pending",
-                    TransactionNo = null
-                });
+                    int newOrderId =
+                        await CreateOrderAndItemsAsync(
+                            customerId.Value,
+                            SelectedReservation);
 
-                _context.Notifications.Add(
-                    new Notification
-                    {
-                        UserID = customerId.Value,
-                        UserType = "Customer",
-                        Message =
-                            $"Order ORD-{newOrderId:D6} was placed. " +
-                            "Cash payment is pending at the restaurant.",
-                        CreatedAt = DateTime.Now,
-                        IsRead = false
-                    });
+                    _context.Payments.Add(
+                        new RROMS.Models.Payment
+                        {
+                            OrderID =
+                                newOrderId,
 
-                await _context.SaveChangesAsync();
+                            PaymentDate =
+                                DateTime.Now,
 
-                CartSession.Clear(HttpContext.Session, customerId.Value);
+                            Amount =
+                                amount,
 
-                TempData["OrderMessage"] = $"Order #{newOrderId}: you chose to pay RM {amount:0.00} in cash on arrival.";
-                return RedirectToPage("/Customer/Orders/Index");
+                            Method =
+                                "Cash",
+
+                            Status =
+                                "Pending",
+
+                            TransactionNo =
+                                null
+                        });
+
+                    _context.Notifications.Add(
+                        new Notification
+                        {
+                            UserID =
+                                customerId.Value,
+
+                            UserType =
+                                "Customer",
+
+                            Message =
+                                $"Order ORD-{newOrderId:D6} " +
+                                "was placed. Cash payment is " +
+                                "pending at the restaurant.",
+
+                            CreatedAt =
+                                DateTime.Now,
+
+                            IsRead =
+                                false
+                        });
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    CartSession.Clear(
+                        HttpContext.Session,
+                        customerId.Value);
+
+                    TempData["OrderMessage"] =
+                        $"Order #{newOrderId}: you chose " +
+                        $"to pay RM {amount:0.00} in cash " +
+                        "on arrival.";
+
+                    return RedirectToPage(
+                        "/Customer/Orders/Index");
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
 
-            if (Method == "Card")
+            if (string.Equals(
+                Method,
+                "Card",
+                StringComparison.OrdinalIgnoreCase))
             {
-                string cardDigits = (CardNumber ?? string.Empty).Replace(" ", "");
+                string cardDigits =
+                    new string(
+                        (CardNumber ?? string.Empty)
+                            .Where(char.IsDigit)
+                            .ToArray());
 
-                if (string.IsNullOrWhiteSpace(cardDigits) || cardDigits.Length < 4)
+                if (cardDigits.Length < 4)
                 {
-                    ModelState.AddModelError(nameof(CardNumber), "Please enter a card number.");
+                    ModelState.AddModelError(
+                        nameof(CardNumber),
+                        "Please enter a card number.");
+
                     return Page();
                 }
 
-                // Simulated gateway rule: a card ending in 0000 always fails
-                bool simulatedSuccess = !cardDigits.EndsWith("0000");
+                // Simulated gateway rule:
+                // a card ending in 0000 always fails.
+                bool simulatedSuccess =
+                    !cardDigits.EndsWith(
+                        "0000",
+                        StringComparison.Ordinal);
 
-                // Small delay so it feels like a real terminal is processing
+                // Small delay so it feels like a real
+                // terminal is processing.
                 await Task.Delay(1500);
 
                 if (!simulatedSuccess)
                 {
-                    // Declined: nothing is created at all. The customer can retry or cancel.
-                    ResultMessage = "Payment declined. Please check your card details or try a different card.";
-                    LastAttemptSucceeded = false;
+                    // Declined payment:
+                    // no order, items, payment, or
+                    // notification record is created.
+                    ResultMessage =
+                        "Payment declined. Please check your " +
+                        "card details or try a different card.";
+
+                    LastAttemptSucceeded =
+                        false;
+
                     return Page();
                 }
 
-                int newOrderId = await CreateOrderAndItemsAsync(customerId.Value, SelectedReservation);
+                await using var transaction =
+                    await _context.Database
+                        .BeginTransactionAsync();
 
-                _context.Payments.Add(new RROMS.Models.Payment
+                try
                 {
-                    OrderID = newOrderId,
-                    PaymentDate = DateTime.Now,
-                    Amount = amount,
-                    Method = "Card",
-                    Status = "Paid",
-                    TransactionNo = $"SIM-{DateTime.Now:yyyyMMddHHmmss}"
-                });
+                    int newOrderId =
+                        await CreateOrderAndItemsAsync(
+                            customerId.Value,
+                            SelectedReservation);
 
-                _context.Notifications.Add(
-                    new Notification
-                    {
-                        UserID = customerId.Value,
-                        UserType = "Customer",
-                        Message =
-                            $"Order ORD-{newOrderId:D6} was placed " +
-                            "and payment was successful.",
-                        CreatedAt = DateTime.Now,
-                        IsRead = false
-                    });
+                    _context.Payments.Add(
+                        new RROMS.Models.Payment
+                        {
+                            OrderID =
+                                newOrderId,
 
-                await _context.SaveChangesAsync();
+                            PaymentDate =
+                                DateTime.Now,
 
-                CartSession.Clear(HttpContext.Session, customerId.Value);
+                            Amount =
+                                amount,
 
-                TempData["OrderMessage"] = $"Order #{newOrderId}: payment of RM {amount:0.00} was successful.";
-                return RedirectToPage("/Customer/Orders/Index");
+                            Method =
+                                "Card",
+
+                            Status =
+                                "Paid",
+
+                            TransactionNo =
+                                $"SIM-{DateTime.Now:yyyyMMddHHmmss}"
+                        });
+
+                    _context.Notifications.Add(
+                        new Notification
+                        {
+                            UserID =
+                                customerId.Value,
+
+                            UserType =
+                                "Customer",
+
+                            Message =
+                                $"Order ORD-{newOrderId:D6} " +
+                                "was placed and payment was " +
+                                "successful.",
+
+                            CreatedAt =
+                                DateTime.Now,
+
+                            IsRead =
+                                false
+                        });
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    CartSession.Clear(
+                        HttpContext.Session,
+                        customerId.Value);
+
+                    TempData["OrderMessage"] =
+                        $"Order #{newOrderId}: payment of " +
+                        $"RM {amount:0.00} was successful.";
+
+                    return RedirectToPage(
+                        "/Customer/Orders/Index");
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
 
-            ModelState.AddModelError(nameof(Method), "Please choose a valid payment method.");
+            ModelState.AddModelError(
+                nameof(Method),
+                "Please choose a valid payment method.");
+
             return Page();
         }
 
-        // Only called once payment is actually confirmed (Cash selected, or Card succeeds)
-        private async Task<int> CreateOrderAndItemsAsync(int customerId, Reservation reservation)
+        // Called only after Cash is selected or Card succeeds.
+        // The surrounding payment method owns the transaction.
+        private async Task<int> CreateOrderAndItemsAsync(
+            int customerId,
+            Reservation reservation)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            var order =
+                new CustomerOrder
+                {
+                    CustomerID =
+                        customerId,
 
-            var order = new CustomerOrder
-            {
-                CustomerID = customerId,
-                ReservationID = reservation.ReservationID,
-                OrderDate = DateTime.Now,
-                Status = "Pending",
-                TotalAmount = Total
-            };
+                    ReservationID =
+                        reservation.ReservationID,
+
+                    OrderDate =
+                        DateTime.Now,
+
+                    Status =
+                        "Pending",
+
+                    TotalAmount =
+                        Total
+                };
 
             _context.CustomerOrders.Add(order);
+
+            // Generates OrderID while still inside
+            // the caller's database transaction.
             await _context.SaveChangesAsync();
 
             foreach (var line in Lines)
             {
-                _context.OrderItems.Add(new OrderItem
-                {
-                    OrderID = order.OrderID,
-                    MenuItemID = line.MenuItemID,
-                    Quantity = line.Quantity,
-                    UnitPrice = line.UnitPrice,
-                    Subtotal = line.Subtotal
-                });
-            }
+                _context.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderID =
+                            order.OrderID,
 
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+                        MenuItemID =
+                            line.MenuItemID,
+
+                        Quantity =
+                            line.Quantity,
+
+                        UnitPrice =
+                            line.UnitPrice,
+
+                        Subtotal =
+                            line.Subtotal
+                    });
+            }
 
             return order.OrderID;
         }
 
-        private async Task LoadLinesAsync(int customerId)
+        private async Task LoadLinesAsync(
+            int customerId)
         {
-            var cart = CartSession.Get(HttpContext.Session, customerId);
-            var ids = cart.Select(l => l.MenuItemID).ToList();
+            var cart =
+                CartSession.Get(
+                    HttpContext.Session,
+                    customerId);
+
+            var ids = cart
+                .Select(line => line.MenuItemID)
+                .ToList();
 
             var items = await _context.MenuItems
                 .AsNoTracking()
-                .Where(m => ids.Contains(m.MenuItemID))
+                .Where(item =>
+                    ids.Contains(item.MenuItemID))
                 .ToListAsync();
 
-            var result = new List<PaymentLine>();
+            var validItemIds = items
+                .Select(item => item.MenuItemID)
+                .ToHashSet();
 
-            foreach (var line in cart)
+            bool removedStaleItems =
+                cart.RemoveAll(line =>
+                    !validItemIds.Contains(
+                        line.MenuItemID)) > 0;
+
+            if (removedStaleItems)
             {
-                var item = items.FirstOrDefault(m => m.MenuItemID == line.MenuItemID);
-                if (item == null)
-                {
-                    continue;
-                }
-
-                result.Add(new PaymentLine
-                {
-                    MenuItemID = item.MenuItemID,
-                    Name = item.Name,
-                    UnitPrice = item.Price,
-                    Quantity = line.Quantity,
-                    IsAvailable = item.Availability == true
-                });
+                CartSession.Save(
+                    HttpContext.Session,
+                    customerId,
+                    cart);
             }
 
-            Lines = result;
+            Lines = cart
+                .Join(
+                    items,
+                    line => line.MenuItemID,
+                    item => item.MenuItemID,
+                    (line, item) =>
+                        new PaymentLine
+                        {
+                            MenuItemID =
+                                item.MenuItemID,
+
+                            Name =
+                                item.Name,
+
+                            UnitPrice =
+                                item.Price,
+
+                            Quantity =
+                                line.Quantity,
+
+                            IsAvailable =
+                                item.Availability == true
+                        })
+                .ToList();
         }
 
-        // The reservation must belong to this customer, not be cancelled, and not have ended
-        private async Task<Reservation?> LoadReservationAsync(int customerId)
+        // The reservation must belong to this customer,
+        // not be cancelled, and not have ended.
+        private async Task<Reservation?>
+            LoadReservationAsync(
+                int customerId)
         {
-            var reservation = await _context.Reservations
-                .Include(r => r.Table)
-                .FirstOrDefaultAsync(r => r.ReservationID == ReservationId
-                                          && r.CustomerID == customerId
-                                          && r.Status != "Cancelled");
+            var reservation =
+                await _context.Reservations
+                    .Include(reservation =>
+                        reservation.Table)
+                    .FirstOrDefaultAsync(reservation =>
+                        reservation.ReservationID ==
+                            ReservationId &&
+                        reservation.CustomerID ==
+                            customerId &&
+                        reservation.Status !=
+                            "Cancelled");
 
-            if (reservation == null || reservation.Date.Date + reservation.Time + SlotLength <= DateTime.Now)
+            if (reservation == null ||
+                reservation.Date.Date +
+                    reservation.Time +
+                    SlotLength <= DateTime.Now)
             {
                 return null;
             }
@@ -297,8 +527,16 @@ namespace RROMS.Pages.Customer.Payment
 
         private int? GetCurrentCustomerId()
         {
-            string? idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(idValue, out int id) && id > 0 ? id : null;
+            string? idValue =
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
+
+            return int.TryParse(
+                idValue,
+                out int id) &&
+                id > 0
+                    ? id
+                    : null;
         }
     }
 }

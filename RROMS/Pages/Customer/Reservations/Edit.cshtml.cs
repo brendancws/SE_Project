@@ -27,19 +27,22 @@ namespace RROMS.Pages.Customer.Reservations
 
         public class EditInputModel
         {
-            [Required(ErrorMessage = "Please choose a date.")]
+            [Required(ErrorMessage = "Please select a reservation date.")]
             [DataType(DataType.Date)]
             [Display(Name = "Date")]
-            public DateTime Date { get; set; }
+            public DateTime? Date { get; set; }
 
-            [Required(ErrorMessage = "Please choose a time.")]
+            [Required(ErrorMessage = "Please select a reservation time.")]
             [Display(Name = "Time")]
-            public TimeSpan Time { get; set; }
+            public TimeSpan? Time { get; set; }
 
             [Required(ErrorMessage = "Please enter the number of guests.")]
-            [Range(1, 50, ErrorMessage = "Number of guests must be between 1 and 50.")]
+            [Range(
+                1,
+                50,
+                ErrorMessage = "Number of guests must be between 1 and 50.")]
             [Display(Name = "Number of Guests")]
-            public int NumberOfGuests { get; set; }
+            public int? NumberOfGuests { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync(int id)
@@ -111,17 +114,19 @@ namespace RROMS.Pages.Customer.Reservations
                 return Page();
             }
 
-            DateTime date = Input.Date.Date;
+            DateTime date = Input.Date!.Value.Date;
+            TimeSpan time = Input.Time!.Value;
+            int numberOfGuests = Input.NumberOfGuests!.Value;
 
             // 1. Time must be a real time of day
-            if (Input.Time < TimeSpan.Zero || Input.Time >= TimeSpan.FromDays(1))
+            if (time < TimeSpan.Zero || time >= TimeSpan.FromDays(1))
             {
                 ModelState.AddModelError("Input.Time", "Please enter a valid time.");
                 return Page();
             }
 
             // 2. Must be in the future
-            if (date + Input.Time <= DateTime.Now)
+            if (date + time <= DateTime.Now)
             {
                 ModelState.AddModelError("", "Please choose a date and time in the future.");
                 return Page();
@@ -137,7 +142,7 @@ namespace RROMS.Pages.Customer.Reservations
                 return Page();
             }
 
-            if (Input.NumberOfGuests > maxCapacity)
+            if (numberOfGuests > maxCapacity)
             {
                 ModelState.AddModelError("Input.NumberOfGuests",
                     $"We can seat up to {maxCapacity} guests online. Please contact the restaurant for larger groups.");
@@ -146,7 +151,7 @@ namespace RROMS.Pages.Customer.Reservations
 
             // 4. Find a table. Ignore THIS booking so it can't clash with itself.
             DateTime nextDay = date.AddDays(1);
-            TimeSpan start = Input.Time;
+            TimeSpan start = time;
             TimeSpan end = start.Add(SlotLength);
 
             var sameDayBookings = await _context.Reservations
@@ -165,8 +170,8 @@ namespace RROMS.Pages.Customer.Reservations
 
             var freeTables = await _context.RestaurantTables
                 .AsNoTracking()
-                .Where(t => t.Capacity >= Input.NumberOfGuests
-                         && !bookedTableIds.Contains(t.TableID))
+                .Where(t => t.Capacity >= numberOfGuests
+         && !bookedTableIds.Contains(t.TableID))
                 .OrderBy(t => t.Capacity)
                 .ThenBy(t => t.TableNumber)
                 .ToListAsync();
@@ -184,8 +189,8 @@ namespace RROMS.Pages.Customer.Reservations
 
             // 5. Save the changes
             reservation.Date = date;
-            reservation.Time = Input.Time;
-            reservation.NumberOfGuests = Input.NumberOfGuests;
+            reservation.Time = time;
+            reservation.NumberOfGuests = numberOfGuests;
             reservation.TableID = table.TableID;
 
             // New details need staff approval again
@@ -194,7 +199,9 @@ namespace RROMS.Pages.Customer.Reservations
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] =
-                $"Reservation updated: table {table.TableNumber} on {date:dd MMM yyyy} at {Input.Time:hh\\:mm}. It is pending confirmation.";
+                $"Reservation updated: table {table.TableNumber} " +
+$"on {date:dd MMM yyyy} at {time:hh\\:mm}. " +
+"It is pending confirmation.";
 
             return RedirectToPage("/Customer/Reservations/Index");
         }

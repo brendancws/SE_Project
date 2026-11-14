@@ -121,37 +121,62 @@ namespace RROMS.Pages.Customer.Cart
 
         private async Task LoadLinesAsync(int customerId)
         {
-            var cart = CartSession.Get(HttpContext.Session, customerId);
-            var ids = cart.Select(l => l.MenuItemID).ToList();
+            var cart =
+                CartSession.Get(
+                    HttpContext.Session,
+                    customerId);
+
+            var ids = cart
+                .Select(line => line.MenuItemID)
+                .ToList();
 
             var items = await _context.MenuItems
                 .AsNoTracking()
-                .Where(m => ids.Contains(m.MenuItemID))
+                .Where(item =>
+                    ids.Contains(item.MenuItemID))
                 .ToListAsync();
 
-            var result = new List<CartDisplayLine>();
+            var validItemIds = items
+                .Select(item => item.MenuItemID)
+                .ToHashSet();
 
-            foreach (var line in cart)
+            bool removedStaleItems =
+                cart.RemoveAll(line =>
+                    !validItemIds.Contains(
+                        line.MenuItemID)) > 0;
+
+            if (removedStaleItems)
             {
-                var item = items.FirstOrDefault(m => m.MenuItemID == line.MenuItemID);
-
-                // Skip items that no longer exist in the menu
-                if (item == null)
-                {
-                    continue;
-                }
-
-                result.Add(new CartDisplayLine
-                {
-                    MenuItemID = item.MenuItemID,
-                    Name = item.Name,
-                    UnitPrice = item.Price,
-                    Quantity = line.Quantity,
-                    IsAvailable = item.Availability == true
-                });
+                CartSession.Save(
+                    HttpContext.Session,
+                    customerId,
+                    cart);
             }
 
-            Lines = result;
+            Lines = cart
+                .Join(
+                    items,
+                    line => line.MenuItemID,
+                    item => item.MenuItemID,
+                    (line, item) =>
+                        new CartDisplayLine
+                        {
+                            MenuItemID =
+                                item.MenuItemID,
+
+                            Name =
+                                item.Name,
+
+                            UnitPrice =
+                                item.Price,
+
+                            Quantity =
+                                line.Quantity,
+
+                            IsAvailable =
+                                item.Availability == true
+                        })
+                .ToList();
         }
 
         private int? GetCurrentCustomerId()

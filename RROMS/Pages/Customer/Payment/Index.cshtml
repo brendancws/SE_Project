@@ -1,152 +1,1403 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.Payment.IndexModel
+
 @{
     ViewData["Title"] = "Payment";
+
+    string formattedTotal =
+        Model.Total.ToString(
+            "0.00",
+            CultureInfo.InvariantCulture);
+
+    int totalQuantity =
+        Model.Lines.Sum(line => line.Quantity);
 }
 
-<div class="container py-4" style="max-width: 600px;">
-    <h2 class="mb-4">Payment</h2>
+<div class="payment-page">
+    <header class="payment-header">
+        <div>
+            <span class="payment-eyebrow">
+                Secure Checkout
+            </span>
 
-    @if (Model.SelectedReservation == null)
-    {
-        <div class="alert alert-danger">Reservation not found.</div>
-    }
-    else
-    {
-        <div class="card shadow-sm mb-4">
-            <div class="card-header fw-semibold">Your Order</div>
-            <div class="card-body">
-                <p class="text-muted small mb-2">
-                    Booking: @Model.SelectedReservation.Date.ToString("dd MMM yyyy") at @Model.SelectedReservation.Time.ToString(@"hh\:mm")
-                    - Table @(Model.SelectedReservation.Table?.TableNumber ?? "-")
-                </p>
+            <h1>Payment</h1>
 
-                <table class="table table-sm mb-2">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th class="text-end">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var line in Model.Lines)
-                        {
-                            <tr>
-                                <td>
-                                    @line.Name
-                                    @if (!line.IsAvailable)
-                                    {
-                                        <span class="badge bg-secondary ms-1">Unavailable</span>
-                                    }
-                                </td>
-                                <td>@line.Quantity</td>
-                                <td class="text-end">RM @line.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <p>
+                Choose how you would like to pay and review your
+                dining details before placing the order.
+            </p>
+        </div>
 
-                <p class="fw-bold mb-0 text-end">
-                    Amount due: RM @Model.Total.ToString("0.00", CultureInfo.InvariantCulture)
-                </p>
+        <a asp-page="/Customer/Cart/Checkout"
+           class="back-checkout-button">
+            <span aria-hidden="true">←</span>
+            Back to Checkout
+        </a>
+    </header>
+
+    <div class="payment-progress"
+         aria-label="Checkout progress">
+        <div class="progress-step completed">
+            <span>1</span>
+
+            <div>
+                <strong>Cart</strong>
+                <small>Items selected</small>
             </div>
         </div>
 
+        <div class="progress-line completed"></div>
+
+        <div class="progress-step completed">
+            <span>2</span>
+
+            <div>
+                <strong>Reservation</strong>
+                <small>Booking linked</small>
+            </div>
+        </div>
+
+        <div class="progress-line completed"></div>
+
+        <div class="progress-step active">
+            <span>3</span>
+
+            <div>
+                <strong>Payment</strong>
+                <small>Choose payment method</small>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.SelectedReservation == null)
+    {
+        <section class="payment-error-state">
+            <div class="payment-error-icon"
+                 aria-hidden="true">
+                !
+            </div>
+
+            <h2>Reservation not found</h2>
+
+            <p>
+                The selected reservation could not be found or is no
+                longer available for ordering.
+            </p>
+
+            <a asp-page="/Customer/Cart/Checkout"
+               class="payment-primary-button">
+                Return to Checkout
+            </a>
+        </section>
+    }
+    else
+    {
         @if (Model.HasUnavailable)
         {
-            <div class="alert alert-warning">
-                Some items in your cart are no longer available. Please go back to your cart to remove them.
+            <div class="availability-warning"
+                 role="alert">
+                <span class="warning-icon"
+                      aria-hidden="true">
+                    !
+                </span>
+
+                <div>
+                    <strong>
+                        Some items are no longer available
+                    </strong>
+
+                    <p>
+                        Return to your cart and remove unavailable
+                        items before submitting payment.
+                    </p>
+                </div>
             </div>
         }
 
-        @if (!string.IsNullOrEmpty(Model.ResultMessage))
+        @if (!string.IsNullOrWhiteSpace(Model.ResultMessage))
         {
-            <div class="alert @(Model.LastAttemptSucceeded == false ? "alert-danger" : "alert-info")">
-                @Model.ResultMessage
+            <div class="payment-result-alert
+                        @(Model.LastAttemptSucceeded == false
+                            ? "payment-result-error"
+                            : "payment-result-info")"
+                 role="alert">
+
+                <div class="result-alert-icon"
+                     aria-hidden="true">
+                    @(Model.LastAttemptSucceeded == false ? "!" : "i")
+                </div>
+
+                <div>
+                    <strong>
+                        @(Model.LastAttemptSucceeded == false
+                            ? "Payment declined"
+                            : "Payment update")
+                    </strong>
+
+                    <p>@Model.ResultMessage</p>
+                </div>
             </div>
         }
 
-        <div class="card shadow-sm">
-            <div class="card-header fw-semibold">Choose Payment Method</div>
-            <div class="card-body">
-                <form method="post" novalidate id="paymentForm">
-                    <input type="hidden" asp-for="ReservationId" />
+        <div class="payment-layout">
+            <section class="payment-method-panel">
+                <div class="panel-heading">
+                    <span class="payment-eyebrow">
+                        Payment Method
+                    </span>
 
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <h2>How would you like to pay?</h2>
 
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="Method" id="methodCard" value="Card" checked />
-                            <label class="form-check-label" for="methodCard">
-                                Card (simulated)
-                            </label>
+                    <p>
+                        Choose Card Payment for a simulated online
+                        payment, or pay with Cash when you arrive.
+                    </p>
+                </div>
+
+                <form method="post"
+                      novalidate
+                      id="paymentForm"
+                      class="payment-form">
+
+                    <input type="hidden"
+                           asp-for="ReservationId" />
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger">
+                    </div>
+
+                    <div class="payment-method-options">
+                        <label class="payment-method-card"
+                               id="cardMethodCard"
+                               for="methodCard">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="Method"
+                                   id="methodCard"
+                                   value="Card"
+                                   checked />
+
+                            <span class="method-icon"
+                                  aria-hidden="true">
+                                💳
+                            </span>
+
+                            <span class="method-content">
+                                <strong>Card Payment</strong>
+
+                                <small>
+                                    Complete a simulated online
+                                    card payment.
+                                </small>
+                            </span>
+
+                            <span class="method-selection"
+                                  aria-hidden="true">
+                                ✓
+                            </span>
+                        </label>
+
+                        <label class="payment-method-card"
+                               id="cashMethodCard"
+                               for="methodCash">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="Method"
+                                   id="methodCash"
+                                   value="Cash" />
+
+                            <span class="method-icon"
+                                  aria-hidden="true">
+                                💵
+                            </span>
+
+                            <span class="method-content">
+                                <strong>Cash on Arrival</strong>
+
+                                <small>
+                                    Pay at the restaurant when you
+                                    arrive.
+                                </small>
+                            </span>
+
+                            <span class="method-selection"
+                                  aria-hidden="true">
+                                ✓
+                            </span>
+                        </label>
+                    </div>
+
+                    <span asp-validation-for="Method"
+                          class="text-danger small">
+                    </span>
+
+                    <div id="cardFields"
+                         class="card-payment-fields">
+
+                        <div class="field-heading">
+                            <div>
+                                <span class="payment-eyebrow">
+                                    Card Details
+                                </span>
+
+                                <h3>Enter your card number</h3>
+                            </div>
+
+                            <span class="demo-badge">
+                                Demo Mode
+                            </span>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="Method" id="methodCash" value="Cash" />
-                            <label class="form-check-label" for="methodCash">
-                                Cash on arrival
+
+                        <div class="mb-3">
+                            <label asp-for="CardNumber"
+                                   class="form-label">
+                                Card Number
                             </label>
+
+                            <div class="card-number-wrapper">
+                                <span class="card-field-icon"
+                                      aria-hidden="true">
+                                    💳
+                                </span>
+
+                                <input asp-for="CardNumber"
+                                       class="form-control"
+                                       placeholder="0000 0000 0000 0000"
+                                       id="cardNumberInput"
+                                       maxlength="19"
+                                       inputmode="numeric"
+                                       autocomplete="off" />
+                            </div>
+
+                            <span asp-validation-for="CardNumber"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="simulation-notice">
+                            <div class="notice-icon"
+                                 aria-hidden="true">
+                                i
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Simulated payment only
+                                </strong>
+
+                                <p>
+                                    No real card will be charged.
+                                    A card number ending in
+                                    <strong>0000</strong>
+                                    simulates a declined payment.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="cardFields" class="mb-3">
-                        <label asp-for="CardNumber" class="form-label">Card Number</label>
-                        <input asp-for="CardNumber" class="form-control" placeholder="e.g. 0000 0000 0000 0000 (any digits)"
-                               id="cardNumberInput" maxlength="19" inputmode="numeric" autocomplete="off" />
-                        <span asp-validation-for="CardNumber" class="text-danger small"></span>
-                        <p class="text-muted small mt-1">
-                            This is a simulated payment. No real card is charged.
-                            Demo mode: a card number ending in <strong>0000</strong> will simulate a failed payment.
-                        </p>
+                    <div id="cashFields"
+                         class="cash-payment-fields">
+                        <div class="cash-icon"
+                             aria-hidden="true">
+                            💵
+                        </div>
+
+                        <div>
+                            <h3>Pay at the restaurant</h3>
+
+                            <p>
+                                Your order will be placed with a
+                                Pending payment status. Pay the
+                                restaurant when you arrive for your
+                                reservation.
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-grow-1" id="payButton">
-                            Pay RM @Model.Total.ToString("0.00", CultureInfo.InvariantCulture)
-                        </button>
-                        <a asp-page="/Customer/Cart/Index" class="btn btn-outline-secondary">Cancel</a>
+                    <div class="payment-assurance">
+                        <div>
+                            <span aria-hidden="true">✓</span>
+
+                            <p>
+                                Your order is created only after this
+                                payment step succeeds.
+                            </p>
+                        </div>
+
+                        <div>
+                            <span aria-hidden="true">✓</span>
+
+                            <p>
+                                Current menu prices and availability
+                                are verified again before submission.
+                            </p>
+                        </div>
                     </div>
+
+                    <button type="submit"
+                            class="submit-payment-button"
+                            id="payButton"
+                            @(Model.HasUnavailable ? "disabled" : null)>
+
+                        <span id="payButtonText">
+                            Pay RM @formattedTotal
+                        </span>
+
+                        <span aria-hidden="true">
+                            →
+                        </span>
+                    </button>
+
+                    <a asp-page="/Customer/Cart/Index"
+                       class="cancel-payment-link">
+                        Cancel and Return to Cart
+                    </a>
                 </form>
-            </div>
+            </section>
+
+            <aside class="payment-summary-panel">
+                <section class="reservation-summary">
+                    <div class="summary-section-heading">
+                        <span class="payment-eyebrow">
+                            Reservation
+                        </span>
+
+                        <h2>Dining Details</h2>
+                    </div>
+
+                    <div class="reservation-date-card">
+                        <div class="reservation-date-box">
+                            <span class="reservation-day">
+                                @Model.SelectedReservation.Date.ToString("dd")
+                            </span>
+
+                            <span class="reservation-month">
+                                @Model.SelectedReservation.Date.ToString("MMM")
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>
+                                @Model.SelectedReservation.Date.ToString(
+                                    "dddd, dd MMMM yyyy")
+                            </strong>
+
+                            <span>
+                                @Model.SelectedReservation.Time.ToString(
+                                    @"hh\:mm")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="reservation-detail-grid">
+                        <div>
+                            <span>Booking</span>
+
+                            <strong>
+                                RES-@Model.SelectedReservation.ReservationID.ToString("D6")
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Table</span>
+
+                            <strong>
+                                @(Model.SelectedReservation.Table?.TableNumber
+                                    ?? "-")
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Guests</span>
+
+                            <strong>
+                                @Model.SelectedReservation.NumberOfGuests
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Status</span>
+
+                            <strong>
+                                @(Model.SelectedReservation.Status
+                                    ?? "Pending")
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="order-summary">
+                    <div class="summary-section-heading">
+                        <span class="payment-eyebrow">
+                            Your Order
+                        </span>
+
+                        <h2>Order Summary</h2>
+                    </div>
+
+                    <div class="payment-item-list">
+                        @foreach (var line in Model.Lines)
+                        {
+                            <div class="payment-item">
+                                <div>
+                                    <div class="item-name-row">
+                                        <strong>@line.Name</strong>
+
+                                        @if (!line.IsAvailable)
+                                        {
+                                            <span class="unavailable-badge">
+                                                Unavailable
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <small>
+                                        @line.Quantity × RM
+                                        @line.UnitPrice.ToString(
+                                            "0.00",
+                                            CultureInfo.InvariantCulture)
+                                    </small>
+                                </div>
+
+                                <strong class="item-subtotal">
+                                    RM
+                                    @line.Subtotal.ToString(
+                                        "0.00",
+                                        CultureInfo.InvariantCulture)
+                                </strong>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="summary-information">
+                        <div>
+                            <span>Total items</span>
+                            <strong>@totalQuantity</strong>
+                        </div>
+                    </div>
+
+                    <div class="payment-total">
+                        <span>Amount Due</span>
+
+                        <strong>
+                            RM @formattedTotal
+                        </strong>
+                    </div>
+                </section>
+            </aside>
         </div>
     }
 </div>
 
+<style>
+    .payment-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .payment-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .payment-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .payment-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .payment-header p,
+    .panel-heading p {
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .back-checkout-button,
+    .payment-primary-button {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 10px 17px;
+        border-radius: 10px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .back-checkout-button {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: white;
+    }
+
+    .back-checkout-button:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .payment-primary-button {
+        border: 1px solid #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .payment-primary-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .payment-progress {
+        display: flex;
+        align-items: center;
+        padding: 18px 24px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+        box-shadow:
+            0 8px 24px rgba(31, 41, 55, 0.05);
+    }
+
+    .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #9ca3af;
+    }
+
+    .progress-step > span {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        flex: 0 0 34px;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #d1d5db;
+        border-radius: 50%;
+        background: white;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .progress-step strong,
+    .progress-step small {
+        display: block;
+    }
+
+    .progress-step strong {
+        font-size: 14px;
+    }
+
+    .progress-step small {
+        margin-top: 2px;
+        font-size: 11px;
+    }
+
+    .progress-step.completed,
+    .progress-step.active {
+        color: #111827;
+    }
+
+    .progress-step.completed > span {
+        border-color: #10b981;
+        color: white;
+        background: #10b981;
+    }
+
+    .progress-step.active > span {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .progress-line {
+        height: 2px;
+        flex: 1;
+        margin: 0 18px;
+        background: #e5e7eb;
+    }
+
+    .progress-line.completed {
+        background: #10b981;
+    }
+
+    .availability-warning,
+    .payment-result-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 18px;
+        border-radius: 14px;
+    }
+
+    .availability-warning {
+        border: 1px solid #fcd34d;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .warning-icon,
+    .result-alert-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        flex: 0 0 34px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-weight: 900;
+    }
+
+    .warning-icon {
+        background: #d97706;
+    }
+
+    .availability-warning strong,
+    .payment-result-alert strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .availability-warning p,
+    .payment-result-alert p {
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .payment-result-error {
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
+    .payment-result-error .result-alert-icon {
+        background: #dc2626;
+    }
+
+    .payment-result-info {
+        border: 1px solid #bfdbfe;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .payment-result-info .result-alert-icon {
+        background: #2563eb;
+    }
+
+    .payment-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.1fr)
+            minmax(350px, 0.9fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .payment-method-panel,
+    .payment-summary-panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 9px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .payment-method-panel {
+        padding: 28px;
+    }
+
+    .panel-heading {
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .panel-heading h2,
+    .summary-section-heading h2 {
+        margin: 0 0 7px;
+        color: #111827;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .payment-form {
+        padding-top: 24px;
+    }
+
+    .payment-method-options {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 13px;
+    }
+
+    .payment-method-card {
+        position: relative;
+        display: grid;
+        grid-template-columns:
+            auto auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f9fafb;
+        cursor: pointer;
+    }
+
+    .payment-method-card:hover {
+        border-color: #fcd34d;
+        background: #fff7ed;
+    }
+
+    .payment-method-card.selected {
+        border-color: #f59e0b;
+        background: #fff7ed;
+        box-shadow:
+            0 0 0 3px rgba(245, 158, 11, 0.11);
+    }
+
+    .payment-method-card .form-check-input {
+        margin: 0;
+    }
+
+    .method-icon {
+        font-size: 25px;
+    }
+
+    .method-content strong,
+    .method-content small {
+        display: block;
+    }
+
+    .method-content strong {
+        color: #111827;
+        font-size: 15px;
+    }
+
+    .method-content small {
+        margin-top: 4px;
+        color: #6b7280;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .method-selection {
+        width: 24px;
+        height: 24px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #f59e0b;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .payment-method-card.selected .method-selection {
+        display: flex;
+    }
+
+    .card-payment-fields,
+    .cash-payment-fields {
+        margin-top: 22px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f9fafb;
+    }
+
+    .field-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 17px;
+    }
+
+    .field-heading h3,
+    .cash-payment-fields h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .demo-badge {
+        padding: 6px 9px;
+        border-radius: 999px;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .card-number-wrapper {
+        position: relative;
+    }
+
+    .card-field-icon {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        z-index: 2;
+        transform: translateY(-50%);
+        font-size: 18px;
+    }
+
+    .card-number-wrapper .form-control {
+        min-height: 48px;
+        padding-left: 46px;
+        letter-spacing: 0.08em;
+    }
+
+    .simulation-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 13px;
+        border: 1px solid #bfdbfe;
+        border-radius: 11px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .notice-icon {
+        width: 26px;
+        height: 26px;
+        display: flex;
+        flex: 0 0 26px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #2563eb;
+        font-weight: 850;
+    }
+
+    .simulation-notice strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .simulation-notice p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .cash-payment-fields {
+        display: none;
+        align-items: flex-start;
+        gap: 15px;
+        color: #065f46;
+        border-color: #a7f3d0;
+        background: #ecfdf5;
+    }
+
+    .cash-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        flex: 0 0 44px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #d1fae5;
+        font-size: 22px;
+    }
+
+    .cash-payment-fields p {
+        margin: 7px 0 0;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .payment-assurance {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        margin-top: 20px;
+    }
+
+    .payment-assurance div {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .payment-assurance span {
+        color: #059669;
+        font-weight: 900;
+    }
+
+    .payment-assurance p {
+        margin: 0;
+    }
+
+    .submit-payment-button {
+        width: 100%;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 18px;
+        margin-top: 22px;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        color: #111827;
+        background: #f59e0b;
+        font-weight: 800;
+    }
+
+    .submit-payment-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .submit-payment-button:disabled {
+        border-color: #d1d5db;
+        color: #9ca3af;
+        background: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    .cancel-payment-link {
+        display: block;
+        margin-top: 13px;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .cancel-payment-link:hover {
+        color: #92400e;
+        text-decoration: underline;
+    }
+
+    .payment-summary-panel {
+        position: sticky;
+        top: 94px;
+        overflow: hidden;
+    }
+
+    .reservation-summary,
+    .order-summary {
+        padding: 24px;
+    }
+
+    .reservation-summary {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-section-heading {
+        margin-bottom: 17px;
+    }
+
+    .reservation-date-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 13px;
+        background: #f9fafb;
+    }
+
+    .reservation-date-box {
+        width: 58px;
+        height: 62px;
+        display: flex;
+        flex: 0 0 58px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: white;
+        background: #1f2937;
+    }
+
+    .reservation-day {
+        font-size: 21px;
+        font-weight: 850;
+        line-height: 1;
+    }
+
+    .reservation-month {
+        margin-top: 5px;
+        color: #fbbf24;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .reservation-date-card > div:last-child strong,
+    .reservation-date-card > div:last-child span {
+        display: block;
+    }
+
+    .reservation-date-card > div:last-child strong {
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .reservation-date-card > div:last-child span {
+        margin-top: 4px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .reservation-detail-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 13px;
+    }
+
+    .reservation-detail-grid div {
+        padding: 11px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .reservation-detail-grid span,
+    .reservation-detail-grid strong {
+        display: block;
+    }
+
+    .reservation-detail-grid span {
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 10px;
+        text-transform: uppercase;
+    }
+
+    .reservation-detail-grid strong {
+        color: #111827;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+
+    .payment-item-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .payment-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 17px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .payment-item strong {
+        color: #111827;
+    }
+
+    .payment-item small {
+        display: block;
+        margin-top: 4px;
+        color: #6b7280;
+    }
+
+    .item-name-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .unavailable-badge {
+        padding: 4px 7px;
+        border-radius: 999px;
+        color: #991b1b;
+        background: #fee2e2;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    .item-subtotal {
+        color: #b45309 !important;
+        white-space: nowrap;
+    }
+
+    .summary-information {
+        padding: 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-information div,
+    .payment-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .summary-information span {
+        color: #6b7280;
+    }
+
+    .payment-total {
+        padding-top: 19px;
+    }
+
+    .payment-total span {
+        font-size: 15px;
+        font-weight: 750;
+    }
+
+    .payment-total strong {
+        color: #b45309;
+        font-size: 24px;
+    }
+
+    .payment-error-state {
+        padding: 70px 30px;
+        border: 1px dashed #fecaca;
+        border-radius: 18px;
+        background: white;
+        text-align: center;
+    }
+
+    .payment-error-icon {
+        width: 62px;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 17px;
+        border-radius: 50%;
+        color: white;
+        background: #dc2626;
+        font-size: 24px;
+        font-weight: 900;
+    }
+
+    .payment-error-state h2 {
+        margin-bottom: 8px;
+        font-weight: 800;
+    }
+
+    .payment-error-state p {
+        max-width: 520px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+    }
+
+    @@media (max-width: 1100px) {
+        .payment-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-summary-panel {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 780px) {
+        .payment-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-checkout-button {
+            width: 100%;
+        }
+
+        .payment-progress {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-line {
+            width: 2px;
+            height: 22px;
+            flex: none;
+            margin: 0 0 0 16px;
+        }
+
+        .payment-method-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
-            const cardRadio = document.getElementById("methodCard");
-            const cashRadio = document.getElementById("methodCash");
-            const cardFields = document.getElementById("cardFields");
+            const cardRadio =
+                document.getElementById(
+                    "methodCard"
+                );
 
-            function toggleCardFields() {
-                cardFields.style.display = cardRadio.checked ? "block" : "none";
+            const cashRadio =
+                document.getElementById(
+                    "methodCash"
+                );
+
+            const cardFields =
+                document.getElementById(
+                    "cardFields"
+                );
+
+            const cashFields =
+                document.getElementById(
+                    "cashFields"
+                );
+
+            const cardMethodCard =
+                document.getElementById(
+                    "cardMethodCard"
+                );
+
+            const cashMethodCard =
+                document.getElementById(
+                    "cashMethodCard"
+                );
+
+            const paymentForm =
+                document.getElementById(
+                    "paymentForm"
+                );
+
+            const payButton =
+                document.getElementById(
+                    "payButton"
+                );
+
+            const cardNumberInput =
+                document.getElementById(
+                    "cardNumberInput"
+                );
+
+            if (
+                !cardRadio ||
+                !cashRadio ||
+                !cardFields ||
+                !cashFields ||
+                !paymentForm ||
+                !payButton
+            ) {
+                return;
             }
 
-            cardRadio.addEventListener("change", toggleCardFields);
-            cashRadio.addEventListener("change", toggleCardFields);
-            toggleCardFields();
+            function togglePaymentMethod() {
+                const cardSelected =
+                    cardRadio.checked;
 
-            const paymentForm = document.getElementById("paymentForm");
-            const payButton = document.getElementById("payButton");
+                cardFields.style.display =
+                    cardSelected
+                        ? "block"
+                        : "none";
 
-            paymentForm.addEventListener("submit", function () {
-                payButton.disabled = true;
+                cashFields.style.display =
+                    cardSelected
+                        ? "none"
+                        : "flex";
+
+                cardMethodCard?.classList.toggle(
+                    "selected",
+                    cardSelected
+                );
+
+                cashMethodCard?.classList.toggle(
+                    "selected",
+                    !cardSelected
+                );
+
                 payButton.innerHTML =
-                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing payment...';
-            });
+                    cardSelected
+                        ? '<span id="payButtonText">' +
+                          'Pay RM @formattedTotal' +
+                          '</span>' +
+                          '<span aria-hidden="true">→</span>'
+                        : '<span id="payButtonText">' +
+                          'Place Order, Pay on Arrival' +
+                          '</span>' +
+                          '<span aria-hidden="true">→</span>';
+            }
 
-            const cardNumberInput = document.getElementById("cardNumberInput");
+            cardRadio.addEventListener(
+                "change",
+                togglePaymentMethod
+            );
+
+            cashRadio.addEventListener(
+                "change",
+                togglePaymentMethod
+            );
+
+            togglePaymentMethod();
+
+            paymentForm.addEventListener(
+                "submit",
+                function () {
+                    if (!paymentForm.checkValidity()) {
+                        return;
+                    }
+
+                    payButton.disabled = true;
+
+                    payButton.innerHTML =
+                        '<span class="spinner-border ' +
+                        'spinner-border-sm" role="status" ' +
+                        'aria-hidden="true"></span>' +
+                        '<span>Processing payment...</span>';
+                }
+            );
 
             if (cardNumberInput) {
-                cardNumberInput.addEventListener("input", function () {
-                    let digitsOnly = cardNumberInput.value.replace(/\D/g, "").slice(0, 16);
-                    let formatted = digitsOnly.match(/.{1,4}/g)?.join(" ") ?? digitsOnly;
-                    cardNumberInput.value = formatted;
-                });
+                cardNumberInput.addEventListener(
+                    "input",
+                    function () {
+                        const digitsOnly =
+                            cardNumberInput.value
+                                .replace(/\D/g, "")
+                                .slice(0, 16);
+
+                        const formatted =
+                            digitsOnly
+                                .match(/.{1,4}/g)
+                                ?.join(" ")
+                            ?? digitsOnly;
+
+                        cardNumberInput.value =
+                            formatted;
+                    }
+                );
             }
         })();
     </script>

@@ -1,0 +1,882 @@
+﻿@page
+@model RROMS.Pages.Customer.Help.IndexModel
+@{
+    ViewData["Title"] = "Help Assistant";
+}
+
+<div class="container py-4 help-page">
+    <header class="help-header">
+        <div>
+            <span class="help-eyebrow">
+                Customer Support
+            </span>
+
+            <h1>Dineflow Help Assistant</h1>
+
+            <p>
+                Ask a question about using Dineflow. The assistant
+                provides guidance and directs you to the relevant page.
+            </p>
+        </div>
+
+        <span class="assistant-type">
+            Rule-based guidance
+        </span>
+    </header>
+
+    <section class="assistant-introduction">
+        <div class="assistant-avatar"
+     aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
+        <path d="M9 13h.01" />
+        <path d="M15 13h.01" />
+        <path d="M12 8.5V5" />
+        <circle cx="12"
+                cy="4"
+                r="1" />
+    </svg>
+</div>
+
+        <div>
+            <span class="assistant-label">
+                Dineflow Assistant
+            </span>
+
+            <h2>How can I help?</h2>
+
+            <p>
+                Ask about reservations, menu items, your cart,
+                checkout, payments, order tracking, receipts,
+                notifications, feedback, or profile settings.
+            </p>
+        </div>
+    </section>
+
+    <div class="help-layout">
+        <main class="assistant-panel">
+            <form method="post"
+                  novalidate
+                  class="question-form">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger validation-summary">
+                </div>
+
+                <label asp-for="Question"
+                       class="question-label">
+                    Your question
+                </label>
+
+                <div class="question-input-row">
+                    <textarea asp-for="Question"
+                              class="form-control question-input"
+                              rows="3"
+                              maxlength="300"
+                              placeholder="For example: How do I track my order?">
+                    </textarea>
+
+                    <button type="submit"
+                            class="ask-button">
+                        Ask
+                    </button>
+                </div>
+
+                <div class="question-details">
+                    <span asp-validation-for="Question"
+                          class="text-danger small">
+                    </span>
+
+                    <span class="question-counter">
+                        <strong id="questionCharacterCount">
+                            0
+                        </strong>
+                        / 300
+                    </span>
+                </div>
+            </form>
+
+            @if (Model.BotResponse != null)
+            {
+                <section class="assistant-response"
+                         aria-live="polite">
+
+                    <div class="response-heading">
+                        <div class="response-icon"
+                             aria-hidden="true">
+                            i
+                        </div>
+
+                        <div>
+                            <span>Assistant Response</span>
+                            <h2>@Model.BotResponse.Title</h2>
+                        </div>
+                    </div>
+
+                    <p class="response-answer">
+                        @Model.BotResponse.Answer
+                    </p>
+
+                    @if (Model.BotResponse.Steps.Any())
+                    {
+                        <div class="response-steps">
+                            <span>What to do</span>
+
+                            <ol>
+                                @foreach (string step in
+                                    Model.BotResponse.Steps)
+                                {
+                                    <li>@step</li>
+                                }
+                            </ol>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(
+                            Model.BotResponse.ActionPage) &&
+                         !string.IsNullOrWhiteSpace(
+                            Model.BotResponse.ActionText))
+                    {
+                        <a href="@Model.BotResponse.ActionPage"
+                           class="response-action">
+                            @Model.BotResponse.ActionText
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    }
+
+                    @if (Model.BotResponse.Intent == "Fallback")
+                    {
+                        <div class="fallback-note">
+                            This assistant provides predefined
+                            Dineflow guidance and does not use AI.
+                        </div>
+                    }
+                </section>
+            }
+            else
+            {
+                <section class="assistant-placeholder">
+                    <div class="placeholder-icon"
+                         aria-hidden="true">
+                        ?
+                    </div>
+
+                    <h2>Your answer will appear here</h2>
+
+                    <p>
+                        Enter a short question above or choose one
+                        of the suggested questions.
+                    </p>
+                </section>
+            }
+        </main>
+
+        <aside class="suggestions-panel">
+            <div class="suggestions-heading">
+                <span class="help-eyebrow">
+                    Quick Questions
+                </span>
+
+                <h2>Suggested Questions</h2>
+
+                <p>
+                    Select a question to place it into the question
+                    field, then choose Ask.
+                </p>
+            </div>
+
+            <div class="suggested-question-list">
+                @foreach (string suggestion in
+                    Model.SuggestedQuestions)
+                {
+                    <button type="button"
+                            class="suggested-question"
+                            data-suggested-question="@suggestion">
+                        <span aria-hidden="true">?</span>
+                        @suggestion
+                    </button>
+                }
+            </div>
+
+            <div class="assistant-boundary">
+                <strong>Guidance only</strong>
+
+                <p>
+                    The assistant explains where to go and what to do.
+                    It cannot create reservations, place orders,
+                    process payments, or change account details.
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <section class="supported-topics">
+        <div class="supported-topics-heading">
+            <span class="help-eyebrow">
+                Supported Help
+            </span>
+
+            <h2>Topics this assistant understands</h2>
+        </div>
+
+        <div class="topic-grid">
+            <article>
+                <span aria-hidden="true">R</span>
+                <strong>Reservations</strong>
+                <small>Book, edit, cancel, status, and duration</small>
+            </article>
+
+            <article>
+                <span aria-hidden="true">M</span>
+                <strong>Menu and Cart</strong>
+                <small>Browse dishes and manage cart items</small>
+            </article>
+
+            <article>
+                <span aria-hidden="true">P</span>
+                <strong>Checkout and Payment</strong>
+                <small>Reservation linking, Card, and Cash</small>
+            </article>
+
+            <article>
+                <span aria-hidden="true">O</span>
+                <strong>Orders</strong>
+                <small>Progress tracking and status meanings</small>
+            </article>
+
+            <article>
+                <span aria-hidden="true">H</span>
+                <strong>History and Receipts</strong>
+                <small>Past records, receipts, and summaries</small>
+            </article>
+
+            <article>
+                <span aria-hidden="true">A</span>
+                <strong>Account Help</strong>
+                <small>Notifications, feedback, and password</small>
+            </article>
+        </div>
+    </section>
+</div>
+
+<style>
+    .help-page {
+        max-width: 1120px;
+    }
+
+    .help-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 20px;
+    }
+
+    .help-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .help-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .help-header p {
+        max-width: 700px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .assistant-type {
+        flex-shrink: 0;
+        padding: 7px 12px;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        color: #1e3a8a;
+        background: #eff6ff;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .assistant-introduction {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-bottom: 20px;
+        padding: 22px 24px;
+        border-radius: 17px;
+        color: white;
+        background:
+            radial-gradient(
+                circle at 90% 18%,
+                rgba(245, 158, 11, 0.28),
+                transparent 28%
+            ),
+            linear-gradient(
+                135deg,
+                #111827,
+                #1f2937
+            );
+        box-shadow:
+            0 12px 30px rgba(31, 41, 55, 0.12);
+    }
+
+    .assistant-avatar {
+    width: 62px;
+    height: 62px;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px;
+    color: #111827;
+    background:
+        linear-gradient(
+            135deg,
+            #fbbf24,
+            #f59e0b
+        );
+    box-shadow:
+        0 10px 24px rgba(245, 158, 11, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.assistant-avatar svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+    .assistant-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+    .assistant-introduction h2 {
+    margin: 0 0 5px;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+    .assistant-introduction p {
+        max-width: 740px;
+        margin: 0;
+        color: #d1d5db;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .help-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.45fr)
+            minmax(280px, 0.55fr);
+        gap: 20px;
+        align-items: start;
+    }
+
+    .assistant-panel,
+    .suggestions-panel,
+    .supported-topics {
+        border: 1px solid #e5e7eb;
+        border-radius: 17px;
+        background: white;
+        box-shadow:
+            0 9px 27px rgba(31, 41, 55, 0.06);
+    }
+
+    .assistant-panel {
+        overflow: hidden;
+    }
+
+    .question-form {
+        padding: 22px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fffdf8;
+    }
+
+    .validation-summary.validation-summary-valid {
+        display: none;
+    }
+
+    .question-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .question-input-row {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .question-input {
+        min-height: 86px;
+        border-color: #d1d5db;
+        border-radius: 10px;
+        resize: vertical;
+    }
+
+    .question-input:focus {
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 0 0.2rem rgba(245, 158, 11, 0.15);
+    }
+
+    .ask-button {
+        min-width: 92px;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        color: #111827;
+        background: #f59e0b;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .ask-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .question-details {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 6px;
+    }
+
+    .question-counter {
+        flex-shrink: 0;
+        color: #9ca3af;
+        font-size: 9px;
+    }
+
+    .assistant-response,
+    .assistant-placeholder {
+        padding: 24px;
+    }
+
+    .response-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .response-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        color: white;
+        background: #2563eb;
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    .response-heading span {
+        display: block;
+        margin-bottom: 2px;
+        color: #2563eb;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .response-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .response-answer {
+        margin: 0;
+        color: #4b5563;
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .response-steps {
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 11px;
+        background: #f9fafb;
+    }
+
+    .response-steps > span {
+        display: block;
+        margin-bottom: 8px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .response-steps ol {
+        margin: 0;
+        padding-left: 20px;
+        color: #374151;
+        font-size: 11px;
+        line-height: 1.65;
+    }
+
+    .response-steps li + li {
+        margin-top: 4px;
+    }
+
+    .response-action {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 17px;
+        padding: 8px 14px;
+        border: 1px solid #2563eb;
+        border-radius: 9px;
+        color: white;
+        background: #2563eb;
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .response-action:hover {
+        border-color: #1d4ed8;
+        color: white;
+        background: #1d4ed8;
+    }
+
+    .fallback-note {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 9px;
+        color: #78350f;
+        background: #fffbeb;
+        font-size: 10px;
+    }
+
+    .assistant-placeholder {
+        padding-top: 48px;
+        padding-bottom: 48px;
+        text-align: center;
+    }
+
+    .placeholder-icon {
+        width: 54px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 13px;
+        border-radius: 16px;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 22px;
+        font-weight: 850;
+    }
+
+    .assistant-placeholder h2 {
+        margin: 0 0 6px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .assistant-placeholder p {
+        max-width: 430px;
+        margin: 0 auto;
+        color: #6b7280;
+        font-size: 11px;
+        line-height: 1.55;
+    }
+
+    .suggestions-panel {
+        position: sticky;
+        top: 94px;
+        padding: 21px;
+    }
+
+    .suggestions-heading {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .suggestions-heading h2 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .suggestions-heading p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    .suggested-question-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .suggested-question {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 10px 11px;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        color: #374151;
+        background: #f9fafb;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .suggested-question:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .suggested-question span {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 9px;
+        font-weight: 850;
+    }
+
+    .assistant-boundary {
+        margin-top: 17px;
+        padding: 13px;
+        border-radius: 10px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .assistant-boundary strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 11px;
+    }
+
+    .assistant-boundary p {
+        margin: 0;
+        font-size: 9px;
+        line-height: 1.5;
+    }
+
+    .supported-topics {
+        margin-top: 20px;
+        padding: 22px;
+    }
+
+    .supported-topics-heading {
+        margin-bottom: 15px;
+    }
+
+    .supported-topics-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .topic-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .topic-grid article {
+        display: grid;
+        grid-template-columns:
+            34px minmax(0, 1fr);
+        gap: 3px 10px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .topic-grid article > span {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        grid-row: 1 / 3;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: #92400e;
+        background: #fef3c7;
+        font-size: 11px;
+        font-weight: 850;
+    }
+
+    .topic-grid strong {
+        color: #1f2937;
+        font-size: 11px;
+    }
+
+    .topic-grid small {
+        color: #6b7280;
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    @@media (max-width: 920px) {
+        .help-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .suggestions-panel {
+            position: static;
+        }
+
+        .suggested-question-list {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .help-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .assistant-introduction {
+            align-items: flex-start;
+        }
+
+        .question-input-row {
+            grid-template-columns: 1fr;
+        }
+
+        .ask-button {
+            min-height: 42px;
+        }
+
+        .topic-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .assistant-introduction {
+            flex-direction: column;
+        }
+
+        .suggested-question-list,
+        .topic-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .question-details {
+            flex-direction: column;
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const question =
+                document.getElementById("Question");
+
+            const questionCharacterCount =
+                document.getElementById(
+                    "questionCharacterCount"
+                );
+
+            function updateQuestionCount() {
+                if (!question ||
+                    !questionCharacterCount) {
+                    return;
+                }
+
+                questionCharacterCount.textContent =
+                    question.value.length.toString();
+            }
+
+            question?.addEventListener(
+                "input",
+                updateQuestionCount
+            );
+
+            document
+                .querySelectorAll(
+                    "[data-suggested-question]"
+                )
+                .forEach(function (button) {
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            if (!question) {
+                                return;
+                            }
+
+                            question.value =
+                                button.getAttribute(
+                                    "data-suggested-question"
+                                ) ?? "";
+
+                            updateQuestionCount();
+                            question.focus();
+                        }
+                    );
+                });
+
+            updateQuestionCount();
+        })();
+    </script>
+}

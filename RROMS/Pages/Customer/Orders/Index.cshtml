@@ -3,264 +3,1087 @@
 @model RROMS.Pages.Customer.Orders.IndexModel
 @{
     ViewData["Title"] = "My Orders";
+
+    int totalOrders =
+        Model.Orders.Count;
+
+    int activeOrders =
+        Model.Orders.Count(order =>
+            !string.Equals(
+                order.Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                order.Status,
+                "Cancelled",
+                StringComparison.OrdinalIgnoreCase));
+
+    int completedOrders =
+        Model.Orders.Count(order =>
+            string.Equals(
+                order.Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase));
+
+    int paidOrders =
+        Model.Orders.Count(order =>
+            string.Equals(
+                order.PaymentStatus,
+                "Paid",
+                StringComparison.OrdinalIgnoreCase));
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">My Orders</h2>
-        <a asp-page="/Customer/Menu/Index" class="btn btn-primary">Order More Food</a>
-    </div>
+<div class="container py-4 customer-orders-page">
+    <header class="orders-header">
+        <div>
+            <span class="orders-eyebrow">
+                Dining Orders
+            </span>
 
-    <div class="card border-0 bg-light mb-4 no-print">
-    <div class="card-body py-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h1>My Orders</h1>
+
+            <p>
+                Review your food orders, monitor preparation progress,
+                and access payment receipts or summaries.
+            </p>
+        </div>
+
+        <a asp-page="/Customer/Menu/Index"
+           class="order-more-button">
+            <span aria-hidden="true">+</span>
+            Order More Food
+        </a>
+    </header>
+
+    <section class="order-summary-grid"
+             aria-label="Order overview">
+
+        <article class="order-summary-card">
+            <span class="summary-label">
+                Total Orders
+            </span>
+
+            <strong>@totalOrders</strong>
+
+            <small>
+                All order records
+            </small>
+        </article>
+
+        <article class="order-summary-card active-summary">
+            <span class="summary-label">
+                Active
+            </span>
+
+            <strong>@activeOrders</strong>
+
+            <small>
+                Currently in progress
+            </small>
+        </article>
+
+        <article class="order-summary-card completed-summary">
+            <span class="summary-label">
+                Completed
+            </span>
+
+            <strong>@completedOrders</strong>
+
+            <small>
+                Finished orders
+            </small>
+        </article>
+
+        <article class="order-summary-card paid-summary">
+            <span class="summary-label">
+                Paid
+            </span>
+
+            <strong>@paidOrders</strong>
+
+            <small>
+                Orders with successful payment
+            </small>
+        </article>
+    </section>
+
+    <section class="live-tracking-panel no-print">
+        <div class="live-tracking-row">
             <div>
-                <span class="fw-semibold">Live order tracking:</span>
-                <span class="text-success">On</span>
+                <span class="live-tracking-label">
+                    Live order tracking:
+                </span>
 
-                <span class="text-muted small ms-2">
+                <span class="live-tracking-status">
+                    On
+                </span>
+
+                <span class="live-tracking-time">
                     Last checked:
-                    <span id="lastStatusCheck">Not checked yet</span>
+                    <span id="lastStatusCheck">
+                        Not checked yet
+                    </span>
                 </span>
             </div>
 
             <button type="button"
-                    class="btn btn-sm btn-outline-primary"
+                    class="refresh-orders-button"
                     onclick="window.location.reload()">
-                Refresh Full Page
+                Check Now
             </button>
         </div>
 
         <div id="statusChangeNotice"
-             class="alert alert-info mt-3 mb-0 d-none"
+             class="status-change-notice d-none"
              role="status">
-            <strong>Order status updated.</strong>
-            Refresh the full page to update payment details,
-            receipt actions, and other order information.
+
+            <div>
+                <strong>Order status updated.</strong>
+
+                <span>
+                    Refresh the full page to update payment details,
+                    receipt actions, and other order information.
+                </span>
+            </div>
 
             <button type="button"
-                    class="btn btn-sm btn-primary ms-2"
+                    class="refresh-notice-button"
                     onclick="window.location.reload()">
                 Refresh Full Page
             </button>
         </div>
 
         <div id="statusPollingError"
-             class="alert alert-warning mt-3 mb-0 d-none"
+             class="status-polling-error d-none"
              role="status">
-            Live status updates are temporarily unavailable.
-            Use Refresh Full Page to check the latest information.
-        </div>
-    </div>
-</div>
 
-    @if (TempData["OrderMessage"] is string orderMessage && !string.IsNullOrEmpty(orderMessage))
+            <strong>Live updates are temporarily unavailable.</strong>
+
+            <span>
+                Use Refresh Full Page to check the latest information.
+            </span>
+        </div>
+    </section>
+
+    @if (TempData["OrderMessage"] is string orderMessage &&
+         !string.IsNullOrEmpty(orderMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @orderMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="order-success-message"
+             role="status">
+
+            <div>
+                <strong>Order updated</strong>
+                <span>@orderMessage</span>
+            </div>
+
+            <button type="button"
+                    class="order-message-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+                ×
+            </button>
         </div>
     }
 
     @if (!Model.Orders.Any())
     {
-        <div class="alert alert-info">You have not placed any orders yet.</div>
+        <section class="orders-empty-state">
+            <div class="orders-empty-icon"
+                 aria-hidden="true">
+                🍽️
+            </div>
+
+            <h2>No orders yet</h2>
+
+            <p>
+                Your food orders and preparation updates will appear
+                here after you place an order from the menu.
+            </p>
+
+            <a asp-page="/Customer/Menu/Index"
+               class="order-more-button">
+                <span aria-hidden="true">+</span>
+                Browse the Menu
+            </a>
+        </section>
     }
     else
     {
-        @foreach (var order in Model.Orders)
-        {
-            string badgeClass = order.Status.ToLowerInvariant() switch
-            {
-                "pending" => "bg-warning text-dark",
-                "preparing" => "bg-info text-dark",
-                "ready to serve" => "bg-primary",
-                "served" => "bg-success",
-                "completed" => "bg-dark",
-                "cancelled" => "bg-danger",
-                _ => "bg-secondary"
-            };
+        <section class="orders-list-section">
+            <div class="orders-list-heading">
+                <div>
+                    <span class="orders-eyebrow">
+                        Order Activity
+                    </span>
 
-            <div class="card shadow-sm mb-4"
-     data-order-id="@order.OrderID"
-     data-current-status="@order.Status">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Order #@order.OrderID</strong>
-                        <span class="text-muted small ms-2">
-                            @(order.OrderDate?.ToString("dd MMM yyyy, HH:mm") ?? "-")
-                        </span>
-                    </div>
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-    <span class="badge @badgeClass order-status-badge">
-    @order.Status
-</span>
-
-
-    @{
-        string paymentBadgeClass =
-            (order.PaymentStatus ?? "").ToLowerInvariant() switch
-            {
-                "paid" => "bg-success",
-                "pending" => "bg-warning text-dark",
-                "failed" => "bg-danger",
-                _ => "bg-secondary"
-            };
-    }
-
-    <span class="badge @paymentBadgeClass">
-        Payment: @(order.PaymentStatus ?? "None")
-    </span>
-
-    @if (string.Equals(
-        order.PaymentStatus,
-        "Paid",
-        StringComparison.OrdinalIgnoreCase))
-    {
-        <a asp-page="/Customer/Orders/Receipt"
-           asp-route-id="@order.OrderID"
-           class="btn btn-sm btn-outline-success">
-            View Receipt
-        </a>
-    }
-    else if (string.Equals(
-        order.PaymentStatus,
-        "Pending",
-        StringComparison.OrdinalIgnoreCase))
-    {
-        <a asp-page="/Customer/Orders/Receipt"
-           asp-route-id="@order.OrderID"
-           class="btn btn-sm btn-outline-secondary">
-            View Payment Summary
-        </a>
-    }
-    else if (string.Equals(
-        order.PaymentStatus,
-        "Failed",
-        StringComparison.OrdinalIgnoreCase))
-    {
-        <span class="small text-danger fw-semibold">
-            Payment failed
-        </span>
-    }
-</div>            
+                    <h2>Your Orders</h2>
                 </div>
-                <div class="card-body pb-2">
-    <p class="text-muted small mb-3">
-        Booking: @order.BookingText
-    </p>
 
-    <div class="order-progress"
-         data-progress-status="@order.Status">
-        <div class="order-progress-step"
-             data-step-status="Pending">
-            <span class="order-progress-dot"></span>
-            <span>Pending</span>
-        </div>
-
-        <div class="order-progress-line"></div>
-
-        <div class="order-progress-step"
-             data-step-status="Preparing">
-            <span class="order-progress-dot"></span>
-            <span>Preparing</span>
-        </div>
-
-        <div class="order-progress-line"></div>
-
-        <div class="order-progress-step"
-             data-step-status="Ready to Serve">
-            <span class="order-progress-dot"></span>
-            <span>Ready</span>
-        </div>
-
-        <div class="order-progress-line"></div>
-
-        <div class="order-progress-step"
-             data-step-status="Served">
-            <span class="order-progress-dot"></span>
-            <span>Served</span>
-        </div>
-
-        <div class="order-progress-line"></div>
-
-        <div class="order-progress-step"
-             data-step-status="Completed">
-            <span class="order-progress-dot"></span>
-            <span>Completed</span>
-        </div>
-    </div>
-
-    <div class="order-cancelled-message text-danger fw-semibold small mt-2 d-none">
-        This order has been cancelled.
-    </div>
-</div>
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Item</th>
-                                <th>Price</th>
-                                <th>Qty</th>
-                                <th class="text-end">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var line in order.Lines)
-                            {
-                                <tr>
-                                    <td>@line.Name</td>
-                                    <td>RM @line.UnitPrice.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                    <td>@line.Quantity</td>
-                                    <td class="text-end">RM @line.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-end">Total</th>
-                                <th class="text-end">RM @order.Total.ToString("0.00", CultureInfo.InvariantCulture)</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                <span class="orders-count">
+                    @totalOrders
+                    @(totalOrders == 1 ? "order" : "orders")
+                </span>
             </div>
-        }
+
+            <div class="orders-list">
+                @foreach (var order in Model.Orders)
+                {
+                    string orderStatus =
+                        order.Status ?? "Pending";
+
+                    string orderStatusClass =
+                        orderStatus.ToLowerInvariant() switch
+                        {
+                            "pending" => "pending",
+                            "preparing" => "preparing",
+                            "ready to serve" => "ready",
+                            "served" => "served",
+                            "completed" => "completed",
+                            "cancelled" => "cancelled",
+                            _ => "other"
+                        };
+
+                    string paymentStatus =
+                        order.PaymentStatus ?? "None";
+
+                    string paymentStatusClass =
+                        paymentStatus.ToLowerInvariant() switch
+                        {
+                            "paid" => "paid",
+                            "pending" => "pending",
+                            "failed" => "failed",
+                            _ => "none"
+                        };
+
+                    int totalItems =
+                        order.Lines.Sum(line => line.Quantity);
+
+                    <article class="order-card"
+                             data-order-id="@order.OrderID"
+                             data-current-status="@orderStatus">
+
+                        <div class="order-card-header">
+                            <div class="order-reference">
+                                <span>Order</span>
+                                <strong>#@order.OrderID</strong>
+                            </div>
+
+                            <div class="order-heading-content">
+                                <span class="order-date">
+                                    @(order.OrderDate?.ToString(
+                                        "dd MMM yyyy, HH:mm")
+                                        ?? "Date not recorded")
+                                </span>
+
+                                <h3>Order #@order.OrderID</h3>
+
+                                <p>
+                                    Booking: @order.BookingText
+                                </p>
+                            </div>
+
+                            <div class="order-status-group">
+                                <span class="order-status-pill @orderStatusClass order-status-badge">
+                                    @orderStatus
+                                </span>
+
+                                <span class="payment-status-pill @paymentStatusClass">
+                                    Payment: @paymentStatus
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="order-overview-grid">
+                            <div class="order-overview-item">
+                                <span>Order Date</span>
+
+                                <strong>
+                                    @(order.OrderDate?.ToString(
+                                        "dd MMM yyyy")
+                                        ?? "-")
+                                </strong>
+                            </div>
+
+                            <div class="order-overview-item">
+                                <span>Order Time</span>
+
+                                <strong>
+                                    @(order.OrderDate?.ToString("HH:mm")
+                                        ?? "-")
+                                </strong>
+                            </div>
+
+                            <div class="order-overview-item">
+                                <span>Items</span>
+
+                                <strong>@totalItems</strong>
+                            </div>
+
+                            <div class="order-overview-item total-overview">
+                                <span>Total</span>
+
+                                <strong>
+                                    RM @order.Total.ToString(
+                                        "0.00",
+                                        CultureInfo.InvariantCulture)
+                                </strong>
+                            </div>
+                        </div>
+
+                        <section class="order-progress-section">
+                            <div class="progress-section-heading">
+                                <div>
+                                    <span>Order Progress</span>
+                                    <strong>@orderStatus</strong>
+                                </div>
+
+                                @if (string.Equals(
+                                    order.PaymentStatus,
+                                    "Paid",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a asp-page="/Customer/Orders/Receipt"
+                                       asp-route-id="@order.OrderID"
+                                       class="receipt-action paid">
+                                        View Receipt
+                                    </a>
+                                }
+                                else if (string.Equals(
+                                    order.PaymentStatus,
+                                    "Pending",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a asp-page="/Customer/Orders/Receipt"
+                                       asp-route-id="@order.OrderID"
+                                       class="receipt-action pending">
+                                        View Payment Summary
+                                    </a>
+                                }
+                                else if (string.Equals(
+                                    order.PaymentStatus,
+                                    "Failed",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="payment-failed-text">
+                                        Payment failed
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="order-progress"
+                                 data-progress-status="@orderStatus">
+
+                                <div class="order-progress-step"
+                                     data-step-status="Pending">
+                                    <span class="order-progress-dot"></span>
+                                    <span>Pending</span>
+                                </div>
+
+                                <div class="order-progress-line"></div>
+
+                                <div class="order-progress-step"
+                                     data-step-status="Preparing">
+                                    <span class="order-progress-dot"></span>
+                                    <span>Preparing</span>
+                                </div>
+
+                                <div class="order-progress-line"></div>
+
+                                <div class="order-progress-step"
+                                     data-step-status="Ready to Serve">
+                                    <span class="order-progress-dot"></span>
+                                    <span>Ready</span>
+                                </div>
+
+                                <div class="order-progress-line"></div>
+
+                                <div class="order-progress-step"
+                                     data-step-status="Served">
+                                    <span class="order-progress-dot"></span>
+                                    <span>Served</span>
+                                </div>
+
+                                <div class="order-progress-line"></div>
+
+                                <div class="order-progress-step"
+                                     data-step-status="Completed">
+                                    <span class="order-progress-dot"></span>
+                                    <span>Completed</span>
+                                </div>
+                            </div>
+
+                            <div class="order-cancelled-message @(string.Equals(
+                                    orderStatus,
+                                    "Cancelled",
+                                    StringComparison.OrdinalIgnoreCase)
+                                        ? ""
+                                        : "d-none")">
+
+                                <strong>Order cancelled</strong>
+
+                                <span>
+                                    This order will not continue through
+                                    the preparation workflow.
+                                </span>
+                            </div>
+                        </section>
+
+                        <section class="order-items-section">
+                            <div class="order-items-heading">
+                                <div>
+                                    <span>Order Items</span>
+                                    <strong>
+                                        @totalItems
+                                        @(totalItems == 1 ? "item" : "items")
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="order-items-list">
+                                @foreach (var line in order.Lines)
+                                {
+                                    <div class="order-item-row">
+                                        <div class="order-item-main">
+                                            <span class="order-item-quantity">
+                                                @line.Quantity ×
+                                            </span>
+
+                                            <strong>@line.Name</strong>
+                                        </div>
+
+                                        <div class="order-item-price">
+                                            <span>
+                                                RM @line.UnitPrice.ToString(
+                                                    "0.00",
+                                                    CultureInfo.InvariantCulture)
+                                                each
+                                            </span>
+
+                                            <strong>
+                                                RM @line.Subtotal.ToString(
+                                                    "0.00",
+                                                    CultureInfo.InvariantCulture)
+                                            </strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="order-total-row">
+                                <span>Order Total</span>
+
+                                <strong>
+                                    RM @order.Total.ToString(
+                                        "0.00",
+                                        CultureInfo.InvariantCulture)
+                                </strong>
+                            </div>
+                        </section>
+                    </article>
+                }
+            </div>
+        </section>
     }
 </div>
 
-                            <style>
+<style>
+    .customer-orders-page {
+        max-width: 1100px;
+    }
+
+    .orders-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .orders-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .orders-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .orders-header p {
+        max-width: 690px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .order-more-button {
+        min-height: 43px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        color: #111827;
+        background: #f59e0b;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .order-more-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .order-more-button span {
+        font-size: 19px;
+        line-height: 1;
+    }
+
+    .order-summary-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 21px;
+    }
+
+    .order-summary-card {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        background: white;
+        box-shadow:
+            0 8px 22px rgba(31, 41, 55, 0.05);
+    }
+
+    .order-summary-card.active-summary {
+        border-color: #fde68a;
+        background: #fffbeb;
+    }
+
+    .order-summary-card.completed-summary {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    .order-summary-card.paid-summary {
+        border-color: #a7f3d0;
+        background: #ecfdf5;
+    }
+
+    .order-summary-card span,
+    .order-summary-card strong,
+    .order-summary-card small {
+        display: block;
+    }
+
+    .summary-label {
+        margin-bottom: 6px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .order-summary-card strong {
+        color: #111827;
+        font-size: 25px;
+        font-weight: 850;
+    }
+
+    .order-summary-card small {
+        margin-top: 4px;
+        color: #9ca3af;
+        font-size: 11px;
+    }
+
+    .live-tracking-panel {
+        margin-bottom: 21px;
+        padding: 16px 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f9fafb;
+    }
+
+    .live-tracking-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .live-tracking-label {
+        color: #374151;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .live-tracking-status {
+        margin-left: 4px;
+        color: #059669;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .live-tracking-time {
+        margin-left: 11px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    .refresh-orders-button,
+    .refresh-notice-button {
+        min-height: 35px;
+        padding: 7px 12px;
+        border: 1px solid #2563eb;
+        border-radius: 8px;
+        color: #1d4ed8;
+        background: white;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .refresh-orders-button:hover,
+    .refresh-notice-button:hover {
+        color: white;
+        background: #2563eb;
+    }
+
+    .status-change-notice,
+    .status-polling-error {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 13px;
+        padding: 13px 14px;
+        border: 1px solid;
+        border-radius: 10px;
+    }
+
+    .status-change-notice {
+        border-color: #bfdbfe;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .status-polling-error {
+        border-color: #fde68a;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .status-change-notice strong,
+    .status-change-notice span,
+    .status-polling-error strong,
+    .status-polling-error span {
+        display: block;
+    }
+
+    .status-change-notice strong,
+    .status-polling-error strong {
+        margin-bottom: 2px;
+        font-size: 12px;
+    }
+
+    .status-change-notice span,
+    .status-polling-error span {
+        font-size: 11px;
+    }
+
+    .order-success-message {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        color: #065f46;
+        background: #ecfdf5;
+    }
+
+    .order-success-message strong,
+    .order-success-message span {
+        display: block;
+    }
+
+    .order-success-message strong {
+        margin-bottom: 2px;
+        font-size: 13px;
+    }
+
+    .order-success-message span {
+        font-size: 12px;
+    }
+
+    .order-message-close {
+        border: 0;
+        color: #047857;
+        background: transparent;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+    .orders-empty-state {
+        padding: 70px 30px;
+        border: 1px dashed #d1d5db;
+        border-radius: 18px;
+        background: white;
+        text-align: center;
+        box-shadow:
+            0 9px 26px rgba(31, 41, 55, 0.05);
+    }
+
+    .orders-empty-icon {
+        width: 66px;
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 17px;
+        border-radius: 19px;
+        background: #fff7ed;
+        font-size: 28px;
+    }
+
+    .orders-empty-state h2 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .orders-empty-state p {
+        max-width: 570px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .orders-list-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 15px;
+    }
+
+    .orders-list-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .orders-count {
+        flex-shrink: 0;
+        padding: 7px 12px;
+        border: 1px solid #fde68a;
+        border-radius: 999px;
+        color: #92400e;
+        background: #fffbeb;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .orders-list {
+        display: grid;
+        gap: 18px;
+    }
+
+    .order-card {
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 17px;
+        background: white;
+        box-shadow:
+            0 9px 27px rgba(31, 41, 55, 0.06);
+    }
+
+    .order-card-header {
+        display: grid;
+        grid-template-columns:
+            82px minmax(0, 1fr) auto;
+        gap: 17px;
+        align-items: center;
+        padding: 19px 21px;
+        border-bottom: 1px solid #f3f4f6;
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #ffffff
+            );
+    }
+
+    .order-reference {
+        padding: 13px 9px;
+        border-radius: 12px;
+        color: #92400e;
+        background: #fef3c7;
+        text-align: center;
+    }
+
+    .order-reference span,
+    .order-reference strong {
+        display: block;
+    }
+
+    .order-reference span {
+        margin-bottom: 3px;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .order-reference strong {
+        font-size: 17px;
+        font-weight: 850;
+    }
+
+    .order-heading-content {
+        min-width: 0;
+    }
+
+    .order-date {
+        display: block;
+        margin-bottom: 3px;
+        color: #d97706;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .order-heading-content h3 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .order-heading-content p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 11px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .order-status-group {
+        display: flex;
+        align-items: flex-end;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .order-status-pill,
+    .payment-status-pill {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: capitalize;
+    }
+
+    .order-status-pill.pending,
+    .payment-status-pill.pending {
+        color: #78350f;
+        background: #fef3c7;
+    }
+
+    .order-status-pill.preparing {
+        color: #075985;
+        background: #e0f2fe;
+    }
+
+    .order-status-pill.ready {
+        color: #1e3a8a;
+        background: #dbeafe;
+    }
+
+    .order-status-pill.served,
+    .payment-status-pill.paid {
+        color: #065f46;
+        background: #d1fae5;
+    }
+
+    .order-status-pill.completed,
+    .order-status-pill.other,
+    .payment-status-pill.none {
+        color: #374151;
+        background: #e5e7eb;
+    }
+
+    .order-status-pill.cancelled,
+    .payment-status-pill.failed {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .order-overview-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        padding: 17px 21px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .order-overview-item {
+        min-width: 0;
+        padding: 11px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .order-overview-item span,
+    .order-overview-item strong {
+        display: block;
+    }
+
+    .order-overview-item span {
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .order-overview-item strong {
+        color: #1f2937;
+        font-size: 12px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .total-overview strong {
+        color: #047857;
+    }
+
+    .order-progress-section {
+        padding: 18px 21px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .progress-section-heading,
+    .order-items-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 17px;
+    }
+
+    .progress-section-heading span,
+    .progress-section-heading strong,
+    .order-items-heading span,
+    .order-items-heading strong {
+        display: block;
+    }
+
+    .progress-section-heading span,
+    .order-items-heading span {
+        margin-bottom: 3px;
+        color: #6b7280;
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .progress-section-heading strong,
+    .order-items-heading strong {
+        color: #111827;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .receipt-action {
+        min-height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 12px;
+        border: 1px solid;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .receipt-action.paid {
+        border-color: #a7f3d0;
+        color: #047857;
+        background: #ecfdf5;
+    }
+
+    .receipt-action.pending {
+        border-color: #d1d5db;
+        color: #4b5563;
+        background: #f9fafb;
+    }
+
+    .receipt-action:hover {
+        filter: brightness(0.96);
+    }
+
+    .payment-failed-text {
+        color: #b91c1c;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
     .order-progress {
         display: flex;
         align-items: flex-start;
         width: 100%;
         overflow-x: auto;
-        padding-bottom: 4px;
+        padding: 5px 2px 8px;
     }
 
     .order-progress-step {
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-width: 72px;
+        min-width: 76px;
         color: #9ca3af;
-        font-size: 12px;
+        font-size: 10px;
         text-align: center;
     }
 
     .order-progress-dot {
         width: 18px;
         height: 18px;
-        border-radius: 50%;
-        border: 3px solid #d1d5db;
-        background: white;
         margin-bottom: 6px;
+        border: 3px solid #d1d5db;
+        border-radius: 50%;
+        background: white;
         transition: 0.2s;
     }
 
     .order-progress-line {
         flex: 1;
-        min-width: 24px;
+        min-width: 25px;
         height: 3px;
         margin-top: 8px;
         background: #d1d5db;
@@ -270,26 +1093,232 @@
     .order-progress-step.completed,
     .order-progress-step.current {
         color: #111827;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .order-progress-step.completed .order-progress-dot {
-        border-color: #198754;
-        background: #198754;
+        border-color: #059669;
+        background: #059669;
     }
 
     .order-progress-step.current .order-progress-dot {
-        border-color: #0d6efd;
+        border-color: #2563eb;
         background: white;
-        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        box-shadow:
+            0 0 0 4px rgba(37, 99, 235, 0.14);
     }
 
     .order-progress-line.completed {
-        background: #198754;
+        background: #059669;
     }
 
     .order-progress.cancelled {
-        opacity: 0.45;
+        opacity: 0.4;
+    }
+
+    .order-cancelled-message {
+        display: grid;
+        gap: 3px;
+        margin-top: 11px;
+        padding: 12px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
+    .order-cancelled-message strong {
+        font-size: 12px;
+    }
+
+    .order-cancelled-message span {
+        font-size: 11px;
+    }
+
+    .order-items-section {
+        padding: 18px 21px 20px;
+    }
+
+    .order-items-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .order-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 11px 13px;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .order-item-main {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 9px;
+    }
+
+    .order-item-quantity {
+        flex-shrink: 0;
+        color: #d97706;
+        font-size: 11px;
+        font-weight: 850;
+    }
+
+    .order-item-main strong {
+        color: #1f2937;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .order-item-price {
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .order-item-price span,
+    .order-item-price strong {
+        display: block;
+    }
+
+    .order-item-price span {
+        margin-bottom: 2px;
+        color: #9ca3af;
+        font-size: 9px;
+    }
+
+    .order-item-price strong {
+        color: #374151;
+        font-size: 12px;
+    }
+
+    .order-total-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 13px;
+        padding-top: 14px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .order-total-row span {
+        color: #374151;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .order-total-row strong {
+        color: #047857;
+        font-size: 18px;
+        font-weight: 850;
+    }
+
+    @@media (max-width: 900px) {
+        .order-summary-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .order-card-header {
+            grid-template-columns:
+                72px minmax(0, 1fr);
+        }
+
+        .order-status-group {
+            grid-column: 1 / -1;
+            align-items: flex-start;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .order-overview-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 680px) {
+        .orders-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .order-more-button {
+            width: 100%;
+        }
+
+        .live-tracking-row,
+        .status-change-notice {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .refresh-orders-button,
+        .refresh-notice-button {
+            width: 100%;
+        }
+
+        .orders-list-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .order-card-header {
+            grid-template-columns: 1fr;
+        }
+
+        .order-reference {
+            width: max-content;
+            min-width: 78px;
+        }
+
+        .order-overview-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .progress-section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .receipt-action {
+            width: 100%;
+        }
+
+        .order-item-row {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .order-item-price {
+            width: 100%;
+            text-align: left;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .order-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .live-tracking-time {
+            display: block;
+            margin: 5px 0 0;
+        }
+
+        .order-status-group {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .order-status-pill,
+        .payment-status-pill {
+            text-align: center;
+        }
     }
 </style>
 
@@ -305,41 +1334,59 @@
             ];
 
             const lastCheckElement =
-                document.getElementById("lastStatusCheck");
+                document.getElementById(
+                    "lastStatusCheck"
+                );
 
             const changeNotice =
-                document.getElementById("statusChangeNotice");
+                document.getElementById(
+                    "statusChangeNotice"
+                );
 
             const pollingError =
-                document.getElementById("statusPollingError");
+                document.getElementById(
+                    "statusPollingError"
+                );
 
-            function badgeClassFor(status) {
+            function statusClassFor(status) {
                 switch ((status || "").toLowerCase()) {
                     case "pending":
-                        return "bg-warning text-dark";
+                        return "pending";
+
                     case "preparing":
-                        return "bg-info text-dark";
+                        return "preparing";
+
                     case "ready to serve":
-                        return "bg-primary";
+                        return "ready";
+
                     case "served":
-                        return "bg-success";
+                        return "served";
+
                     case "completed":
-                        return "bg-dark";
+                        return "completed";
+
                     case "cancelled":
-                        return "bg-danger";
+                        return "cancelled";
+
                     default:
-                        return "bg-secondary";
+                        return "other";
                 }
             }
 
             function updateProgress(card, status) {
                 const progress =
-                    card.querySelector(".order-progress");
+                    card.querySelector(
+                        ".order-progress"
+                    );
 
                 const cancelledMessage =
                     card.querySelector(
                         ".order-cancelled-message"
                     );
+
+                if (!progress || !cancelledMessage) {
+                    return;
+                }
 
                 const steps =
                     Array.from(
@@ -363,54 +1410,80 @@
                 });
 
                 lines.forEach(function (line) {
-                    line.classList.remove("completed");
+                    line.classList.remove(
+                        "completed"
+                    );
                 });
 
                 if (status === "Cancelled") {
-                    progress.classList.add("cancelled");
-                    cancelledMessage.classList.remove("d-none");
+                    progress.classList.add(
+                        "cancelled"
+                    );
+
+                    cancelledMessage.classList.remove(
+                        "d-none"
+                    );
+
                     return;
                 }
 
-                progress.classList.remove("cancelled");
-                cancelledMessage.classList.add("d-none");
+                progress.classList.remove(
+                    "cancelled"
+                );
+
+                cancelledMessage.classList.add(
+                    "d-none"
+                );
 
                 const currentIndex =
-    statusOrder.indexOf(status);
+                    statusOrder.indexOf(status);
 
-if (currentIndex === -1) {
-    return;
-}
+                if (currentIndex === -1) {
+                    return;
+                }
 
-// A completed order should show the entire workflow in green.
-if (status === "Completed") {
-    steps.forEach(function (step) {
-        step.classList.add("completed");
-    });
+                if (status === "Completed") {
+                    steps.forEach(function (step) {
+                        step.classList.add(
+                            "completed"
+                        );
+                    });
 
-    lines.forEach(function (line) {
-        line.classList.add("completed");
-    });
+                    lines.forEach(function (line) {
+                        line.classList.add(
+                            "completed"
+                        );
+                    });
 
-    return;
-}
+                    return;
+                }
 
-steps.forEach(function (step, index) {
-    if (index < currentIndex) {
-        step.classList.add("completed");
-    } else if (index === currentIndex) {
-        step.classList.add("current");
-    }
-});
+                steps.forEach(function (step, index) {
+                    if (index < currentIndex) {
+                        step.classList.add(
+                            "completed"
+                        );
+                    }
+                    else if (index === currentIndex) {
+                        step.classList.add(
+                            "current"
+                        );
+                    }
+                });
 
-lines.forEach(function (line, index) {
-    if (index < currentIndex) {
-        line.classList.add("completed");
-    }
-});
+                lines.forEach(function (line, index) {
+                    if (index < currentIndex) {
+                        line.classList.add(
+                            "completed"
+                        );
+                    }
+                });
             }
 
-            function updateOrderCard(card, newStatus) {
+            function updateOrderCard(
+                card,
+                newStatus
+            ) {
                 const oldStatus =
                     card.dataset.currentStatus;
 
@@ -419,15 +1492,23 @@ lines.forEach(function (line, index) {
                         ".order-status-badge"
                     );
 
-                badge.textContent = newStatus;
+                if (badge) {
+                    badge.textContent =
+                        newStatus;
 
-                badge.className =
-                    "badge order-status-badge " +
-                    badgeClassFor(newStatus);
+                    badge.className =
+                        "order-status-pill " +
+                        "order-status-badge " +
+                        statusClassFor(newStatus);
+                }
 
-                updateProgress(card, newStatus);
+                updateProgress(
+                    card,
+                    newStatus
+                );
 
-                card.dataset.currentStatus = newStatus;
+                card.dataset.currentStatus =
+                    newStatus;
 
                 return oldStatus !== newStatus;
             }
@@ -438,7 +1519,8 @@ lines.forEach(function (line, index) {
                         "?handler=Statuses",
                         {
                             headers: {
-                                "Accept": "application/json"
+                                "Accept":
+                                    "application/json"
                             },
                             cache: "no-store"
                         }
@@ -486,21 +1568,31 @@ lines.forEach(function (line, index) {
                             );
                         });
 
-                    lastCheckElement.textContent =
-                        new Date()
-                            .toLocaleTimeString();
+                    if (lastCheckElement) {
+                        lastCheckElement.textContent =
+                            new Date()
+                                .toLocaleTimeString();
+                    }
 
-                    pollingError.classList.add("d-none");
+                    if (pollingError) {
+                        pollingError.classList.add(
+                            "d-none"
+                        );
+                    }
 
-                    if (anyChanged) {
+                    if (anyChanged &&
+                        changeNotice) {
                         changeNotice.classList.remove(
                             "d-none"
                         );
                     }
-                } catch (error) {
-                    pollingError.classList.remove(
-                        "d-none"
-                    );
+                }
+                catch (error) {
+                    if (pollingError) {
+                        pollingError.classList.remove(
+                            "d-none"
+                        );
+                    }
                 }
             }
 

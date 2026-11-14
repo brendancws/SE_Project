@@ -69,26 +69,42 @@ namespace RROMS.Pages.Customer.Orders
                 .OrderByDescending(p => p.PaymentID)
                 .ToListAsync();
 
+            var latestPaymentByOrder = latestPayments
+                .GroupBy(p => p.OrderID)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.First());
+
             Orders = orders.Select(o => new OrderView
             {
                 OrderID = o.OrderID,
                 OrderDate = o.OrderDate,
                 Status = o.Status ?? "Pending",
                 Total = o.TotalAmount ?? 0m,
+
                 BookingText = o.Reservation == null
-        ? "-"
-        : $"{o.Reservation.Date:dd MMM yyyy} at {o.Reservation.Time:hh\\:mm} - Table {o.Reservation.Table?.TableNumber ?? "-"}",
-                PaymentStatus = latestPayments.FirstOrDefault(p => p.OrderID == o.OrderID)?.Status,
+                    ? "-"
+                    : $"{o.Reservation.Date:dd MMM yyyy} " +
+                      $"at {o.Reservation.Time:hh\\:mm} - " +
+                      $"Table {o.Reservation.Table?.TableNumber ?? "-"}",
+
+                PaymentStatus =
+                    latestPaymentByOrder.TryGetValue(
+                        o.OrderID,
+                        out var latestPayment)
+                            ? latestPayment.Status
+                            : null,
+
                 Lines = items
-        .Where(i => i.OrderID == o.OrderID)
-        .Select(i => new OrderLineView
-        {
-            Name = i.MenuItem?.Name ?? "(removed item)",
-            Quantity = i.Quantity,
-            UnitPrice = i.UnitPrice,
-            Subtotal = i.Subtotal
-        })
-        .ToList()
+                    .Where(i => i.OrderID == o.OrderID)
+                    .Select(i => new OrderLineView
+                    {
+                        Name = i.MenuItem?.Name ?? "(removed item)",
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        Subtotal = i.Subtotal
+                    })
+                    .ToList()
             }).ToList();
 
             return Page();

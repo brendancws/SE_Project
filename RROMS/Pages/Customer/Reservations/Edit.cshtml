@@ -4,52 +4,686 @@
     ViewData["Title"] = "Change Reservation";
 }
 
-<div class="container py-4" style="max-width: 600px;">
-    <h2 class="mb-4">Change Reservation</h2>
+<div class="container py-4 reservation-edit-page">
+    <header class="edit-header">
+        <div>
+            <span class="edit-eyebrow">
+                Dining Reservations
+            </span>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <p class="text-muted small mb-3">
-                Current table: <strong>@Model.CurrentTableNumber</strong>.
-                We keep your table if it is still free, otherwise we choose another one.
+            <h1>Change Reservation</h1>
+
+            <p>
+                Update your visit details. Dineflow will retain your
+                current table when possible or assign another suitable
+                available table.
             </p>
+        </div>
 
-            <form method="post" novalidate>
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <a asp-page="/Customer/Reservations/Index"
+           class="back-reservations-link">
+            Back to My Reservations
+        </a>
+    </header>
 
-                <div class="mb-3">
-                    <label asp-for="Input.Date" class="form-label"></label>
-                    <input asp-for="Input.Date" type="date" class="form-control"
-                           value="@Model.Input.Date.ToString("yyyy-MM-dd")"
-                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                    <span asp-validation-for="Input.Date" class="text-danger small"></span>
+    <div class="edit-layout">
+        <section class="edit-form-card">
+            <div class="edit-card-heading">
+                <div class="edit-step-icon"
+                     aria-hidden="true">
+                    1
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Input.Time" class="form-label"></label>
-                    <input asp-for="Input.Time" type="time" class="form-control"
-                           value="@Model.Input.Time.ToString(@"hh\:mm")" />
-                    <span asp-validation-for="Input.Time" class="text-danger small"></span>
+                <div>
+                    <span>Reservation changes</span>
+                    <h2>Update your visit</h2>
+                </div>
+            </div>
+
+            <form method="post"
+                  novalidate
+                  class="edit-form">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger validation-summary">
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Input.NumberOfGuests" class="form-label"></label>
-                    <input asp-for="Input.NumberOfGuests" type="number" min="1" class="form-control" />
-                    <span asp-validation-for="Input.NumberOfGuests" class="text-danger small"></span>
+                <div class="current-table-panel">
+                    <div class="current-table-icon"
+                         aria-hidden="true">
+                        T
+                    </div>
+
+                    <div>
+                        <span>Current table</span>
+                        <strong>@Model.CurrentTableNumber</strong>
+                    </div>
+
+                    <p>
+                        This table will be kept if it still fits your
+                        party and is available for the changed time.
+                    </p>
                 </div>
 
-                <p class="text-muted small">
-                    Each booking is for a 2-hour slot. A changed booking will be set to pending confirmation.
-                </p>
+                <div class="edit-fields-grid">
+                    <div class="edit-field">
+                        <label asp-for="Input.Date"
+                               class="form-label">
+                        </label>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <a asp-page="/Customer/Reservations/Index" class="btn btn-outline-secondary">Back</a>
+                        <input asp-for="Input.Date"
+                               type="date"
+                               class="form-control edit-input"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                        <span asp-validation-for="Input.Date"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Select today or a future date.
+                        </small>
+                    </div>
+
+                    <div class="edit-field">
+                        <label asp-for="Input.Time"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.Time"
+                               type="time"
+                               class="form-control edit-input" />
+
+                        <span asp-validation-for="Input.Time"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Choose your updated arrival time.
+                        </small>
+                    </div>
+
+                    <div class="edit-field edit-field-full">
+                        <label asp-for="Input.NumberOfGuests"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.NumberOfGuests"
+                               type="number"
+                               min="1"
+                               class="form-control edit-input" />
+
+                        <span asp-validation-for="Input.NumberOfGuests"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="field-help">
+                            Enter the updated total number of guests,
+                            including yourself.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="edit-warning">
+                    <div class="warning-icon"
+                         aria-hidden="true">
+                        !
+                    </div>
+
+                    <div>
+                        <strong>Confirmation will be required again</strong>
+
+                        <p>
+                            Saving changes returns this reservation to
+                            Pending so restaurant staff can review the
+                            updated details.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="edit-information">
+                    <div class="information-icon"
+                         aria-hidden="true">
+                        i
+                    </div>
+
+                    <div>
+                        <strong>Table availability</strong>
+
+                        <p>
+                            Every reservation covers a two-hour dining
+                            slot. If your current table is unavailable,
+                            Dineflow will select the smallest suitable
+                            available table for your party.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="edit-actions">
+                    <button type="submit"
+                            class="save-changes-button">
+                        Save Changes
+                    </button>
+
+                    <a asp-page="/Customer/Reservations/Index"
+                       class="cancel-changes-link">
+                        Cancel
+                    </a>
                 </div>
             </form>
-        </div>
+        </section>
+
+        <aside class="edit-guide"
+               aria-label="Reservation change information">
+
+            <span class="edit-eyebrow">
+                Before You Save
+            </span>
+
+            <h2>What happens next?</h2>
+
+            <div class="edit-guide-list">
+                <div class="edit-guide-item">
+                    <span class="guide-number">1</span>
+
+                    <div>
+                        <strong>Availability is checked</strong>
+
+                        <p>
+                            Dineflow checks your updated two-hour slot
+                            against other active reservations.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="edit-guide-item">
+                    <span class="guide-number">2</span>
+
+                    <div>
+                        <strong>Your table is reviewed</strong>
+
+                        <p>
+                            Your current table is preferred when it
+                            remains suitable and available.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="edit-guide-item">
+                    <span class="guide-number">3</span>
+
+                    <div>
+                        <strong>Status returns to Pending</strong>
+
+                        <p>
+                            Restaurant staff must confirm your updated
+                            reservation details again.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="edit-duration-note">
+                <span>Dining duration</span>
+                <strong>2 hours</strong>
+            </div>
+        </aside>
     </div>
 </div>
+
+<style>
+    .reservation-edit-page {
+        max-width: 1040px;
+    }
+
+    .edit-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .edit-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .edit-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .edit-header p {
+        max-width: 670px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .back-reservations-link {
+        min-height: 42px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        color: #374151;
+        background: white;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .back-reservations-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .edit-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.55fr)
+            minmax(270px, 0.75fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .edit-form-card,
+    .edit-guide {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 10px 28px rgba(31, 41, 55, 0.06);
+    }
+
+    .edit-form-card {
+        overflow: hidden;
+    }
+
+    .edit-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 21px 23px;
+        border-bottom: 1px solid #dbeafe;
+        background:
+            linear-gradient(
+                135deg,
+                #f8fbff,
+                #eff6ff
+            );
+    }
+
+    .edit-step-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: #1e3a8a;
+        background: #bfdbfe;
+        font-size: 16px;
+        font-weight: 850;
+    }
+
+    .edit-card-heading span {
+        display: block;
+        margin-bottom: 3px;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .edit-card-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .edit-form {
+        padding: 24px;
+    }
+
+    .validation-summary:empty {
+        display: none;
+    }
+
+    .current-table-panel {
+        display: grid;
+        grid-template-columns:
+            42px auto minmax(0, 1fr);
+        gap: 13px;
+        align-items: center;
+        margin-bottom: 22px;
+        padding: 14px 15px;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        background: #f8fbff;
+    }
+
+    .current-table-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        color: #1d4ed8;
+        background: #dbeafe;
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .current-table-panel span,
+    .current-table-panel strong {
+        display: block;
+    }
+
+    .current-table-panel span {
+        margin-bottom: 2px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .current-table-panel strong {
+        color: #111827;
+        font-size: 18px;
+        font-weight: 850;
+    }
+
+    .current-table-panel p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+        text-align: right;
+    }
+
+    .edit-fields-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .edit-field {
+        min-width: 0;
+    }
+
+    .edit-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .edit-field .form-label {
+        margin-bottom: 7px;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .edit-input {
+        min-height: 46px;
+        border-color: #d1d5db;
+        border-radius: 10px;
+        color: #111827;
+        background: white;
+    }
+
+    .edit-input:focus {
+        border-color: #2563eb;
+        box-shadow:
+            0 0 0 0.2rem rgba(37, 99, 235, 0.14);
+    }
+
+    .field-help {
+        display: block;
+        margin-top: 6px;
+        color: #9ca3af;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .edit-warning,
+    .edit-information {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid;
+        border-radius: 12px;
+    }
+
+    .edit-warning {
+        border-color: #fde68a;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .edit-information {
+        border-color: #bfdbfe;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .warning-icon,
+    .information-icon {
+        width: 26px;
+        height: 26px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    .warning-icon {
+        background: #d97706;
+    }
+
+    .information-icon {
+        background: #2563eb;
+        font-family: Georgia, serif;
+    }
+
+    .edit-warning strong,
+    .edit-information strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .edit-warning p,
+    .edit-information p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .edit-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .save-changes-button,
+    .cancel-changes-link {
+        min-height: 43px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .save-changes-button {
+        border: 1px solid #2563eb;
+        color: white;
+        background: #2563eb;
+    }
+
+    .save-changes-button:hover {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+    }
+
+    .cancel-changes-link {
+        border: 1px solid #d1d5db;
+        color: #4b5563;
+        background: white;
+        text-decoration: none;
+    }
+
+    .cancel-changes-link:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .edit-guide {
+        padding: 24px;
+    }
+
+    .edit-guide h2 {
+        margin: 0 0 20px;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .edit-guide-list {
+        display: grid;
+        gap: 17px;
+    }
+
+    .edit-guide-item {
+        display: grid;
+        grid-template-columns: 31px minmax(0, 1fr);
+        gap: 11px;
+        align-items: start;
+    }
+
+    .guide-number {
+        width: 31px;
+        height: 31px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        color: #1e3a8a;
+        background: #dbeafe;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .edit-guide-item strong {
+        display: block;
+        margin-bottom: 3px;
+        color: #374151;
+        font-size: 13px;
+    }
+
+    .edit-guide-item p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .edit-duration-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 23px;
+        padding: 13px 14px;
+        border-radius: 11px;
+        color: #1e3a8a;
+        background: #eff6ff;
+    }
+
+    .edit-duration-note span {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .edit-duration-note strong {
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    @@media (max-width: 860px) {
+        .edit-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .edit-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-reservations-link {
+            width: 100%;
+        }
+
+        .current-table-panel {
+            grid-template-columns: 42px minmax(0, 1fr);
+        }
+
+        .current-table-panel p {
+            grid-column: 1 / -1;
+            text-align: left;
+        }
+
+        .edit-fields-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .edit-field-full {
+            grid-column: auto;
+        }
+
+        .edit-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .save-changes-button,
+        .cancel-changes-link {
+            width: 100%;
+        }
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

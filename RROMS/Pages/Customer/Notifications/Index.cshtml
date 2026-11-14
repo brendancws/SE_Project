@@ -2,166 +2,744 @@
 @model RROMS.Pages.Customer.Notifications.IndexModel
 @{
     ViewData["Title"] = "Notifications";
+
+    int totalNotifications =
+        Model.Notifications.Count;
+
+    int unreadNotifications =
+        Model.UnreadCount;
+
+    int readNotifications =
+        totalNotifications - unreadNotifications;
 }
 
-<div class="container py-4" style="max-width: 900px;">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="container py-4 notifications-page">
+    <header class="notifications-header">
         <div>
-            <h2 class="mb-1">Notifications</h2>
-            <p class="text-muted mb-0">
-                View reservation, order, and payment updates.
+            <span class="notifications-eyebrow">
+                Customer Updates
+            </span>
+
+            <h1>Notifications</h1>
+
+            <p>
+                Follow reservation, order, payment, and restaurant
+                status updates from one place.
             </p>
         </div>
 
-        @if (Model.UnreadCount > 0)
-        {
-            <form method="post"
-                  asp-page-handler="MarkAllRead">
-                <button type="submit"
-                        class="btn btn-outline-primary">
-                    Mark All as Read
-                </button>
-            </form>
-        }
-    </div>
+        <div class="notifications-header-actions">
+            @if (Model.UnreadCount > 0)
+            {
+                <form method="post"
+                      asp-page-handler="MarkAllRead">
+
+                    <button type="submit"
+                            class="mark-all-button">
+                        Mark All as Read
+                    </button>
+                </form>
+            }
+        </div>
+    </header>
 
     @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show"
-             role="alert">
-            @Model.StatusMessage
+        <div class="notification-success-message"
+             role="status">
+
+            <div class="success-message-icon"
+                 aria-hidden="true">
+                ✓
+            </div>
+
+            <div>
+                <strong>Notifications updated</strong>
+                <span>@Model.StatusMessage</span>
+            </div>
 
             <button type="button"
-                    class="btn-close"
+                    class="success-message-close"
                     data-bs-dismiss="alert"
                     aria-label="Close">
+                ×
             </button>
         </div>
     }
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-semibold">
-                    Unread notifications
-                </span>
+    <section class="notification-summary-grid"
+             aria-label="Notification overview">
 
-                <span class="badge bg-danger">
-                    @Model.UnreadCount
-                </span>
-            </div>
-        </div>
-    </div>
+        <article class="notification-summary-card">
+            <span class="summary-label">
+                Total Updates
+            </span>
+
+            <strong>@totalNotifications</strong>
+
+            <small>
+                All notifications
+            </small>
+        </article>
+
+        <article class="notification-summary-card unread-summary">
+            <span class="summary-label">
+                Unread
+            </span>
+
+            <strong>@unreadNotifications</strong>
+
+            <small>
+                Updates requiring review
+            </small>
+        </article>
+
+        <article class="notification-summary-card read-summary">
+            <span class="summary-label">
+                Read
+            </span>
+
+            <strong>@readNotifications</strong>
+
+            <small>
+                Previously reviewed
+            </small>
+        </article>
+    </section>
 
     @if (!Model.Notifications.Any())
     {
-        <div class="alert alert-info">
-            You do not have any notifications yet.
-        </div>
+        <section class="notifications-empty-state">
+            <div class="notifications-empty-icon"
+                 aria-hidden="true">
+                🔔
+            </div>
+
+            <h2>No notifications yet</h2>
+
+            <p>
+                Reservation, order, payment, and restaurant updates
+                will appear here when activity occurs.
+            </p>
+
+        </section>
     }
     else
     {
-        <div class="notification-list">
-            @foreach (var notification in Model.Notifications)
-            {
-                bool isUnread =
-                    notification.IsRead != true;
+        <section class="notifications-list-section">
+            <div class="notifications-list-heading">
+                <div>
+                    <span class="notifications-eyebrow">
+                        Recent Activity
+                    </span>
 
-                <article class="notification-item @(isUnread ? "unread" : "read")">
-                    <div class="notification-icon">
-                        🔔
-                    </div>
+                    <h2>Your Updates</h2>
+                </div>
 
-                    <div class="notification-content">
-                        <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div>
+                <span class="notification-count">
+                    @totalNotifications
+                    @(totalNotifications == 1
+                        ? "notification"
+                        : "notifications")
+                </span>
+            </div>
+
+            <div class="notification-list">
+                @foreach (var notification in Model.Notifications)
+                {
+                    bool isUnread =
+                        notification.IsRead != true;
+
+                    string message =
+                        notification.Message ?? string.Empty;
+
+                    string messageLower =
+                        message.ToLowerInvariant();
+
+                    string notificationType;
+                    string notificationTypeClass;
+                    string notificationIcon;
+
+                    if (messageLower.Contains("payment") ||
+                        messageLower.Contains("paid") ||
+                        messageLower.Contains("card") ||
+                        messageLower.Contains("cash"))
+                    {
+                        notificationType = "Payment";
+                        notificationTypeClass = "payment";
+                        notificationIcon = "RM";
+                    }
+                    else if (messageLower.Contains("order") ||
+                             messageLower.Contains("preparing") ||
+                             messageLower.Contains("ready to serve") ||
+                             messageLower.Contains("served") ||
+                             messageLower.Contains("completed"))
+                    {
+                        notificationType = "Order";
+                        notificationTypeClass = "order";
+                        notificationIcon = "O";
+                    }
+                    else if (messageLower.Contains("reservation") ||
+                             messageLower.Contains("booking") ||
+                             messageLower.Contains("table"))
+                    {
+                        notificationType = "Reservation";
+                        notificationTypeClass = "reservation";
+                        notificationIcon = "R";
+                    }
+                    else
+                    {
+                        notificationType = "General";
+                        notificationTypeClass = "general";
+                        notificationIcon = "N";
+                    }
+
+                    <article class="notification-item @(isUnread ? "unread" : "read")">
+                        <div class="notification-icon @notificationTypeClass"
+                             aria-hidden="true">
+                            @notificationIcon
+                        </div>
+
+                        <div class="notification-content">
+                            <div class="notification-item-top">
+                                <div>
+                                    <div class="notification-label-row">
+                                        <span class="notification-type">
+                                            @notificationType Update
+                                        </span>
+
+                                        @if (isUnread)
+                                        {
+                                            <span class="new-notification-pill">
+                                                New
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p class="notification-message">
+                                        @notification.Message
+                                    </p>
+                                </div>
+
                                 @if (isUnread)
                                 {
-                                    <span class="badge bg-primary mb-2">
-                                        New
+                                    <form method="post"
+                                          asp-page-handler="MarkRead"
+                                          asp-route-id="@notification.NotificationID">
+
+                                        <button type="submit"
+                                                class="mark-read-button">
+                                            Mark as Read
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="read-notification-pill">
+                                        Read
                                     </span>
                                 }
-
-                                <p class="notification-message mb-1">
-                                    @notification.Message
-                                </p>
-
-                                <small class="text-muted">
-                                    @(notification.CreatedAt?.ToString(
-                                        "dd MMM yyyy, HH:mm") ?? "-")
-                                </small>
                             </div>
 
-                            @if (isUnread)
-                            {
-                                <form method="post"
-                                      asp-page-handler="MarkRead"
-                                      asp-route-id="@notification.NotificationID">
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-primary">
-                                        Mark as Read
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">
-                                    Read
+                            <div class="notification-meta">
+                                <span>
+                                    @(notification.CreatedAt?.ToString(
+                                        "dd MMM yyyy")
+                                        ?? "Date unavailable")
                                 </span>
-                            }
+
+                                <span aria-hidden="true">•</span>
+
+                                <span>
+                                    @(notification.CreatedAt?.ToString(
+                                        "HH:mm")
+                                        ?? "--:--")
+                                </span>
+
+                                <span aria-hidden="true">•</span>
+
+                                <span>
+                                    Notification
+                                    #@notification.NotificationID
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </article>
-            }
-        </div>
+                    </article>
+                }
+            </div>
+        </section>
     }
 </div>
 
 <style>
-    .notification-list {
+    .notifications-page {
+        max-width: 1040px;
+    }
+
+    .notifications-header {
         display: flex;
-        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .notifications-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .notifications-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .notifications-header p {
+        max-width: 670px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .notifications-header-actions {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .notifications-header-actions form {
+        margin: 0;
+    }
+
+    .mark-all-button {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .mark-all-button {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .mark-all-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .notification-success-message {
+        display: grid;
+        grid-template-columns:
+            34px minmax(0, 1fr) auto;
         gap: 12px;
+        align-items: center;
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        color: #065f46;
+        background: #ecfdf5;
     }
 
-    .notification-item {
-        display: flex;
-        gap: 15px;
-        padding: 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        background: white;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
-    }
-
-    .notification-item.unread {
-        border-left: 5px solid #0d6efd;
-        background: #f8fbff;
-    }
-
-    .notification-item.read {
-        opacity: 0.78;
-    }
-
-    .notification-icon {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
+    .success-message-icon {
+        width: 34px;
+        height: 34px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
+        color: white;
+        background: #059669;
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .notification-success-message strong,
+    .notification-success-message span {
+        display: block;
+    }
+
+    .notification-success-message strong {
+        margin-bottom: 2px;
+        font-size: 13px;
+    }
+
+    .notification-success-message span {
+        font-size: 12px;
+    }
+
+    .success-message-close {
+        border: 0;
+        color: #047857;
+        background: transparent;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .notification-summary-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 23px;
+    }
+
+    .notification-summary-card {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        background: white;
+        box-shadow:
+            0 8px 22px rgba(31, 41, 55, 0.05);
+    }
+
+    .notification-summary-card.unread-summary {
+        border-color: #fde68a;
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #fffbeb
+            );
+    }
+
+    .notification-summary-card.read-summary {
+        border-color: #d1fae5;
+        background:
+            linear-gradient(
+                135deg,
+                #ffffff,
+                #ecfdf5
+            );
+    }
+
+    .notification-summary-card span,
+    .notification-summary-card strong,
+    .notification-summary-card small {
+        display: block;
+    }
+
+    .summary-label {
+        margin-bottom: 6px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .notification-summary-card strong {
+        color: #111827;
+        font-size: 25px;
+        font-weight: 850;
+    }
+
+    .notification-summary-card small {
+        margin-top: 4px;
+        color: #9ca3af;
+        font-size: 11px;
+    }
+
+    .notifications-empty-state {
+        padding: 70px 30px;
+        border: 1px dashed #d1d5db;
+        border-radius: 18px;
+        background: white;
+        text-align: center;
+        box-shadow:
+            0 9px 26px rgba(31, 41, 55, 0.05);
+    }
+
+    .notifications-empty-icon {
+        width: 66px;
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 17px;
+        border-radius: 19px;
         background: #fff7ed;
-        font-size: 20px;
+        font-size: 27px;
+    }
+
+    .notifications-empty-state h2 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .notifications-empty-state p {
+        max-width: 570px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .notifications-list-section {
+        margin-top: 4px;
+    }
+
+    .notifications-list-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 15px;
+    }
+
+    .notifications-list-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .notification-count {
+        flex-shrink: 0;
+        padding: 7px 12px;
+        border: 1px solid #fde68a;
+        border-radius: 999px;
+        color: #92400e;
+        background: #fffbeb;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .notification-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .notification-item {
+        display: grid;
+        grid-template-columns:
+            50px minmax(0, 1fr);
+        gap: 15px;
+        padding: 17px 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        background: white;
+        box-shadow:
+            0 7px 20px rgba(31, 41, 55, 0.045);
+    }
+
+    .notification-item.unread {
+        border-color: #fcd34d;
+        border-left: 5px solid #f59e0b;
+        background:
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #ffffff
+            );
+    }
+
+    .notification-item.read {
+        background: #fafafa;
+    }
+
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        color: #374151;
+        background: #e5e7eb;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .notification-icon.reservation {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .notification-icon.order {
+        color: #1e3a8a;
+        background: #dbeafe;
+    }
+
+    .notification-icon.payment {
+        color: #065f46;
+        background: #d1fae5;
+    }
+
+    .notification-icon.general {
+        color: #374151;
+        background: #e5e7eb;
     }
 
     .notification-content {
-        flex: 1;
         min-width: 0;
     }
 
+    .notification-item-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .notification-label-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .notification-type {
+        color: #d97706;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .new-notification-pill,
+    .read-notification-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 9px;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .new-notification-pill {
+        color: #78350f;
+        background: #fef3c7;
+    }
+
+    .read-notification-pill {
+        flex-shrink: 0;
+        color: #4b5563;
+        background: #e5e7eb;
+    }
+
     .notification-message {
+        margin: 0;
         color: #1f2937;
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1.55;
         overflow-wrap: anywhere;
+    }
+
+    .notification-item.read .notification-message {
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .notification-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 9px;
+        color: #9ca3af;
+        font-size: 10px;
+    }
+
+    .mark-read-button {
+        min-height: 34px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 11px;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        color: #92400e;
+        background: #fffbeb;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .mark-read-button:hover {
+        color: white;
+        background: #d97706;
+    }
+
+    @@media (max-width: 760px) {
+        .notifications-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .notifications-header-actions,
+.notifications-header-actions form,
+.mark-all-button {
+    width: 100%;
+}
+
+        .notification-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .notifications-list-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .notification-item-top {
+            flex-direction: column;
+        }
+
+        .notification-item-top form,
+        .mark-read-button {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .notifications-header-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .notification-item {
+            grid-template-columns: 1fr;
+        }
+
+        .notification-icon {
+            width: 44px;
+            height: 44px;
+        }
+
+        .notification-success-message {
+            grid-template-columns:
+                34px minmax(0, 1fr);
+        }
+
+        .success-message-close {
+            grid-column: 1 / -1;
+            justify-self: end;
+        }
     }
 </style>
