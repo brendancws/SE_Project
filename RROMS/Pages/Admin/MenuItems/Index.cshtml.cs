@@ -1,0 +1,32 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using RROMS.Data;
+using RROMS.Models;
+
+namespace RROMS.Pages.Admin.MenuItems
+{
+    [Authorize(Roles = "Admin")]
+    public class IndexModel : PageModel
+    {
+        private readonly ApplicationDbContext _db;
+
+        public IndexModel(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public List<MenuItem> Items { get; set; } = new();
+
+        public async Task OnGetAsync()
+        {
+            Items = await _db.MenuItems
+                .AsNoTracking()
+                .Include(menuItem => menuItem.Category)
+                .OrderBy(menuItem =>
+                    menuItem.Category!.CategoryName)
+                .ThenBy(menuItem => menuItem.Name)
+                .ToListAsync();
+        }
+    }
+}

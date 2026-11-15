@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RROMS.Models
 {
@@ -20,5 +21,27 @@ namespace RROMS.Models
         public string? TransactionNo { get; set; }
 
         public CustomerOrder? Order { get; set; }
+
+        // Admin compatibility aliases.
+        [NotMapped]
+        public int Id
+        {
+            get => PaymentID;
+            set => PaymentID = value;
+        }
+
+        [NotMapped]
+        public int OrderId
+        {
+            get => OrderID;
+            set => OrderID = value;
+        }
+
+        [NotMapped]
+        public DateTime? PaidAt
+        {
+            get => PaymentDate;
+            set => PaymentDate = value;
+        }
     }
 }

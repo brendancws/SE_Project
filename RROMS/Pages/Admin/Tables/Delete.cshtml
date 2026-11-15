@@ -1,0 +1,21 @@
+﻿@page
+@model RROMS.Pages.Admin.Tables.DeleteModel
+@{
+    ViewData["Title"] = "Delete Table";
+    Layout = "_AdminLayout";
+}
+
+<h1>Delete Restaurant Table</h1>
+<p class="subtitle">Are you sure you want to delete this table?</p>
+
+<div class="card" style="max-width:560px;">
+    <p><strong>Table:</strong> @Model.Table.TableNumber</p>
+    <p><strong>Capacity:</strong> @Model.Table.Capacity seats</p>
+    <p><strong>Location:</strong> @Model.Table.Location</p>
+
+    <form method="post" style="margin-top:20px;">
+        <input type="hidden" asp-for="Table.Id" />
+        <button type="submit" style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Yes, Delete</button>
+        <a href="/Admin/Tables" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+    </form>
+</div>

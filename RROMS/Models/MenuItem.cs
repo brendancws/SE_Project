@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RROMS.Models
 {
@@ -20,5 +21,34 @@ namespace RROMS.Models
         public string? ImageURL { get; set; }
 
         public MenuCategory? Category { get; set; }
+
+        // Admin compatibility aliases.
+        [NotMapped]
+        public int Id
+        {
+            get => MenuItemID;
+            set => MenuItemID = value;
+        }
+
+        [NotMapped]
+        public int MenuCategoryId
+        {
+            get => CategoryID;
+            set => CategoryID = value;
+        }
+
+        [NotMapped]
+        public string? ImageUrl
+        {
+            get => ImageURL;
+            set => ImageURL = value;
+        }
+
+        [NotMapped]
+        public bool IsAvailable
+        {
+            get => Availability ?? false;
+            set => Availability = value;
+        }
     }
 }

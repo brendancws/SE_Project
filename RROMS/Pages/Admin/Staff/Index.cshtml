@@ -1,0 +1,111 @@
+﻿@page
+@model RROMS.Pages.Admin.Staff.IndexModel
+
+@{
+    ViewData["Title"] = "Staff";
+    Layout = "_AdminLayout";
+}
+
+<h1>Staff Accounts</h1>
+<p class="subtitle">
+    Manage Restaurant Staff accounts and access status.
+</p>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div style="margin-bottom:16px; padding:12px 14px; border-radius:8px; background:#dcfce7; color:#166534;">
+        @statusMessage
+    </div>
+}
+
+<div class="card">
+    <a asp-page="Create"
+       style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">
+        + Add Staff
+    </a>
+
+    @if (Model.StaffMembers.Count == 0)
+    {
+        <p style="color:#64748b;">
+            No Staff accounts were found.
+        </p>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                        <th style="padding:10px 8px;">Name</th>
+                        <th style="padding:10px 8px;">Email</th>
+                        <th style="padding:10px 8px;">Phone</th>
+                        <th style="padding:10px 8px;">Role</th>
+                        <th style="padding:10px 8px;">Status</th>
+                        <th style="padding:10px 8px; text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var staff in Model.StaffMembers)
+                    {
+                        bool isActive = string.Equals(
+                            staff.Status,
+                            "Active",
+                            StringComparison.OrdinalIgnoreCase);
+
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:12px 8px; font-weight:600;">
+                                @staff.Name
+                            </td>
+
+                            <td style="padding:12px 8px; color:#475569;">
+                                @staff.Email
+                            </td>
+
+                            <td style="padding:12px 8px; color:#475569;">
+                                @(string.IsNullOrWhiteSpace(staff.Phone)
+                                    ? "Not provided"
+                                    : staff.Phone)
+                            </td>
+
+                            <td style="padding:12px 8px;">
+                                <span style="background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:20px; font-size:12px;">
+                                    @(staff.Role ?? "Staff")
+                                </span>
+                            </td>
+
+                            <td style="padding:12px 8px;">
+                                @if (isActive)
+                                {
+                                    <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+
+                            <td style="padding:12px 8px; text-align:right; white-space:nowrap;">
+                                <a asp-page="Edit"
+                                   asp-route-id="@staff.StaffID"
+                                   style="color:#0284c7; text-decoration:none; margin-right:10px;">
+                                    Edit
+                                </a>
+
+                                <a asp-page="Delete"
+                                   asp-route-id="@staff.StaffID"
+                                   style="color:#dc2626; text-decoration:none;">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

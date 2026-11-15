@@ -1,0 +1,26 @@
+﻿@page
+@model RROMS.Pages.Admin.Reports.IndexModel
+@{
+    ViewData["Title"] = "Reports";
+    Layout = "_AdminLayout";
+}
+
+<h1>Reports</h1>
+<p class="subtitle">Generate filtered reports for your restaurant.</p>
+
+<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;">
+    <a href="/Admin/Reports/Reservations" style="text-decoration:none;">
+        <div class="card" style="cursor:pointer; transition: box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
+            <div style="font-size:32px; margin-bottom:12px;">📅</div>
+            <div style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:6px;">Reservations Report</div>
+            <div style="color:#64748b; font-size:14px;">Filter by date range and status. View counts, guests, and details.</div>
+        </div>
+    </a>
+    <a href="/Admin/Reports/Sales" style="text-decoration:none;">
+        <div class="card" style="cursor:pointer; transition: box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
+            <div style="font-size:32px; margin-bottom:12px;">💰</div>
+            <div style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:6px;">Sales Report</div>
+            <div style="color:#64748b; font-size:14px;">Filter orders by date and status. View revenue and order breakdown.</div>
+        </div>
+    </a>
+</div>

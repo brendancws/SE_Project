@@ -1,0 +1,63 @@
+﻿@page
+@model RROMS.Pages.Admin.Staff.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete Staff";
+    Layout = "_AdminLayout";
+}
+
+<h1>Delete Staff Member</h1>
+<p class="subtitle">
+    Confirm whether this Staff account should be permanently deleted.
+</p>
+
+<div class="card" style="max-width:560px;">
+    <p>
+        <strong>Name:</strong>
+        @Model.Input.Name
+    </p>
+
+    <p>
+        <strong>Email:</strong>
+        @Model.Input.Email
+    </p>
+
+    <p>
+        <strong>Phone:</strong>
+        @(string.IsNullOrWhiteSpace(Model.Input.Phone)
+            ? "Not provided"
+            : Model.Input.Phone)
+    </p>
+
+    <p>
+        <strong>Role:</strong>
+        @(Model.Input.Role ?? "Staff")
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+        @(Model.Input.Status ?? "Unknown")
+    </p>
+
+    <div style="margin-top:20px; padding:12px; border-radius:8px; background:#fef2f2; color:#991b1b;">
+        Deleting this account cannot be undone. If the account should only
+        be prevented from signing in, cancel this action and set its status
+        to Inactive instead.
+    </div>
+
+    <form method="post"
+          style="margin-top:20px;">
+        <input asp-for="Input.StaffID"
+               type="hidden" />
+
+        <button type="submit"
+                style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+            Yes, Delete
+        </button>
+
+        <a asp-page="Index"
+           style="margin-left:10px; color:#64748b; text-decoration:none;">
+            Cancel
+        </a>
+    </form>
+</div>

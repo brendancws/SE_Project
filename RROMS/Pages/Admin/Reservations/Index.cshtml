@@ -1,0 +1,74 @@
+﻿@page
+@model RROMS.Pages.Admin.Reservations.IndexModel
+@{
+    ViewData["Title"] = "Reservations Monitor";
+    Layout = "_AdminLayout";
+}
+
+<h1>Reservations</h1>
+<p class="subtitle">Monitor all reservations across the restaurant.</p>
+
+<div style="display:flex; gap:16px; margin-bottom:20px;">
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Today's Reservations</div>
+        <div style="font-size:24px; font-weight:700; color:#0f172a;">@Model.TodayCount</div>
+    </div>
+    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="font-size:13px; color:#64748b;">Pending</div>
+        <div style="font-size:24px; font-weight:700; color:#f59e0b;">@Model.PendingCount</div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="margin-bottom:16px; display:flex; gap:8px;">
+        <a href="?filter=all"       style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "all" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">All</a>
+        <a href="?filter=today"     style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "today" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Today</a>
+        <a href="?filter=upcoming"  style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "upcoming" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Upcoming</a>
+        <a href="?filter=pending"   style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "pending" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Pending</a>
+        <a href="?filter=cancelled" style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "cancelled" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Cancelled</a>
+    </div>
+
+    @if (Model.Reservations.Count == 0)
+    {
+        <p style="color:#64748b;">No reservations found.</p>
+    }
+    else
+    {
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+                    <th style="padding:10px 8px;">Date & Time</th>
+                    <th style="padding:10px 8px;">Customer</th>
+                    <th style="padding:10px 8px;">Phone</th>
+                    <th style="padding:10px 8px;">Party</th>
+                    <th style="padding:10px 8px;">Table</th>
+                    <th style="padding:10px 8px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Reservations)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:12px 8px; font-weight:600;">@r.ReservationDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td style="padding:12px 8px;">@r.CustomerName</td>
+                        <td style="padding:12px 8px; color:#475569;">@r.CustomerPhone</td>
+                        <td style="padding:12px 8px;">@r.PartySize</td>
+                        <td style="padding:12px 8px; color:#475569;">@(r.Table?.TableNumber ?? "—")</td>
+                        <td style="padding:12px 8px;">
+                            @{
+                                var badge = r.Status switch
+                                {
+                                    "Confirmed" => "background:#dcfce7; color:#166534;",
+                                    "Cancelled" => "background:#fee2e2; color:#991b1b;",
+                                    "Completed" => "background:#e0e7ff; color:#3730a3;",
+                                    _ => "background:#fef3c7; color:#92400e;"
+                                };
+                            }
+                            <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">@r.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

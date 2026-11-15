@@ -1,0 +1,125 @@
+﻿@page
+@model RROMS.Pages.Admin.Staff.CreateModel
+
+@{
+    ViewData["Title"] = "Add Staff";
+    Layout = "_AdminLayout";
+}
+
+<h1>Add Staff Member</h1>
+<p class="subtitle">
+    Create a new Restaurant Staff account.
+</p>
+
+<div class="card" style="max-width:560px;">
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"
+             style="color:#dc2626; margin-bottom:16px;">
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label asp-for="Input.Name"
+                   style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Full Name *
+            </label>
+
+            <input asp-for="Input.Name"
+                   placeholder="e.g. John Doe"
+                   style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+
+            <span asp-validation-for="Input.Name"
+                  style="color:#dc2626; font-size:12px;">
+            </span>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label asp-for="Input.Email"
+                   style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Email *
+            </label>
+
+            <input asp-for="Input.Email"
+                   type="email"
+                   placeholder="name@example.com"
+                   style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+
+            <span asp-validation-for="Input.Email"
+                  style="color:#dc2626; font-size:12px;">
+            </span>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label asp-for="Input.Phone"
+                   style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Phone
+            </label>
+
+            <input asp-for="Input.Phone"
+                   placeholder="012-3456789"
+                   style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+
+            <span asp-validation-for="Input.Phone"
+                  style="color:#dc2626; font-size:12px;">
+            </span>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label asp-for="Password"
+                   style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Password *
+            </label>
+
+            <input asp-for="Password"
+                   type="password"
+                   autocomplete="new-password"
+                   placeholder="At least 8 characters with uppercase, lowercase and number"
+                   style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
+
+            <span asp-validation-for="Password"
+                  style="color:#dc2626; font-size:12px;">
+            </span>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Role
+            </label>
+
+            <input type="text"
+                   value="Staff"
+                   disabled
+                   style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:#f8fafc; color:#475569;" />
+
+            <input asp-for="Input.Role"
+                   type="hidden"
+                   value="Staff" />
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <label asp-for="Input.Status"
+                   style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">
+                Account Status
+            </label>
+
+            <select asp-for="Input.Status"
+                    style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
+
+        <button type="submit"
+                style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+            Save
+        </button>
+
+        <a asp-page="Index"
+           style="margin-left:10px; color:#64748b; text-decoration:none;">
+            Cancel
+        </a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

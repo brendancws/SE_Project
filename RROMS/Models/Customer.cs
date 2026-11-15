@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RROMS.Models
 {
@@ -21,9 +22,57 @@ namespace RROMS.Models
 
         public string? Status { get; set; }
 
-        // S7 - Customer requests and preferences
         public string? SpecialRequest { get; set; }
 
         public string? DiningPreference { get; set; }
+
+        // Admin compatibility aliases.
+        [NotMapped]
+        public int Id
+        {
+            get => CustomerID;
+            set => CustomerID = value;
+        }
+
+        [NotMapped]
+        public int CustomerId
+        {
+            get => CustomerID;
+            set => CustomerID = value;
+        }
+
+        [NotMapped]
+        public string FullName
+        {
+            get => Name;
+            set => Name = value;
+        }
+
+        [NotMapped]
+        public string PasswordHash
+        {
+            get => Password;
+            set => Password = value;
+        }
+
+        [NotMapped]
+        public DateTime? CreatedAt
+        {
+            get => DateRegistered;
+            set => DateRegistered = value;
+        }
+
+        [NotMapped]
+        public bool IsActive
+        {
+            get => string.Equals(
+                Status,
+                "Active",
+                StringComparison.OrdinalIgnoreCase);
+
+            set => Status = value
+                ? "Active"
+                : "Inactive";
+        }
     }
 }
