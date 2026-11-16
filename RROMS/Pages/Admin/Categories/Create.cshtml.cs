@@ -18,11 +18,30 @@ namespace RROMS.Pages.Admin.Categories
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
+            Category.CategoryName =
+                Category.CategoryName?.Trim() ?? string.Empty;
+
+            Category.Description =
+                string.IsNullOrWhiteSpace(Category.Description)
+                    ? null
+                    : Category.Description.Trim();
+
+            if (string.IsNullOrWhiteSpace(Category.CategoryName))
+            {
+                ModelState.AddModelError(
+                    "Category.CategoryName",
+                    "Category name is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
 
             _db.MenuCategories.Add(Category);
             await _db.SaveChangesAsync();
-            return RedirectToPage("Index");
+
+            return RedirectToPage("./Index");
         }
     }
 }

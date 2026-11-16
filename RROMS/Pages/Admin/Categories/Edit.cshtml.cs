@@ -25,11 +25,28 @@ namespace RROMS.Pages.Admin.Categories
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
 
-            _db.MenuCategories.Update(Category);
+            var category = await _db.MenuCategories
+                .FirstOrDefaultAsync(item =>
+                    item.CategoryID == Category.CategoryID);
+
+            if (category == null)
+            {
+                return RedirectToPage("./Index");
+            }
+
+            category.CategoryName = Category.CategoryName.Trim();
+            category.Description = string.IsNullOrWhiteSpace(Category.Description)
+                ? null
+                : Category.Description.Trim();
+
             await _db.SaveChangesAsync();
-            return RedirectToPage("Index");
+
+            return RedirectToPage("./Index");
         }
     }
 }
