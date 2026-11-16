@@ -5,60 +5,285 @@
     Layout = "_AdminLayout";
 }
 
+<style>
+    .dashboard-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .dashboard-summary-card {
+        display: block;
+        margin-bottom: 0;
+        color: inherit;
+        text-decoration: none;
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .dashboard-summary-card:hover {
+        transform: translateY(-2px);
+        border-color: #f59e0b;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+    }
+
+    .dashboard-summary-card:focus-visible {
+        border-color: #f59e0b;
+        outline: 3px solid rgba(245, 158, 11, 0.24);
+        outline-offset: 2px;
+    }
+
+    .dashboard-card-label {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .dashboard-card-value {
+        margin-top: 2px;
+        color: #0f172a;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .dashboard-card-value.warning {
+        color: #f59e0b;
+    }
+
+    .dashboard-card-value.success {
+        color: #166534;
+    }
+
+    .dashboard-card-detail {
+        margin-top: 4px;
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .dashboard-card-action {
+        margin-top: 12px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .dashboard-summary-card:hover .dashboard-card-action {
+        color: #d97706;
+    }
+
+    .dashboard-chart-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-chart-grid:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .dashboard-chart-card {
+        min-width: 0;
+        margin-bottom: 0;
+    }
+
+    .dashboard-chart-title {
+        margin-bottom: 16px;
+        color: #0f172a;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .dashboard-chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .dashboard-chart-container.compact {
+        height: 280px;
+    }
+
+    @@media (max-width: 1100px) {
+        .dashboard-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dashboard-chart-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-chart-container,
+        .dashboard-chart-container.compact {
+            height: 260px;
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .dashboard-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-chart-container,
+        .dashboard-chart-container.compact {
+            height: 230px;
+        }
+    }
+</style>
+
 <h1>Admin Dashboard</h1>
 <p class="subtitle">Overview of restaurant operations.</p>
 
 <!-- Summary cards -->
-<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:24px;">
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Today's Reservations</div>
-        <div style="font-size:28px; font-weight:700; color:#0f172a;">@Model.TodayReservations</div>
-        <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Total: @Model.TotalReservations</div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Pending Orders</div>
-        <div style="font-size:28px; font-weight:700; color:#f59e0b;">@Model.PendingOrders</div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Total Revenue (Served)</div>
-        <div style="font-size:28px; font-weight:700; color:#166534;">RM @Model.TotalRevenue.ToString("F2")</div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Menu Items</div>
-        <div style="font-size:28px; font-weight:700; color:#0f172a;">@Model.TotalMenuItems</div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Staff</div>
-        <div style="font-size:28px; font-weight:700; color:#0f172a;">@Model.TotalStaff</div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:13px; color:#64748b;">Customers</div>
-        <div style="font-size:28px; font-weight:700; color:#0f172a;">@Model.TotalCustomers</div>
-    </div>
+<div class="dashboard-summary-grid">
+    <a href="/Admin/Reservations"
+       class="card dashboard-summary-card"
+       aria-label="View reservations">
+        <div class="dashboard-card-label">
+            Today's Reservations
+        </div>
+
+        <div class="dashboard-card-value">
+            @Model.TodayReservations
+        </div>
+
+        <div class="dashboard-card-detail">
+            Total: @Model.TotalReservations
+        </div>
+
+        <div class="dashboard-card-action">
+            View reservations →
+        </div>
+    </a>
+
+    <a href="/Admin/Orders"
+       class="card dashboard-summary-card"
+       aria-label="View pending orders">
+        <div class="dashboard-card-label">
+            Pending Orders
+        </div>
+
+        <div class="dashboard-card-value warning">
+            @Model.PendingOrders
+        </div>
+
+        <div class="dashboard-card-action">
+            View orders →
+        </div>
+    </a>
+
+    <a href="/Admin/Reports/Sales"
+       class="card dashboard-summary-card"
+       aria-label="View sales report">
+        <div class="dashboard-card-label">
+            Total Revenue (Served)
+        </div>
+
+        <div class="dashboard-card-value success">
+            RM @Model.TotalRevenue.ToString("F2")
+        </div>
+
+        <div class="dashboard-card-action">
+            View sales report →
+        </div>
+    </a>
+
+    <a href="/Admin/MenuItems"
+       class="card dashboard-summary-card"
+       aria-label="Manage menu items">
+        <div class="dashboard-card-label">
+            Menu Items
+        </div>
+
+        <div class="dashboard-card-value">
+            @Model.TotalMenuItems
+        </div>
+
+        <div class="dashboard-card-action">
+            Manage menu items →
+        </div>
+    </a>
+
+    <a href="/Admin/Staff"
+       class="card dashboard-summary-card"
+       aria-label="Manage Staff accounts">
+        <div class="dashboard-card-label">
+            Staff
+        </div>
+
+        <div class="dashboard-card-value">
+            @Model.TotalStaff
+        </div>
+
+        <div class="dashboard-card-action">
+            Manage Staff →
+        </div>
+    </a>
+
+    <a href="/Admin/Customers"
+       class="card dashboard-summary-card"
+       aria-label="Manage customer accounts">
+        <div class="dashboard-card-label">
+            Customers
+        </div>
+
+        <div class="dashboard-card-value">
+            @Model.TotalCustomers
+        </div>
+
+        <div class="dashboard-card-action">
+            Manage customers →
+        </div>
+    </a>
 </div>
 
 <!-- Charts row 1 -->
-<div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:20px;">
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:16px;">Reservations — Last 14 Days</div>
-        <canvas id="reservationsChart" height="90"></canvas>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:16px;">Orders by Status</div>
-        <canvas id="orderStatusChart" height="180"></canvas>
-    </div>
+<div class="dashboard-chart-grid">
+    <section class="card dashboard-chart-card">
+        <div class="dashboard-chart-title">
+            Reservations — Last 14 Days
+        </div>
+
+        <div class="dashboard-chart-container">
+            <canvas id="reservationsChart"></canvas>
+        </div>
+    </section>
+
+    <section class="card dashboard-chart-card">
+        <div class="dashboard-chart-title">
+            Orders by Status
+        </div>
+
+        <div class="dashboard-chart-container compact">
+            <canvas id="orderStatusChart"></canvas>
+        </div>
+    </section>
 </div>
 
 <!-- Charts row 2 -->
-<div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:16px;">Revenue — Last 7 Days (RM)</div>
-        <canvas id="revenueChart" height="90"></canvas>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-        <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:16px;">Items per Category</div>
-        <canvas id="categoriesChart" height="180"></canvas>
-    </div>
+<div class="dashboard-chart-grid">
+    <section class="card dashboard-chart-card">
+        <div class="dashboard-chart-title">
+            Revenue — Last 7 Days (RM)
+        </div>
+
+        <div class="dashboard-chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </section>
+
+    <section class="card dashboard-chart-card">
+        <div class="dashboard-chart-title">
+            Items per Category
+        </div>
+
+        <div class="dashboard-chart-container compact">
+            <canvas id="categoriesChart"></canvas>
+        </div>
+    </section>
 </div>
 
 @section Scripts {
@@ -82,6 +307,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             }
@@ -100,6 +326,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }
             }
         });
@@ -118,6 +345,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,     
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true } }
             }
@@ -138,6 +366,7 @@
             options: {
                 indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
             }
