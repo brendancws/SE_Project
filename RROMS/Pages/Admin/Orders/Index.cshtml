@@ -4,113 +4,527 @@
 @{
     ViewData["Title"] = "Orders Monitor";
     Layout = "_AdminLayout";
+
+    string FilterClass(string filter)
+    {
+        return Model.Filter == filter
+            ? "order-filter active"
+            : "order-filter";
+    }
 }
 
-<h1>Orders</h1>
-<p class="subtitle">Monitor all customer orders.</p>
+<style>
+    .order-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
 
-<div style="display:flex; gap:16px; margin-bottom:20px;">
-    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:13px; color:#64748b;">
+    .order-summary-card {
+        margin-bottom: 0;
+        padding: 16px 20px;
+    }
+
+    .order-summary-label {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .order-summary-value {
+        margin-top: 2px;
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .order-summary-value.success {
+        color: #166534;
+    }
+
+    .order-summary-value.warning {
+        color: #f59e0b;
+    }
+
+    .order-toolbar {
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .order-search {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        width: 100%;
+        max-width: 650px;
+    }
+
+    .order-search-field {
+        flex: 1;
+    }
+
+    .order-search-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .order-search-field input {
+        width: 100%;
+        min-height: 40px;
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        color: #0f172a;
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .order-search-field input:focus {
+        border-color: #f59e0b;
+        outline: 3px solid rgba(245, 158, 11, 0.16);
+    }
+
+    .order-button {
+        min-height: 40px;
+        padding: 9px 14px;
+        border: 0;
+        border-radius: 8px;
+        background: #f59e0b;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .order-button:hover {
+        background: #d97706;
+    }
+
+    .order-button.secondary {
+        display: inline-flex;
+        align-items: center;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .order-button.secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .order-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .order-filter {
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .order-filter:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .order-filter.active {
+        background: #f59e0b;
+        color: #fff;
+    }
+
+    .order-results-summary {
+        margin-bottom: 12px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .order-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .order-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+    }
+
+    .order-table thead tr {
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .order-table th {
+        padding: 10px 8px;
+    }
+
+    .order-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .order-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .order-table td {
+        padding: 12px 8px;
+    }
+
+    .order-number,
+    .order-total {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .order-muted {
+        color: #475569;
+    }
+
+    .order-date {
+        white-space: nowrap;
+    }
+
+    .order-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .order-badge.pending {
+        background: #fff7ed;
+        color: #9a3412;
+    }
+
+    .order-badge.preparing {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .order-badge.ready {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .order-badge.completed {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .order-badge.served {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .order-badge.cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .order-badge.unknown {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .order-empty {
+        padding: 24px 0;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .order-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .order-page-status {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .order-page-links {
+        display: flex;
+        gap: 8px;
+    }
+
+    .order-page-link {
+        min-width: 90px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .order-page-link:hover {
+        background: #e2e8f0;
+    }
+
+    @@media (max-width: 800px) {
+        .order-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .order-search {
+            max-width: none;
+        }
+
+        .order-pagination {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .order-page-links {
+            width: 100%;
+        }
+
+        .order-page-link {
+            flex: 1;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .order-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-search {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .order-button {
+            justify-content: center;
+            text-align: center;
+        }
+    }
+</style>
+
+<h1>Orders</h1>
+
+<p class="subtitle">
+    Monitor all customer orders.
+</p>
+
+<div class="order-summary-grid">
+    <div class="card order-summary-card">
+        <div class="order-summary-label">
             Total Revenue (Served Orders)
         </div>
 
-        <div style="font-size:24px; font-weight:700; color:#166534;">
+        <div class="order-summary-value success">
             RM @Model.TotalRevenue.ToString("F2")
         </div>
     </div>
 
-    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:13px; color:#64748b;">
+    <div class="card order-summary-card">
+        <div class="order-summary-label">
             Pending Orders
         </div>
 
-        <div style="font-size:24px; font-weight:700; color:#f59e0b;">
+        <div class="order-summary-value warning">
             @Model.PendingCount
         </div>
     </div>
 </div>
 
 <div class="card">
-    <div style="margin-bottom:16px; display:flex; gap:8px; flex-wrap:wrap;">
-        <a href="?filter=all"
-           style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "all" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">
+    <div class="order-toolbar">
+        <form method="get" class="order-search">
+            <input type="hidden"
+                   name="filter"
+                   value="@Model.Filter" />
+
+            <div class="order-search-field">
+                <label for="order-search">
+                    Search orders
+                </label>
+
+                <input id="order-search"
+                       name="search"
+                       value="@Model.Search"
+                       type="search"
+                       placeholder="Order number, customer name, or email"
+                       autocomplete="off" />
+            </div>
+
+            <button type="submit"
+                    class="order-button">
+                Search
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <a asp-page="./Index"
+                   asp-route-filter="@Model.Filter"
+                   class="order-button secondary">
+                    Clear
+                </a>
+            }
+        </form>
+    </div>
+
+    <nav class="order-filters"
+         aria-label="Order filters">
+        <a asp-page="./Index"
+           asp-route-filter="all"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("all")">
             All
         </a>
 
-        <a href="?filter=today"
-           style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "today" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">
+        <a asp-page="./Index"
+           asp-route-filter="today"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("today")">
             Today
         </a>
 
-        <a href="?filter=pending"
-           style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "pending" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">
+        <a asp-page="./Index"
+           asp-route-filter="pending"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("pending")">
             Pending
         </a>
 
-        <a href="?filter=preparing"
-           style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "preparing" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">
+        <a asp-page="./Index"
+           asp-route-filter="preparing"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("preparing")">
             Preparing
         </a>
 
-        <a href="?filter=ready"
-           style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "ready" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">
-            Ready
+        <a asp-page="./Index"
+           asp-route-filter="ready"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("ready")">
+            Ready to Serve
         </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="completed"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("completed")">
+            Completed
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="served"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("served")">
+            Served
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="cancelled"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("cancelled")">
+            Cancelled
+        </a>
+    </nav>
+
+    <div class="order-results-summary">
+        @if (Model.TotalResults == 0)
+        {
+            <span>No matching orders</span>
+        }
+        else
+        {
+            <span>
+                Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                of @Model.TotalResults orders
+            </span>
+        }
     </div>
 
     @if (Model.Orders.Count == 0)
     {
-        <p style="color:#64748b;">
-            No orders found.
-        </p>
+        <div class="order-empty">
+            No orders match the selected filter and search.
+        </div>
     }
     else
     {
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse;">
+        <div class="order-table-wrapper">
+            <table class="order-table">
                 <thead>
-                    <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                        <th style="padding:10px 8px;">Order #</th>
-                        <th style="padding:10px 8px;">Customer</th>
-                        <th style="padding:10px 8px;">Date</th>
-                        <th style="padding:10px 8px;">Total</th>
-                        <th style="padding:10px 8px;">Status</th>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @foreach (var order in Model.Orders)
                     {
-                        var badge = order.Status switch
+                        string normalizedStatus =
+                            order.Status?.Trim().ToLowerInvariant()
+                            ?? "unknown";
+
+                        string statusClass = normalizedStatus switch
                         {
-                            "Served" => "background:#dcfce7; color:#166534;",
-                            "Ready" => "background:#dbeafe; color:#1e40af;",
-                            "Preparing" => "background:#fef3c7; color:#92400e;",
-                            "Cancelled" => "background:#fee2e2; color:#991b1b;",
-                            "Pending" => "background:#fff7ed; color:#9a3412;",
-                            _ => "background:#f1f5f9; color:#475569;"
+                            "pending" => "pending",
+                            "preparing" => "preparing",
+                            "ready" => "ready",
+                            "ready to serve" => "ready",
+                            "completed" => "completed",
+                            "served" => "served",
+                            "cancelled" => "cancelled",
+                            _ => "unknown"
                         };
 
-                        <tr style="border-bottom:1px solid #f1f5f9;">
-                            <td style="padding:12px 8px; font-weight:600;">
+                        <tr>
+                            <td class="order-number">
                                 #@order.OrderID
                             </td>
 
-                            <td style="padding:12px 8px;">
-                                @(order.Customer?.Name ?? "Unknown customer")
+                            <td>
+                                @(order.Customer?.Name
+                                    ?? "Unknown customer")
                             </td>
 
-                            <td style="padding:12px 8px; color:#475569;">
-                                @(order.OrderDate?.ToString("yyyy-MM-dd HH:mm") ?? "Not recorded")
+                            <td class="order-muted order-date">
+                                @(order.OrderDate?.ToString(
+                                    "yyyy-MM-dd HH:mm")
+                                    ?? "Not recorded")
                             </td>
 
-                            <td style="padding:12px 8px; font-weight:600;">
-                                RM @((order.TotalAmount ?? 0m).ToString("F2"))
+                            <td class="order-total">
+                                RM @((order.TotalAmount ?? 0m)
+                                    .ToString("F2"))
                             </td>
 
-                            <td style="padding:12px 8px;">
-                                <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">
+                            <td>
+                                <span class="order-badge @statusClass">
                                     @(order.Status ?? "Unknown")
                                 </span>
                             </td>
@@ -119,5 +533,39 @@
                 </tbody>
             </table>
         </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="order-pagination"
+             aria-label="Order result pages">
+            <div class="order-page-status">
+                Page @Model.PageNumber of @Model.TotalPages
+            </div>
+
+            <div class="order-page-links">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-filter="@Model.Filter"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       class="order-page-link">
+                        ← Previous
+                    </a>
+                }
+
+                @if (Model.HasNextPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-filter="@Model.Filter"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       class="order-page-link">
+                        Next →
+                    </a>
+                }
+            </div>
+        </nav>
     }
 </div>
