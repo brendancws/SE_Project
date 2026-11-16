@@ -1,20 +1,12 @@
 ﻿@page
 @model RROMS.Pages.Admin.Reservations.IndexModel
-
 @{
     ViewData["Title"] = "Reservations Monitor";
     Layout = "_AdminLayout";
-
-    string FilterClass(string filter)
-    {
-        return Model.Filter == filter
-            ? "reservation-filter active"
-            : "reservation-filter";
-    }
 }
 
 <style>
-    .reservation-summary-grid {
+    .reservation-summary {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px;
@@ -32,7 +24,6 @@
     }
 
     .reservation-summary-value {
-        margin-top: 2px;
         color: #0f172a;
         font-size: 24px;
         font-weight: 700;
@@ -44,18 +35,17 @@
 
     .reservation-toolbar {
         display: flex;
-        align-items: flex-end;
+        align-items: end;
         justify-content: space-between;
         gap: 16px;
         margin-bottom: 18px;
     }
 
-    .reservation-search {
+    .reservation-search-form {
         display: flex;
-        align-items: flex-end;
+        align-items: end;
         gap: 8px;
-        flex: 1;
-        max-width: 560px;
+        width: min(100%, 490px);
     }
 
     .reservation-search-field {
@@ -65,37 +55,38 @@
     .reservation-search-field label {
         display: block;
         margin-bottom: 6px;
-        color: #334155;
-        font-size: 13px;
+        color: #475569;
+        font-size: 12px;
         font-weight: 700;
     }
 
     .reservation-search-field input {
         width: 100%;
-        min-height: 40px;
-        padding: 9px 12px;
+        padding: 9px 11px;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         color: #0f172a;
-        background: #fff;
         font: inherit;
-        font-size: 14px;
+        font-size: 13px;
+        outline: none;
     }
 
     .reservation-search-field input:focus {
         border-color: #f59e0b;
-        outline: 3px solid rgba(245, 158, 11, 0.16);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
     }
 
     .reservation-button {
-        min-height: 40px;
-        padding: 9px 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 37px;
+        padding: 8px 14px;
         border: 0;
         border-radius: 8px;
         background: #f59e0b;
-        color: #fff;
+        color: #ffffff;
         cursor: pointer;
-        font: inherit;
         font-size: 13px;
         font-weight: 700;
         text-decoration: none;
@@ -106,14 +97,18 @@
     }
 
     .reservation-button.secondary {
-        display: inline-flex;
-        align-items: center;
         background: #e2e8f0;
         color: #334155;
     }
 
     .reservation-button.secondary:hover {
         background: #cbd5e1;
+    }
+
+    .reservation-result-count {
+        color: #64748b;
+        font-size: 13px;
+        white-space: nowrap;
     }
 
     .reservation-filters {
@@ -135,22 +130,14 @@
 
     .reservation-filter:hover {
         background: #e2e8f0;
-        color: #0f172a;
     }
 
     .reservation-filter.active {
         background: #f59e0b;
-        color: #fff;
-    }
-
-    .reservation-results-summary {
-        margin-bottom: 12px;
-        color: #64748b;
-        font-size: 13px;
+        color: #ffffff;
     }
 
     .reservation-table-wrapper {
-        width: 100%;
         overflow-x: auto;
     }
 
@@ -160,18 +147,16 @@
         border-collapse: collapse;
     }
 
-    .reservation-table thead tr {
+    .reservation-table th {
+        padding: 10px 8px;
         border-bottom: 2px solid #e2e8f0;
         color: #475569;
         font-size: 13px;
         text-align: left;
     }
 
-    .reservation-table th {
-        padding: 10px 8px;
-    }
-
-    .reservation-table tbody tr {
+    .reservation-table td {
+        padding: 12px 8px;
         border-bottom: 1px solid #f1f5f9;
     }
 
@@ -179,49 +164,8 @@
         background: #f8fafc;
     }
 
-    .reservation-table td {
-        padding: 12px 8px;
-    }
-
-    .reservation-date {
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .reservation-muted {
-        color: #475569;
-    }
-
-    .reservation-badge {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        white-space: nowrap;
-    }
-
-    .reservation-badge.pending {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .reservation-badge.confirmed {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .reservation-badge.completed {
-        background: #e0e7ff;
-        color: #3730a3;
-    }
-
-    .reservation-badge.cancelled {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
     .reservation-empty {
-        padding: 24px 0;
+        padding: 28px 12px;
         color: #64748b;
         text-align: center;
     }
@@ -231,7 +175,7 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        margin-top: 18px;
+        margin-top: 20px;
         padding-top: 16px;
         border-top: 1px solid #e2e8f0;
     }
@@ -243,18 +187,21 @@
 
     .reservation-page-links {
         display: flex;
+        align-items: center;
         gap: 8px;
     }
 
     .reservation-page-link {
-        min-width: 90px;
-        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 8px 13px;
         border-radius: 8px;
         background: #f1f5f9;
         color: #334155;
         font-size: 13px;
         font-weight: 700;
-        text-align: center;
         text-decoration: none;
     }
 
@@ -262,53 +209,46 @@
         background: #e2e8f0;
     }
 
-    @@media (max-width: 800px) {
-        .reservation-toolbar {
-            align-items: stretch;
-            flex-direction: column;
-        }
+    .reservation-page-link.disabled {
+        color: #94a3b8;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
 
-        .reservation-search {
-            max-width: none;
-        }
-
+    @@media (max-width: 850px) {
+        .reservation-toolbar,
         .reservation-pagination {
             align-items: stretch;
             flex-direction: column;
         }
 
-        .reservation-page-links {
+        .reservation-search-form {
             width: 100%;
         }
 
-        .reservation-page-link {
-            flex: 1;
+        .reservation-result-count {
+            white-space: normal;
         }
     }
 
     @@media (max-width: 600px) {
-        .reservation-summary-grid {
+        .reservation-summary {
             grid-template-columns: 1fr;
         }
 
-        .reservation-search {
+        .reservation-search-form {
             align-items: stretch;
             flex-direction: column;
-        }
-
-        .reservation-button {
-            text-align: center;
         }
     }
 </style>
 
 <h1>Reservations</h1>
-
 <p class="subtitle">
     Monitor all reservations across the restaurant.
 </p>
 
-<div class="reservation-summary-grid">
+<div class="reservation-summary">
     <div class="card reservation-summary-card">
         <div class="reservation-summary-label">
             Today's Reservations
@@ -332,26 +272,25 @@
 
 <div class="card">
     <div class="reservation-toolbar">
-        <form method="get" class="reservation-search">
+        <form method="get" class="reservation-search-form">
             <input type="hidden"
                    name="filter"
                    value="@Model.Filter" />
 
             <div class="reservation-search-field">
                 <label for="reservation-search">
-                    Search reservations
+                    Search by customer or phone
                 </label>
 
                 <input id="reservation-search"
+                       type="search"
                        name="search"
                        value="@Model.Search"
-                       type="search"
-                       placeholder="Customer name or phone"
+                       placeholder="Enter customer name or phone"
                        autocomplete="off" />
             </div>
 
-            <button type="submit"
-                    class="reservation-button">
+            <button type="submit" class="reservation-button">
                 Search
             </button>
 
@@ -364,6 +303,20 @@
                 </a>
             }
         </form>
+
+        <div class="reservation-result-count">
+            @if (Model.TotalResults == 0)
+            {
+                <span>No matching reservations</span>
+            }
+            else
+            {
+                <span>
+                    Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                    of @Model.TotalResults
+                </span>
+            }
+        </div>
     </div>
 
     <nav class="reservation-filters"
@@ -371,71 +324,57 @@
         <a asp-page="./Index"
            asp-route-filter="all"
            asp-route-search="@Model.Search"
-           class="@FilterClass("all")">
+           class="reservation-filter @(Model.Filter == "all" ? "active" : "")">
             All
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="today"
            asp-route-search="@Model.Search"
-           class="@FilterClass("today")">
+           class="reservation-filter @(Model.Filter == "today" ? "active" : "")">
             Today
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="upcoming"
            asp-route-search="@Model.Search"
-           class="@FilterClass("upcoming")">
+           class="reservation-filter @(Model.Filter == "upcoming" ? "active" : "")">
             Upcoming
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="pending"
            asp-route-search="@Model.Search"
-           class="@FilterClass("pending")">
+           class="reservation-filter @(Model.Filter == "pending" ? "active" : "")">
             Pending
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="confirmed"
            asp-route-search="@Model.Search"
-           class="@FilterClass("confirmed")">
+           class="reservation-filter @(Model.Filter == "confirmed" ? "active" : "")">
             Confirmed
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="completed"
            asp-route-search="@Model.Search"
-           class="@FilterClass("completed")">
+           class="reservation-filter @(Model.Filter == "completed" ? "active" : "")">
             Completed
         </a>
 
         <a asp-page="./Index"
            asp-route-filter="cancelled"
            asp-route-search="@Model.Search"
-           class="@FilterClass("cancelled")">
+           class="reservation-filter @(Model.Filter == "cancelled" ? "active" : "")">
             Cancelled
         </a>
     </nav>
 
-    <div class="reservation-results-summary">
-        @if (Model.TotalResults == 0)
-        {
-            <span>No matching reservations</span>
-        }
-        else
-        {
-            <span>
-                Showing @Model.FirstResultNumber–@Model.LastResultNumber
-                of @Model.TotalResults reservations
-            </span>
-        }
-    </div>
-
     @if (Model.Reservations.Count == 0)
     {
         <div class="reservation-empty">
-            No reservations match the selected filter and search.
+            No reservations match the selected filters.
         </div>
     }
     else
@@ -456,29 +395,17 @@
                 <tbody>
                     @foreach (var reservation in Model.Reservations)
                     {
-                        string statusClass =
-                            reservation.Status?.ToLowerInvariant()
-                            switch
-                            {
-                                "confirmed" => "confirmed",
-                                "completed" => "completed",
-                                "cancelled" => "cancelled",
-                                _ => "pending"
-                            };
-
                         <tr>
-                            <td class="reservation-date">
-                                @reservation.ReservationDate.ToString(
-                                    "yyyy-MM-dd HH:mm")
+                            <td style="font-weight:600;">
+                                @reservation.ReservationDate.ToString("yyyy-MM-dd HH:mm")
                             </td>
 
                             <td>
                                 @reservation.CustomerName
                             </td>
 
-                            <td class="reservation-muted">
-                                @(string.IsNullOrWhiteSpace(
-                                    reservation.CustomerPhone)
+                            <td style="color:#475569;">
+                                @(string.IsNullOrWhiteSpace(reservation.CustomerPhone)
                                     ? "Not provided"
                                     : reservation.CustomerPhone)
                             </td>
@@ -487,12 +414,22 @@
                                 @reservation.PartySize
                             </td>
 
-                            <td class="reservation-muted">
+                            <td style="color:#475569;">
                                 @(reservation.Table?.TableNumber ?? "—")
                             </td>
 
                             <td>
-                                <span class="reservation-badge @statusClass">
+                                @{
+                                    var badge = reservation.Status switch
+                                    {
+                                        "Confirmed" => "background:#dcfce7; color:#166534;",
+                                        "Cancelled" => "background:#fee2e2; color:#991b1b;",
+                                        "Completed" => "background:#e0e7ff; color:#3730a3;",
+                                        _ => "background:#fef3c7; color:#92400e;"
+                                    };
+                                }
+
+                                <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">
                                     @reservation.Status
                                 </span>
                             </td>
@@ -503,10 +440,9 @@
         </div>
     }
 
-    @if (Model.TotalPages > 1)
+    @if (Model.TotalResults > 0)
     {
-        <nav class="reservation-pagination"
-             aria-label="Reservation result pages">
+        <div class="reservation-pagination">
             <div class="reservation-page-status">
                 Page @Model.PageNumber of @Model.TotalPages
             </div>
@@ -522,6 +458,13 @@
                         ← Previous
                     </a>
                 }
+                else
+                {
+                    <span class="reservation-page-link disabled"
+                          aria-disabled="true">
+                        ← Previous
+                    </span>
+                }
 
                 @if (Model.HasNextPage)
                 {
@@ -533,7 +476,14 @@
                         Next →
                     </a>
                 }
+                else
+                {
+                    <span class="reservation-page-link disabled"
+                          aria-disabled="true">
+                        Next →
+                    </span>
+                }
             </div>
-        </nav>
+        </div>
     }
 </div>
