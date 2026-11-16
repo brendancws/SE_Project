@@ -1,0 +1,294 @@
+﻿.print-only {
+    display: none;
+}
+
+.report-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.report-summary-card {
+    padding: 16px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.report-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .report-table thead tr {
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 10px 8px;
+    }
+
+    .report-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+@page {
+    size: A4 portrait;
+    margin: 14mm 12mm 16mm;
+}
+
+@media print {
+    html,
+    body {
+        width: auto;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9.5pt;
+    }
+
+    .sidebar,
+    .topbar,
+    .screen-only {
+        display: none !important;
+    }
+
+    .admin-shell,
+    .main {
+        display: block !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .content {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    .print-report-header {
+        margin-bottom: 6mm;
+        padding-bottom: 4mm;
+        border-bottom: 2px solid #111827;
+    }
+
+    .print-report-brand {
+        margin-bottom: 2mm;
+        color: #111827;
+        font-size: 9pt;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .print-report-title {
+        margin: 0 0 2mm;
+        color: #000000;
+        font-size: 20pt;
+        line-height: 1.15;
+    }
+
+    .print-report-description {
+        margin: 0;
+        color: #374151;
+        font-size: 9pt;
+    }
+
+    .print-report-meta {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 3mm;
+        margin: 0 0 6mm;
+        padding: 3mm 0;
+        border-bottom: 1px solid #9ca3af;
+    }
+
+    .print-meta-label {
+        display: block;
+        margin-bottom: 1mm;
+        color: #4b5563;
+        font-size: 7.5pt;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .print-meta-value {
+        color: #000000;
+        font-size: 9pt;
+        font-weight: 600;
+    }
+
+    .report-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2mm;
+        margin-bottom: 6mm;
+    }
+
+    .report-summary-card {
+        min-height: 0;
+        padding: 3mm;
+        border: 1px solid #9ca3af;
+        border-radius: 0;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .report-summary-label {
+        color: #4b5563 !important;
+        font-size: 7.5pt !important;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .report-summary-value {
+        margin-top: 1mm;
+        color: #000000 !important;
+        font-size: 12pt !important;
+        font-weight: 700;
+    }
+
+    .report-results {
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    .report-results-summary {
+        margin-bottom: 3mm !important;
+        color: #374151 !important;
+        font-size: 8.5pt !important;
+    }
+
+    .report-table-wrapper {
+        overflow: visible !important;
+    }
+
+    .report-table {
+        width: 100% !important;
+        table-layout: fixed;
+        border-collapse: collapse !important;
+        font-size: 8.5pt;
+    }
+
+        .report-table thead {
+            display: table-header-group;
+        }
+
+        .report-table tfoot {
+            display: table-footer-group;
+        }
+
+        .report-table tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .report-table th {
+            padding: 2.2mm 1.5mm !important;
+            border-top: 1px solid #000000;
+            border-bottom: 1px solid #000000;
+            background: #e5e7eb !important;
+            color: #000000 !important;
+            font-size: 8pt;
+            font-weight: 700;
+        }
+
+        .report-table td {
+            padding: 1.7mm 1.5mm !important;
+            border-bottom: 0.5pt solid #d1d5db;
+            color: #000000 !important;
+            vertical-align: top;
+        }
+
+        .report-table .date-column {
+            white-space: nowrap;
+        }
+
+        .report-table .money-column {
+            white-space: nowrap;
+            text-align: right;
+        }
+
+    .report-status {
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #000000 !important;
+        font-size: 8.5pt !important;
+    }
+
+    .print-report-footer {
+        margin-top: 3mm;
+        padding-top: 2mm;
+        border-top: 1px solid #9ca3af;
+        color: #4b5563;
+        font-size: 7.5pt;
+        text-align: center;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    a {
+        color: #000000 !important;
+        text-decoration: none !important;
+    }
+
+    .reservations-summary-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .reservations-report-table th:nth-child(1),
+    .reservations-report-table td:nth-child(1) {
+        width: 21%;
+    }
+
+    .reservations-report-table th:nth-child(2),
+    .reservations-report-table td:nth-child(2) {
+        width: 21%;
+    }
+
+    .reservations-report-table th:nth-child(3),
+    .reservations-report-table td:nth-child(3) {
+        width: 20%;
+    }
+
+    .reservations-report-table th:nth-child(4),
+    .reservations-report-table td:nth-child(4) {
+        width: 10%;
+    }
+
+    .reservations-report-table th:nth-child(5),
+    .reservations-report-table td:nth-child(5) {
+        width: 10%;
+    }
+
+    .reservations-report-table th:nth-child(6),
+    .reservations-report-table td:nth-child(6) {
+        width: 18%;
+    }
+}

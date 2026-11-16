@@ -6,10 +6,74 @@
     Layout = "_AdminLayout";
 }
 
-<h1>Sales Report</h1>
-<p class="subtitle">Filter and analyse sales data.</p>
+<link rel="stylesheet"
+      href="~/css/admin-reports-print.css"
+      asp-append-version="true" />
 
-<div class="card">
+<div class="screen-only">
+    <h1>Sales Report</h1>
+
+    <p class="subtitle">
+        Filter and analyse sales data.
+    </p>
+</div>
+
+<header class="print-only print-report-header">
+    <div class="print-report-brand">
+        RROMS · Restaurant Reservation and Ordering Management System
+    </div>
+
+    <h1 class="print-report-title">
+        Sales Report
+    </h1>
+
+    <p class="print-report-description">
+        Sales activity and revenue summary for the selected reporting period.
+    </p>
+</header>
+
+<section class="print-only print-report-meta">
+    <div>
+        <span class="print-meta-label">
+            Reporting Period
+        </span>
+
+        <span class="print-meta-value">
+            @(Model.From?.ToString("dd MMM yyyy")
+                ?? "Not specified")
+            to
+            @(Model.To?.ToString("dd MMM yyyy")
+                ?? "Not specified")
+        </span>
+    </div>
+
+    <div>
+        <span class="print-meta-label">
+            Status Filter
+        </span>
+
+        <span class="print-meta-value">
+            @(string.Equals(
+                Model.Status,
+                "all",
+                StringComparison.OrdinalIgnoreCase)
+                ? "All statuses"
+                : Model.Status)
+        </span>
+    </div>
+
+    <div>
+        <span class="print-meta-label">
+            Generated
+        </span>
+
+        <span class="print-meta-value">
+            @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
+        </span>
+    </div>
+</section>
+
+<div class="card screen-only">
     <form method="get"
           style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
 
@@ -42,6 +106,7 @@
 
             <select name="Status"
                     style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+
                 <option value="all"
                         selected="@(Model.Status == "all")">
                     All
@@ -60,6 +125,16 @@
                 <option value="Ready"
                         selected="@(Model.Status == "Ready")">
                     Ready
+                </option>
+
+                <option value="Ready to Serve"
+                        selected="@(Model.Status == "Ready to Serve")">
+                    Ready to Serve
+                </option>
+
+                <option value="Completed"
+                        selected="@(Model.Status == "Completed")">
+                    Completed
                 </option>
 
                 <option value="Served"
@@ -103,60 +178,71 @@
     </form>
 </div>
 
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px;">
-    <div style="background:#fff; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:12px; color:#64748b;">
+<div class="report-summary-grid">
+    <div class="report-summary-card">
+        <div class="report-summary-label"
+             style="font-size:12px; color:#64748b;">
             Total Orders
         </div>
 
-        <div style="font-size:22px; font-weight:700; color:#0f172a;">
+        <div class="report-summary-value"
+             style="font-size:22px; font-weight:700; color:#0f172a;">
             @Model.TotalOrders
         </div>
     </div>
 
-    <div style="background:#fff; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:12px; color:#64748b;">
+    <div class="report-summary-card">
+        <div class="report-summary-label"
+             style="font-size:12px; color:#64748b;">
             Total Revenue
         </div>
 
-        <div style="font-size:22px; font-weight:700; color:#166534;">
+        <div class="report-summary-value"
+             style="font-size:22px; font-weight:700; color:#166534;">
             RM @Model.TotalRevenue.ToString("F2")
         </div>
     </div>
 
-    <div style="background:#fff; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:12px; color:#64748b;">
+    <div class="report-summary-card">
+        <div class="report-summary-label"
+             style="font-size:12px; color:#64748b;">
             Average Order
         </div>
 
-        <div style="font-size:22px; font-weight:700; color:#0f172a;">
+        <div class="report-summary-value"
+             style="font-size:22px; font-weight:700; color:#0f172a;">
             RM @Model.AverageOrder.ToString("F2")
         </div>
     </div>
 
-    <div style="background:#fff; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:12px; color:#64748b;">
+    <div class="report-summary-card">
+        <div class="report-summary-label"
+             style="font-size:12px; color:#64748b;">
             Served Revenue
         </div>
 
-        <div style="font-size:22px; font-weight:700; color:#3730a3;">
+        <div class="report-summary-value"
+             style="font-size:22px; font-weight:700; color:#3730a3;">
             RM @Model.ServedRevenue.ToString("F2")
         </div>
     </div>
 
-    <div style="background:#fff; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:12px; color:#64748b;">
+    <div class="report-summary-card">
+        <div class="report-summary-label"
+             style="font-size:12px; color:#64748b;">
             Pending Revenue
         </div>
 
-        <div style="font-size:22px; font-weight:700; color:#92400e;">
+        <div class="report-summary-value"
+             style="font-size:22px; font-weight:700; color:#92400e;">
             RM @Model.PendingRevenue.ToString("F2")
         </div>
     </div>
 </div>
 
-<div class="card">
-    <div style="margin-bottom:12px; color:#64748b; font-size:13px;">
+<div class="card report-results">
+    <div class="report-results-summary"
+         style="margin-bottom:12px; color:#64748b; font-size:13px;">
         Showing @Model.Results.Count result(s) from
         @(Model.From?.ToString("dd MMM yyyy") ?? "Not specified")
         to
@@ -171,15 +257,29 @@
     }
     else
     {
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse;">
+        <div class="report-table-wrapper">
+            <table class="report-table">
                 <thead>
                     <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                        <th style="padding:10px 8px;">Order #</th>
-                        <th style="padding:10px 8px;">Date</th>
-                        <th style="padding:10px 8px;">Customer</th>
-                        <th style="padding:10px 8px;">Total</th>
-                        <th style="padding:10px 8px;">Status</th>
+                        <th style="padding:10px 8px;">
+                            Order #
+                        </th>
+
+                        <th style="padding:10px 8px;">
+                            Date
+                        </th>
+
+                        <th style="padding:10px 8px;">
+                            Customer
+                        </th>
+
+                        <th style="padding:10px 8px;">
+                            Total
+                        </th>
+
+                        <th style="padding:10px 8px;">
+                            Status
+                        </th>
                     </tr>
                 </thead>
 
@@ -188,12 +288,29 @@
                     {
                         var badge = order.Status switch
                         {
-                            "Served" => "background:#dcfce7; color:#166534;",
-                            "Ready" => "background:#dbeafe; color:#1e40af;",
-                            "Preparing" => "background:#fef3c7; color:#92400e;",
-                            "Cancelled" => "background:#fee2e2; color:#991b1b;",
-                            "Pending" => "background:#fff7ed; color:#9a3412;",
-                            _ => "background:#f1f5f9; color:#475569;"
+                            "Served" =>
+                                "background:#dcfce7; color:#166534;",
+
+                            "Ready" =>
+                                "background:#dbeafe; color:#1e40af;",
+
+                            "Ready to Serve" =>
+                                "background:#dbeafe; color:#1e40af;",
+
+                            "Preparing" =>
+                                "background:#fef3c7; color:#92400e;",
+
+                            "Completed" =>
+                                "background:#ede9fe; color:#5b21b6;",
+
+                            "Cancelled" =>
+                                "background:#fee2e2; color:#991b1b;",
+
+                            "Pending" =>
+                                "background:#fff7ed; color:#9a3412;",
+
+                            _ =>
+                                "background:#f1f5f9; color:#475569;"
                         };
 
                         <tr style="border-bottom:1px solid #f1f5f9;">
@@ -201,20 +318,27 @@
                                 #@order.OrderID
                             </td>
 
-                            <td style="padding:10px 8px; color:#475569;">
-                                @(order.OrderDate?.ToString("yyyy-MM-dd HH:mm") ?? "Not recorded")
+                            <td class="date-column"
+                                style="padding:10px 8px; color:#475569;">
+                                @(order.OrderDate?.ToString(
+                                    "yyyy-MM-dd HH:mm")
+                                    ?? "Not recorded")
                             </td>
 
                             <td style="padding:10px 8px;">
-                                @(order.Customer?.Name ?? "Unknown customer")
+                                @(order.Customer?.Name
+                                    ?? "Unknown customer")
                             </td>
 
-                            <td style="padding:10px 8px; font-weight:600;">
-                                RM @((order.TotalAmount ?? 0m).ToString("F2"))
+                            <td class="money-column"
+                                style="padding:10px 8px; font-weight:600;">
+                                RM @((order.TotalAmount ?? 0m)
+                                    .ToString("F2"))
                             </td>
 
                             <td style="padding:10px 8px;">
-                                <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">
+                                <span class="report-status"
+                                      style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">
                                     @(order.Status ?? "Unknown")
                                 </span>
                             </td>
@@ -225,3 +349,8 @@
         </div>
     }
 </div>
+
+<footer class="print-only print-report-footer">
+    RROMS Sales Report · @Model.TotalOrders order(s) included ·
+    Generated by the Dineflow Administrator portal
+</footer>
