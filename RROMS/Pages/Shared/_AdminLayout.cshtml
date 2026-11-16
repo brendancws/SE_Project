@@ -59,7 +59,30 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700;
         }
-        .topbar .user a { color: #64748b; margin-left: 12px; text-decoration: none; font-size: 12px; }
+        .logout-form {
+    margin-left: 12px;
+}
+
+.logout-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.logout-button:hover {
+    color: #dc2626;
+    text-decoration: underline;
+}
+
+.logout-button:focus-visible {
+    border-radius: 3px;
+    outline: 2px solid #f59e0b;
+    outline-offset: 3px;
+}
 
         .content { padding: 28px; }
         .content h1 { color: #0f172a; margin-bottom: 6px; font-size: 26px; }
@@ -121,7 +144,15 @@
                 <div class="user">
                     <div class="avatar">@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</div>
                     <div>Signed in as<br /><strong>@User.Identity?.Name</strong></div>
-                    <a href="/Account/Logout">Logout</a>
+                    <form method="post"
+      asp-page="/Account/Logout"
+      class="logout-form">
+    @Html.AntiForgeryToken()
+
+    <button type="submit" class="logout-button">
+        Logout
+    </button>
+</form>
                 </div>
             </header>
 
