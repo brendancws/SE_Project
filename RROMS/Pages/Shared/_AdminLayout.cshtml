@@ -27,6 +27,23 @@
             letter-spacing: 1px;
         }
         .sidebar .nav { display: flex; flex-direction: column; }
+        .sidebar .nav-group {
+    padding: 18px 24px 7px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sidebar .nav-group:first-child {
+    padding-top: 4px;
+}
+
+.sidebar .nav-group:not(:first-child) {
+    margin-top: 4px;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
         .sidebar .nav a {
             color: #cbd5e1;
             text-decoration: none;
@@ -101,41 +118,83 @@
     <div class="admin-shell">
         <aside class="sidebar">
             <div class="logo">RROMS</div>
-            <nav class="nav">
-                <a href="/Admin/Dashboard" class="@(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
-                    <span class="icon">🏠</span> Dashboard
-                </a>
-                <a href="/Admin/Reservations" class="@(Context.Request.Path.StartsWithSegments("/Admin/Reservations") ? "active" : "")">
-                    <span class="icon">📅</span> Reservations
-                </a>
-                <a href="/Admin/Orders" class="@(Context.Request.Path.StartsWithSegments("/Admin/Orders") ? "active" : "")">
-                    <span class="icon">🧾</span> Orders
-                </a>
-                <a href="/Admin/Payments" class="@(Context.Request.Path.StartsWithSegments("/Admin/Payments") ? "active" : "")">
-                    <span class="icon">💳</span> Payments
-                </a>
-                <a href="/Admin/Reports" class="@(Context.Request.Path.StartsWithSegments("/Admin/Reports") ? "active" : "")">
-                    <span class="icon">📊</span> Reports
-                </a>
-                <a href="/Admin/Tables" class="@(Context.Request.Path.StartsWithSegments("/Admin/Tables") ? "active" : "")">
-                    <span class="icon">🪑</span> Tables
-                </a>
-                <a href="/Admin/Categories" class="@(Context.Request.Path.StartsWithSegments("/Admin/Categories") ? "active" : "")">
-                    <span class="icon">📂</span> Menu Categories
-                </a>
-                <a href="/Admin/OpeningHours" class="@(Context.Request.Path.StartsWithSegments("/Admin/OpeningHours") ? "active" : "")">
-                    <span class="icon">🕒</span> Opening Hours
-                </a>
-                <a href="/Admin/MenuItems" class="@(Context.Request.Path.StartsWithSegments("/Admin/MenuItems") ? "active" : "")">
-                    <span class="icon">🍽️</span> Menu Items
-                </a>
-                <a href="/Admin/Staff" class="@(Context.Request.Path.StartsWithSegments("/Admin/Staff") ? "active" : "")">
-                    <span class="icon">👥</span> Staff
-                </a>
-                <a href="/Admin/Customers" class="@(Context.Request.Path.StartsWithSegments("/Admin/Customers") ? "active" : "")">
-                    <span class="icon">👤</span> Customers
-                </a>
-            </nav>
+            <nav class="nav" aria-label="Administrator navigation">
+    <div class="nav-group">Overview</div>
+
+    <a href="/Admin/Dashboard"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
+        <span class="icon">🏠</span>
+        Dashboard
+    </a>
+
+    <div class="nav-group">Operations</div>
+
+    <a href="/Admin/Reservations"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Reservations") ? "active" : "")">
+        <span class="icon">📅</span>
+        Reservations
+    </a>
+
+    <a href="/Admin/Orders"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Orders") ? "active" : "")">
+        <span class="icon">🧾</span>
+        Orders
+    </a>
+
+    <a href="/Admin/Payments"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Payments") ? "active" : "")">
+        <span class="icon">💳</span>
+        Payments
+    </a>
+
+    <a href="/Admin/Reports"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Reports") ? "active" : "")">
+        <span class="icon">📊</span>
+        Reports
+    </a>
+
+    <div class="nav-group">Restaurant Setup</div>
+
+    <a href="/Admin/Tables"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Tables") ? "active" : "")">
+        <span class="icon">🪑</span>
+        Tables
+    </a>
+
+    <a href="/Admin/OpeningHours"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/OpeningHours") ? "active" : "")">
+        <span class="icon">🕒</span>
+        Opening Hours
+    </a>
+
+    <div class="nav-group">Menu Management</div>
+
+    <a href="/Admin/Categories"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Categories") ? "active" : "")">
+        <span class="icon">📂</span>
+        Menu Categories
+    </a>
+
+    <a href="/Admin/MenuItems"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/MenuItems") ? "active" : "")">
+        <span class="icon">🍽️</span>
+        Menu Items
+    </a>
+
+    <div class="nav-group">User Management</div>
+
+    <a href="/Admin/Staff"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Staff") ? "active" : "")">
+        <span class="icon">👥</span>
+        Staff
+    </a>
+
+    <a href="/Admin/Customers"
+       class="@(Context.Request.Path.StartsWithSegments("/Admin/Customers") ? "active" : "")">
+        <span class="icon">👤</span>
+        Customers
+    </a>
+</nav>
         </aside>
 
         <div class="main">
