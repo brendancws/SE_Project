@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
@@ -11,6 +12,18 @@ namespace RROMS.Pages.Admin.Reservations
     {
         private readonly ApplicationDbContext _db;
 
+        private static readonly HashSet<string> AllowedFilters =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                "all",
+                "today",
+                "upcoming",
+                "pending",
+                "confirmed",
+                "completed",
+                "cancelled"
+            };
+
         public IndexModel(ApplicationDbContext db)
         {
             _db = db;
@@ -18,17 +31,56 @@ namespace RROMS.Pages.Admin.Reservations
 
         public List<Reservation> Reservations { get; set; } = new();
 
+        [BindProperty(SupportsGet = true)]
         public string Filter { get; set; } = "all";
+
+        [BindProperty(SupportsGet = true)]
+        public string? Search { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; } = 10;
+
+        public int TotalResults { get; set; }
+
+        public int TotalPages { get; set; }
 
         public int TodayCount { get; set; }
 
         public int PendingCount { get; set; }
 
-        public async Task OnGetAsync(string filter = "all")
+        public bool HasPreviousPage => PageNumber > 1;
+
+        public bool HasNextPage => PageNumber < TotalPages;
+
+        public int FirstResultNumber =>
+            TotalResults == 0
+                ? 0
+                : ((PageNumber - 1) * PageSize) + 1;
+
+        public int LastResultNumber =>
+            Math.Min(PageNumber * PageSize, TotalResults);
+
+        public async Task OnGetAsync()
         {
-            Filter = string.IsNullOrWhiteSpace(filter)
+            Filter = string.IsNullOrWhiteSpace(Filter)
                 ? "all"
-                : filter.ToLowerInvariant();
+                : Filter.Trim().ToLowerInvariant();
+
+            if (!AllowedFilters.Contains(Filter))
+            {
+                Filter = "all";
+            }
+
+            Search = string.IsNullOrWhiteSpace(Search)
+                ? null
+                : Search.Trim();
+
+            if (PageNumber < 1)
+            {
+                PageNumber = 1;
+            }
 
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
@@ -39,36 +91,61 @@ namespace RROMS.Pages.Admin.Reservations
                 .Include(reservation => reservation.Table)
                 .AsQueryable();
 
-            if (Filter == "today")
+            query = Filter switch
             {
-                query = query.Where(reservation =>
+                "today" => query.Where(reservation =>
                     reservation.Date >= today &&
-                    reservation.Date < tomorrow);
-            }
-            else if (Filter == "upcoming")
+                    reservation.Date < tomorrow),
+
+                "upcoming" => query.Where(reservation =>
+                    reservation.Date >= today),
+
+                "pending" => query.Where(reservation =>
+                    reservation.Status == "Pending"),
+
+                "confirmed" => query.Where(reservation =>
+                    reservation.Status == "Confirmed"),
+
+                "completed" => query.Where(reservation =>
+                    reservation.Status == "Completed"),
+
+                "cancelled" => query.Where(reservation =>
+                    reservation.Status == "Cancelled"),
+
+                _ => query
+            };
+
+            if (Search != null)
             {
                 query = query.Where(reservation =>
-                    reservation.Date >= today);
+                    reservation.Customer != null &&
+                    (
+                        reservation.Customer.Name.Contains(Search) ||
+                        (
+                            reservation.Customer.Phone != null &&
+                            reservation.Customer.Phone.Contains(Search)
+                        )
+                    ));
             }
-            else if (Filter == "pending")
+
+            TotalResults = await query.CountAsync();
+
+            TotalPages = Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    TotalResults / (double)PageSize));
+
+            if (PageNumber > TotalPages)
             {
-                query = query.Where(reservation =>
-                    reservation.Status == "Pending");
-            }
-            else if (Filter == "confirmed")
-            {
-                query = query.Where(reservation =>
-                    reservation.Status == "Confirmed");
-            }
-            else if (Filter == "cancelled")
-            {
-                query = query.Where(reservation =>
-                    reservation.Status == "Cancelled");
+                PageNumber = TotalPages;
             }
 
             Reservations = await query
                 .OrderBy(reservation => reservation.Date)
                 .ThenBy(reservation => reservation.Time)
+                .ThenBy(reservation => reservation.ReservationID)
+                .Skip((PageNumber - 1) * PageSize)
+                .Take(PageSize)
                 .ToListAsync();
 
             TodayCount = await _db.Reservations
