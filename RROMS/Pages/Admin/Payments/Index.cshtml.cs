@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
@@ -10,38 +11,152 @@ namespace RROMS.Pages.Admin.Payments
     public class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _db;
-        public IndexModel(ApplicationDbContext db) => _db = db;
+
+        private static readonly HashSet<string> AllowedFilters =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                "all",
+                "paid",
+                "pending",
+                "failed",
+                "refunded"
+            };
+
+        public IndexModel(ApplicationDbContext db)
+        {
+            _db = db;
+        }
 
         public List<Payment> Payments { get; set; } = new();
+
+        [BindProperty(SupportsGet = true)]
         public string Filter { get; set; } = "all";
+
+        [BindProperty(SupportsGet = true)]
+        public string? Search { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; } = 10;
+
+        public int TotalResults { get; set; }
+
+        public int TotalPages { get; set; }
+
         public decimal PaidTotal { get; set; }
+
         public decimal PendingTotal { get; set; }
 
-        public async Task OnGetAsync(string filter = "all")
+        public bool HasPreviousPage => PageNumber > 1;
+
+        public bool HasNextPage => PageNumber < TotalPages;
+
+        public int FirstResultNumber =>
+            TotalResults == 0
+                ? 0
+                : ((PageNumber - 1) * PageSize) + 1;
+
+        public int LastResultNumber =>
+            Math.Min(PageNumber * PageSize, TotalResults);
+
+        public async Task OnGetAsync()
         {
-            Filter = filter;
+            Filter = string.IsNullOrWhiteSpace(Filter)
+                ? "all"
+                : Filter.Trim().ToLowerInvariant();
 
-            var query = _db.Payments.Include(p => p.Order).AsQueryable();
+            if (!AllowedFilters.Contains(Filter))
+            {
+                Filter = "all";
+            }
 
-            if (filter == "paid")
-                query = query.Where(p => p.Status == "Paid");
-            else if (filter == "pending")
-                query = query.Where(p => p.Status == "Pending");
-            else if (filter == "refunded")
-                query = query.Where(p => p.Status == "Refunded");
+            Search = string.IsNullOrWhiteSpace(Search)
+                ? null
+                : Search.Trim();
+
+            if (PageNumber < 1)
+            {
+                PageNumber = 1;
+            }
+
+            var query = _db.Payments
+                .AsNoTracking()
+                .Include(payment => payment.Order)
+                .AsQueryable();
+
+            query = Filter switch
+            {
+                "paid" => query.Where(payment =>
+                    payment.Status == "Paid"),
+
+                "pending" => query.Where(payment =>
+                    payment.Status == "Pending"),
+
+                "failed" => query.Where(payment =>
+                    payment.Status == "Failed"),
+
+                "refunded" => query.Where(payment =>
+                    payment.Status == "Refunded"),
+
+                _ => query
+            };
+
+            if (Search != null)
+            {
+                string numberSearch = Search.TrimStart('#');
+
+                bool isNumber =
+                    int.TryParse(numberSearch, out int numericId);
+
+                query = query.Where(payment =>
+                    (
+                        isNumber &&
+                        (
+                            payment.PaymentID == numericId ||
+                            payment.OrderID == numericId
+                        )
+                    ) ||
+                    (
+                        payment.TransactionNo != null &&
+                        payment.TransactionNo.Contains(Search)
+                    ) ||
+                    (
+                        payment.Method != null &&
+                        payment.Method.Contains(Search)
+                    ));
+            }
+
+            TotalResults = await query.CountAsync();
+
+            TotalPages = Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    TotalResults / (double)PageSize));
+
+            if (PageNumber > TotalPages)
+            {
+                PageNumber = TotalPages;
+            }
 
             Payments = await query
-                .OrderByDescending(p => p.PaymentDate)
-                .ThenByDescending(p => p.PaymentID)
+                .OrderByDescending(payment => payment.PaymentDate)
+                .ThenByDescending(payment => payment.PaymentID)
+                .Skip((PageNumber - 1) * PageSize)
+                .Take(PageSize)
                 .ToListAsync();
 
             PaidTotal = await _db.Payments
-                .Where(p => p.Status == "Paid")
-                .SumAsync(p => (decimal?)p.Amount) ?? 0;
+                .AsNoTracking()
+                .Where(payment => payment.Status == "Paid")
+                .SumAsync(payment => (decimal?)payment.Amount)
+                ?? 0m;
 
             PendingTotal = await _db.Payments
-                .Where(p => p.Status == "Pending")
-                .SumAsync(p => (decimal?)p.Amount) ?? 0;
+                .AsNoTracking()
+                .Where(payment => payment.Status == "Pending")
+                .SumAsync(payment => (decimal?)payment.Amount)
+                ?? 0m;
         }
     }
 }

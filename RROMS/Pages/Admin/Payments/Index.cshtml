@@ -1,72 +1,541 @@
 ﻿@page
 @model RROMS.Pages.Admin.Payments.IndexModel
+
 @{
     ViewData["Title"] = "Payments Monitor";
     Layout = "_AdminLayout";
+
+    string FilterClass(string filter)
+    {
+        return Model.Filter == filter
+            ? "payment-filter active"
+            : "payment-filter";
+    }
 }
 
-<h1>Payments</h1>
-<p class="subtitle">Monitor all payments received and outstanding.</p>
+<style>
+    .payment-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
 
-<div style="display:flex; gap:16px; margin-bottom:20px;">
-    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:13px; color:#64748b;">Total Paid</div>
-        <div style="font-size:24px; font-weight:700; color:#166534;">RM @Model.PaidTotal.ToString("F2")</div>
+    .payment-summary-card {
+        margin-bottom: 0;
+        padding: 16px 20px;
+    }
+
+    .payment-summary-label {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .payment-summary-value {
+        margin-top: 2px;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .payment-summary-value.success {
+        color: #166534;
+    }
+
+    .payment-summary-value.danger {
+        color: #dc2626;
+    }
+
+    .payment-toolbar {
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .payment-search {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .payment-search-field {
+        flex: 1;
+    }
+
+    .payment-search-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .payment-search-field input {
+        width: 100%;
+        min-height: 40px;
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        color: #0f172a;
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .payment-search-field input:focus {
+        border-color: #f59e0b;
+        outline: 3px solid rgba(245, 158, 11, 0.16);
+    }
+
+    .payment-button {
+        min-height: 40px;
+        padding: 9px 14px;
+        border: 0;
+        border-radius: 8px;
+        background: #f59e0b;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .payment-button:hover {
+        background: #d97706;
+    }
+
+    .payment-button.secondary {
+        display: inline-flex;
+        align-items: center;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .payment-button.secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .payment-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .payment-filter {
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .payment-filter:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .payment-filter.active {
+        background: #f59e0b;
+        color: #fff;
+    }
+
+    .payment-results-summary {
+        margin-bottom: 12px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .payment-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .payment-table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+    }
+
+    .payment-table thead tr {
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .payment-table th {
+        padding: 10px 8px;
+    }
+
+    .payment-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .payment-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .payment-table td {
+        padding: 12px 8px;
+    }
+
+    .payment-number,
+    .payment-amount {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .payment-muted {
+        color: #475569;
+    }
+
+    .payment-date {
+        white-space: nowrap;
+    }
+
+    .payment-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .payment-badge.paid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .payment-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .payment-badge.failed {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .payment-badge.refunded {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .payment-badge.unknown {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .payment-empty {
+        padding: 24px 0;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .payment-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .payment-page-status {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .payment-page-links {
+        display: flex;
+        gap: 8px;
+    }
+
+    .payment-page-link {
+        min-width: 90px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .payment-page-link:hover {
+        background: #e2e8f0;
+    }
+
+    @@media (max-width: 800px) {
+        .payment-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .payment-search {
+            max-width: none;
+        }
+
+        .payment-pagination {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .payment-page-links {
+            width: 100%;
+        }
+
+        .payment-page-link {
+            flex: 1;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .payment-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-search {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .payment-button {
+            justify-content: center;
+            text-align: center;
+        }
+    }
+</style>
+
+<h1>Payments</h1>
+
+<p class="subtitle">
+    Monitor all payments received and outstanding.
+</p>
+
+<div class="payment-summary-grid">
+    <div class="card payment-summary-card">
+        <div class="payment-summary-label">
+            Total Paid
+        </div>
+
+        <div class="payment-summary-value success">
+            RM @Model.PaidTotal.ToString("F2")
+        </div>
     </div>
-    <div style="flex:1; background:#fff; padding:16px 20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-        <div style="font-size:13px; color:#64748b;">Outstanding</div>
-        <div style="font-size:24px; font-weight:700; color:#dc2626;">RM @Model.PendingTotal.ToString("F2")</div>
+
+    <div class="card payment-summary-card">
+        <div class="payment-summary-label">
+            Outstanding
+        </div>
+
+        <div class="payment-summary-value danger">
+            RM @Model.PendingTotal.ToString("F2")
+        </div>
     </div>
 </div>
 
 <div class="card">
-    <div style="margin-bottom:16px; display:flex; gap:8px;">
-        <a href="?filter=all"      style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "all" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">All</a>
-        <a href="?filter=paid"     style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "paid" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Paid</a>
-        <a href="?filter=pending"  style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "pending" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Pending</a>
-        <a href="?filter=refunded" style="padding:8px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; @(Model.Filter == "refunded" ? "background:#f59e0b; color:#fff;" : "background:#f1f5f9; color:#475569;")">Refunded</a>
+    <div class="payment-toolbar">
+        <form method="get" class="payment-search">
+            <input type="hidden"
+                   name="filter"
+                   value="@Model.Filter" />
+
+            <div class="payment-search-field">
+                <label for="payment-search">
+                    Search payments
+                </label>
+
+                <input id="payment-search"
+                       name="search"
+                       value="@Model.Search"
+                       type="search"
+                       placeholder="Payment, order, transaction, or method"
+                       autocomplete="off" />
+            </div>
+
+            <button type="submit"
+                    class="payment-button">
+                Search
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <a asp-page="./Index"
+                   asp-route-filter="@Model.Filter"
+                   class="payment-button secondary">
+                    Clear
+                </a>
+            }
+        </form>
+    </div>
+
+    <nav class="payment-filters"
+         aria-label="Payment filters">
+        <a asp-page="./Index"
+           asp-route-filter="all"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("all")">
+            All
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="paid"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("paid")">
+            Paid
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="pending"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("pending")">
+            Pending
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="failed"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("failed")">
+            Failed
+        </a>
+
+        <a asp-page="./Index"
+           asp-route-filter="refunded"
+           asp-route-search="@Model.Search"
+           class="@FilterClass("refunded")">
+            Refunded
+        </a>
+    </nav>
+
+    <div class="payment-results-summary">
+        @if (Model.TotalResults == 0)
+        {
+            <span>No matching payments</span>
+        }
+        else
+        {
+            <span>
+                Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                of @Model.TotalResults payments
+            </span>
+        }
     </div>
 
     @if (Model.Payments.Count == 0)
     {
-        <p style="color:#64748b;">No payments found.</p>
+        <div class="payment-empty">
+            No payments match the selected filter and search.
+        </div>
     }
     else
     {
-        <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                    <th style="padding:10px 8px;">Payment #</th>
-                    <th style="padding:10px 8px;">Order #</th>
-                    <th style="padding:10px 8px;">Amount</th>
-                    <th style="padding:10px 8px;">Method</th>
-                    <th style="padding:10px 8px;">Status</th>
-                    <th style="padding:10px 8px;">Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model.Payments)
-                {
-                    <tr style="border-bottom:1px solid #f1f5f9;">
-                        <td style="padding:12px 8px; font-weight:600;">#@p.Id</td>
-                        <td style="padding:12px 8px; color:#475569;">#@p.OrderId</td>
-                        <td style="padding:12px 8px; font-weight:600;">RM @p.Amount.ToString("F2")</td>
-                        <td style="padding:12px 8px;">@p.Method</td>
-                        <td style="padding:12px 8px;">
-                            @{
-                                var badge = p.Status switch
-                                {
-                                    "Paid"     => "background:#dcfce7; color:#166534;",
-                                    "Refunded" => "background:#fee2e2; color:#991b1b;",
-                                    _          => "background:#fef3c7; color:#92400e;"
-                                };
-                            }
-                            <span style="@badge padding:3px 10px; border-radius:20px; font-size:12px;">@p.Status</span>
-                        </td>
-                        <td style="padding:12px 8px; color:#475569;">@(p.PaidAt?.ToString("yyyy-MM-dd HH:mm") ?? "Not recorded")</td>
+        <div class="payment-table-wrapper">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Payment #</th>
+                        <th>Order #</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Date</th>
                     </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var payment in Model.Payments)
+                    {
+                        string normalizedStatus =
+                            payment.Status?.Trim().ToLowerInvariant()
+                            ?? "unknown";
+
+                        string statusClass = normalizedStatus switch
+                        {
+                            "paid" => "paid",
+                            "pending" => "pending",
+                            "failed" => "failed",
+                            "refunded" => "refunded",
+                            _ => "unknown"
+                        };
+
+                        <tr>
+                            <td class="payment-number">
+                                #@payment.Id
+                            </td>
+
+                            <td class="payment-muted">
+                                #@payment.OrderId
+                            </td>
+
+                            <td class="payment-amount">
+                                RM @payment.Amount.ToString("F2")
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(payment.Method)
+                                    ? "Not recorded"
+                                    : payment.Method)
+                            </td>
+
+                            <td>
+                                <span class="payment-badge @statusClass">
+                                    @(payment.Status ?? "Unknown")
+                                </span>
+                            </td>
+
+                            <td class="payment-muted payment-date">
+                                @(payment.PaidAt?.ToString(
+                                    "yyyy-MM-dd HH:mm")
+                                    ?? "Not recorded")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="payment-pagination"
+             aria-label="Payment result pages">
+            <div class="payment-page-status">
+                Page @Model.PageNumber of @Model.TotalPages
+            </div>
+
+            <div class="payment-page-links">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-filter="@Model.Filter"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       class="payment-page-link">
+                        ← Previous
+                    </a>
                 }
-            </tbody>
-        </table>
+
+                @if (Model.HasNextPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-filter="@Model.Filter"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       class="payment-page-link">
+                        Next →
+                    </a>
+                }
+            </div>
+        </nav>
     }
 </div>
