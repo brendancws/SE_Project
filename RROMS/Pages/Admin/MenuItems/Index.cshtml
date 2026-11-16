@@ -5,74 +5,550 @@
     Layout = "_AdminLayout";
 }
 
+<style>
+    .menu-toolbar {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .menu-add-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 9px 16px;
+        border-radius: 8px;
+        background: #f59e0b;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .menu-add-button:hover {
+        background: #d97706;
+    }
+
+    .menu-result-count {
+        color: #64748b;
+        font-size: 13px;
+        text-align: right;
+    }
+
+    .menu-filter-form {
+        display: grid;
+        grid-template-columns: minmax(220px, 2fr) minmax(170px, 1fr)
+            minmax(150px, 1fr) auto auto;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 20px;
+        padding: 16px;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .menu-filter-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .menu-filter-field input,
+    .menu-filter-field select {
+        width: 100%;
+        min-height: 38px;
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #0f172a;
+        font: inherit;
+        font-size: 13px;
+        outline: none;
+    }
+
+    .menu-filter-field input:focus,
+    .menu-filter-field select:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+
+    .menu-filter-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 15px;
+        border: 0;
+        border-radius: 8px;
+        background: #f59e0b;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .menu-filter-button:hover {
+        background: #d97706;
+    }
+
+    .menu-filter-button.secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .menu-filter-button.secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .menu-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .menu-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+    }
+
+    .menu-table th {
+        padding: 10px 8px;
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .menu-table td {
+        padding: 12px 8px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .menu-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .menu-item-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .menu-item-image {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
+
+    .menu-item-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 16px;
+    }
+
+    .menu-item-name {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .menu-item-description {
+        display: -webkit-box;
+        max-width: 440px;
+        margin-top: 3px;
+        overflow: hidden;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .menu-badge {
+        display: inline-flex;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .menu-badge.available {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .menu-badge.unavailable {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .menu-actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .menu-action-link {
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .menu-action-link.edit {
+        margin-right: 12px;
+        color: #0284c7;
+    }
+
+    .menu-action-link.delete {
+        color: #dc2626;
+    }
+
+    .menu-empty {
+        padding: 32px 12px;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .menu-empty strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #334155;
+    }
+
+    .menu-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .menu-page-status {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .menu-page-links {
+        display: flex;
+        gap: 8px;
+    }
+
+    .menu-page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 8px 13px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .menu-page-link:hover {
+        background: #e2e8f0;
+    }
+
+    .menu-page-link.disabled {
+        color: #94a3b8;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    @@media (max-width: 1000px) {
+        .menu-filter-form {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .menu-toolbar,
+        .menu-pagination {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .menu-result-count {
+            text-align: left;
+        }
+
+        .menu-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .menu-add-button,
+        .menu-filter-button {
+            width: 100%;
+        }
+
+        .menu-page-links {
+            justify-content: space-between;
+        }
+    }
+</style>
+
 <h1>Menu Items</h1>
-<p class="subtitle">Manage your restaurant's menu items, pricing, and availability.</p>
+
+<p class="subtitle">
+    Manage your restaurant's menu items, pricing, and availability.
+</p>
 
 <div class="card">
-    <a href="/Admin/MenuItems/Create" style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">+ Add Menu Item</a>
+    <div class="menu-toolbar">
+        <a asp-page="./Create"
+           class="menu-add-button">
+            + Add Menu Item
+        </a>
+
+        <div class="menu-result-count">
+            @if (Model.TotalResults == 0)
+            {
+                <span>No matching menu items</span>
+            }
+            else
+            {
+                <span>
+                    Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                    of @Model.TotalResults
+                </span>
+            }
+        </div>
+    </div>
+
+    <form method="get" class="menu-filter-form">
+        <div class="menu-filter-field">
+            <label for="menu-search">
+                Search
+            </label>
+
+            <input id="menu-search"
+                   type="search"
+                   name="search"
+                   value="@Model.Search"
+                   placeholder="Search name or description"
+                   autocomplete="off" />
+        </div>
+
+        <div class="menu-filter-field">
+            <label for="category-filter">
+                Category
+            </label>
+
+            <select id="category-filter" name="categoryId">
+                <option value="">All categories</option>
+
+                @foreach (var category in Model.Categories)
+                {
+                    if (Model.CategoryId == category.CategoryID)
+                    {
+                        <option value="@category.CategoryID" selected>
+                            @category.CategoryName
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="@category.CategoryID">
+                            @category.CategoryName
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="menu-filter-field">
+            <label for="availability-filter">
+                Availability
+            </label>
+
+            <select id="availability-filter" name="availability">
+                <option value="all"
+                        selected="@(Model.Availability == "all")">
+                    All statuses
+                </option>
+
+                <option value="available"
+                        selected="@(Model.Availability == "available")">
+                    Available
+                </option>
+
+                <option value="unavailable"
+                        selected="@(Model.Availability == "unavailable")">
+                    Unavailable
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="menu-filter-button">
+            Apply
+        </button>
+
+        <a asp-page="./Index"
+           class="menu-filter-button secondary">
+            Reset
+        </a>
+    </form>
 
     @if (Model.Items.Count == 0)
     {
-        <p style="color:#64748b;">No menu items yet. Add your first one.</p>
+        <div class="menu-empty">
+            <strong>No menu items found.</strong>
+            Try changing the search or filters.
+        </div>
     }
     else
     {
-        <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                    <th style="padding:10px 8px;">Item</th>
-                    <th style="padding:10px 8px;">Category</th>
-                    <th style="padding:10px 8px;">Price</th>
-                    <th style="padding:10px 8px;">Status</th>
-                    <th style="padding:10px 8px; text-align:right;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Items)
-                {
-                    <tr style="border-bottom:1px solid #f1f5f9;">
-                        <td style="padding:12px 8px; font-weight:600;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                @if (!string.IsNullOrEmpty(item.ImageURL))
+        <div class="menu-table-wrapper">
+            <table class="menu-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="menu-item-main">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageURL))
+                                    {
+                                        <img src="@item.ImageURL"
+                                             alt=""
+                                             class="menu-item-image" />
+                                    }
+                                    else
+                                    {
+                                        <div class="menu-item-image menu-item-placeholder"
+                                             aria-hidden="true">
+                                            🍽️
+                                        </div>
+                                    }
+
+                                    <div>
+                                        <div class="menu-item-name">
+                                            @item.Name
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                                        {
+                                            <div class="menu-item-description">
+                                                @item.Description
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td style="color:#475569;">
+                                @(item.Category?.CategoryName ?? "—")
+                            </td>
+
+                            <td style="color:#0f172a; font-weight:700;">
+                                RM @item.Price.ToString("F2")
+                            </td>
+
+                            <td>
+                                @if (item.Availability == true)
                                 {
-                                    <img src="@item.ImageURL" alt="@item.Name" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" />
+                                    <span class="menu-badge available">
+                                        Available
+                                    </span>
                                 }
                                 else
                                 {
-                                    <div style="width:40px; height:40px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:14px;">🍽️</div>
+                                    <span class="menu-badge unavailable">
+                                        Unavailable
+                                    </span>
                                 }
-                                <div>
-                                    @item.Name
-                                    @if (!string.IsNullOrEmpty(item.Description))
-                                    {
-                                        <div style="font-size:12px; color:#64748b; font-weight:400;">@item.Description</div>
-                                    }
-                                </div>
-                            </div>
-                        </td>
-                        <td style="padding:12px 8px; color:#475569;">
-                            @(item.Category?.CategoryName ?? "—")
-                        </td>
-                        <td style="padding:12px 8px; font-weight:600; color:#0f172a;">
-                            RM @item.Price.ToString("F2")
-                        </td>
-                        <td style="padding:12px 8px;">
-                            @if (item.Availability == true)
-                            {
-                                <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">Available</span>
-                            }
-                            else
-                            {
-                                <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">Unavailable</span>
-                            }
-                        </td>
-                        <td style="padding:12px 8px; text-align:right;">
-                            <a href="/Admin/MenuItems/Edit?id=@item.MenuItemID" style="color:#0284c7; text-decoration:none; margin-right:10px;">Edit</a>
-                            <a href="/Admin/MenuItems/Delete?id=@item.MenuItemID" style="color:#dc2626; text-decoration:none;">Delete</a>
-                        </td>
-                    </tr>
+                            </td>
+
+                            <td class="menu-actions">
+                                <a asp-page="./Edit"
+                                   asp-route-id="@item.MenuItemID"
+                                   class="menu-action-link edit">
+                                    Edit
+                                </a>
+
+                                <a asp-page="./Delete"
+                                   asp-route-id="@item.MenuItemID"
+                                   class="menu-action-link delete">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.TotalResults > 0)
+    {
+        <div class="menu-pagination">
+            <div class="menu-page-status">
+                Page @Model.PageNumber of @Model.TotalPages
+            </div>
+
+            <div class="menu-page-links">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-categoryId="@Model.CategoryId"
+                       asp-route-availability="@Model.Availability"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       class="menu-page-link">
+                        ← Previous
+                    </a>
                 }
-            </tbody>
-        </table>
+                else
+                {
+                    <span class="menu-page-link disabled"
+                          aria-disabled="true">
+                        ← Previous
+                    </span>
+                }
+
+                @if (Model.HasNextPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-categoryId="@Model.CategoryId"
+                       asp-route-availability="@Model.Availability"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       class="menu-page-link">
+                        Next →
+                    </a>
+                }
+                else
+                {
+                    <span class="menu-page-link disabled"
+                          aria-disabled="true">
+                        Next →
+                    </span>
+                }
+            </div>
+        </div>
     }
 </div>
