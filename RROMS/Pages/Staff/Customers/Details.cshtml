@@ -1,438 +1,487 @@
-﻿
-@page "{id:int}"
+﻿@page "{id:int}"
 @model RROMS.Pages.Staff.Customers.DetailsModel
 
 @{
     ViewData["Title"] = "Customer Details";
     Layout = "_StaffLayout";
+
+    string ReservationBadge(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "confirmed" =>
+                "staff-badge staff-badge-success",
+
+            "pending" =>
+                "staff-badge staff-badge-warning",
+
+            "cancelled" =>
+                "staff-badge staff-badge-danger",
+
+            "completed" =>
+                "staff-badge staff-badge-completed",
+
+            _ =>
+                "staff-badge staff-badge-pending"
+        };
+    }
+
+    string OrderBadge(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "preparing" =>
+                "staff-badge staff-badge-warning",
+
+            "ready to serve" =>
+                "staff-badge staff-badge-info",
+
+            "served" =>
+                "staff-badge staff-badge-completed",
+
+            "completed" =>
+                "staff-badge staff-badge-success",
+
+            "cancelled" =>
+                "staff-badge staff-badge-danger",
+
+            _ =>
+                "staff-badge staff-badge-pending"
+        };
+    }
 }
 
-<div class="customer-details-page">
+@section Styles {
+    <style>
+        .customer-details {
+            width: 100%;
+            max-width: 1350px;
+            margin: 0 auto;
+        }
 
-    <!-- PAGE HEADER -->
-    <div class="page-header">
-        <div>
-            <h2>Customer Details</h2>
+        .customer-details-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .customer-details-header .staff-page-header {
+            margin-bottom: 0;
+        }
+
+        .customer-information-grid,
+        .customer-history-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .customer-details-card {
+            min-width: 0;
+            margin: 0;
+        }
+
+        .customer-card-title {
+            margin: 0 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--staff-border);
+            color: var(--staff-text);
+            font-size: 16px;
+            font-weight: 850;
+        }
+
+        .customer-info-list {
+            display: grid;
+            gap: 13px;
+        }
+
+        .customer-info-row {
+            display: grid;
+            grid-template-columns: 125px minmax(0, 1fr);
+            gap: 14px;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .customer-info-label {
+            color: var(--staff-text);
+            font-weight: 800;
+        }
+
+        .customer-preference {
+            display: inline-flex;
+            max-width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: var(--staff-info-soft);
+            color: #075985;
+            font-size: 12px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .customer-request {
+            background: var(--staff-warning-soft);
+            color: #92400e;
+        }
+
+        .history-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .history-title {
+            color: var(--staff-text);
+            font-size: 16px;
+            font-weight: 850;
+        }
+
+        .history-subtitle {
+            margin-top: 3px;
+            color: var(--staff-text-secondary);
+            font-size: 11px;
+        }
+
+        .history-count {
+            flex-shrink: 0;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .history-table {
+            min-width: 540px;
+        }
+
+        .history-footer {
+            margin-top: 13px;
+            color: var(--staff-text-secondary);
+            font-size: 11px;
+        }
+
+        @@media (max-width: 1050px) {
+            .customer-information-grid,
+            .customer-history-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 700px) {
+            .customer-details-header {
+                flex-direction: column;
+            }
+
+            .customer-info-row {
+                grid-template-columns: 1fr;
+                gap: 2px;
+            }
+        }
+    </style>
+}
+
+<div class="customer-details">
+    <div class="customer-details-header">
+        <header class="staff-page-header">
+            <h1>Customer Details</h1>
+
             <p>
-                View customer information, requests,
-                preferences, and reservation history.
+                Review customer information, preferences, and recent activity.
             </p>
-        </div>
+        </header>
 
-        <a asp-page="/Staff/Customers/Index"
-           class="btn btn-outline-secondary">
+        <a asp-page="./Index"
+           class="staff-button staff-button-secondary">
             ← Back to Customers
         </a>
     </div>
 
-    <!-- CUSTOMER INFORMATION -->
-    <div class="details-grid">
+    <section class="customer-information-grid">
+        <article class="staff-card customer-details-card">
+            <h2 class="customer-card-title">
+                Contact Information
+            </h2>
 
-        <!-- CONTACT INFORMATION -->
-        <div class="details-card">
-            <h4>Contact Information</h4>
-            <hr class="mb-3 mt-2" />
+            <div class="customer-info-list">
+                <div class="customer-info-row">
+                    <div class="customer-info-label">
+                        Name
+                    </div>
 
-            <div class="info-list">
-                <p>
-                    <strong>Name:</strong>
-                    @Model.Customer.Name
-                </p>
+                    <div>@Model.Customer.Name</div>
+                </div>
 
-                <p>
-                    <strong>Email:</strong>
-                    @(Model.Customer.Email ?? "-")
-                </p>
+                <div class="customer-info-row">
+                    <div class="customer-info-label">
+                        Email
+                    </div>
 
-                <p>
-                    <strong>Phone:</strong>
-                    @(string.IsNullOrWhiteSpace(Model.Customer.Phone)
-                        ? "N/A" : Model.Customer.Phone)
-                </p>
+                    <div>
+                        @(string.IsNullOrWhiteSpace(Model.Customer.Email)
+                            ? "Not provided"
+                            : Model.Customer.Email)
+                    </div>
+                </div>
 
-                <p>
-                    <strong>Account Status:</strong>
+                <div class="customer-info-row">
+                    <div class="customer-info-label">
+                        Phone
+                    </div>
 
-                    @{
-                        string customerStatus =
-                            Model.Customer.Status ?? "Unknown";
+                    <div>
+                        @(string.IsNullOrWhiteSpace(Model.Customer.Phone)
+                            ? "Not provided"
+                            : Model.Customer.Phone)
+                    </div>
+                </div>
 
-                        string accountClass =
-                            customerStatus.Equals(
-                                "Active",
-                                StringComparison.OrdinalIgnoreCase)
-                            ? "bg-success"
-                            : "bg-secondary";
-                    }
+                <div class="customer-info-row">
+                    <div class="customer-info-label">
+                        Account Status
+                    </div>
 
-                    <span class="badge @accountClass">
-                        @customerStatus
-                    </span>
-                </p>
-            </div>
-        </div>
-
-        <!-- DINING PREFERENCES -->
-        <div class="details-card">
-            <h4>Dining Preferences & Requests</h4>
-            <hr class="mb-3 mt-2" />
-
-            <div class="info-list">
-
-                <p>
-                    <strong>Special Request:</strong>
-                </p>
-
-                @if (!string.IsNullOrWhiteSpace(
-                    Model.Customer.SpecialRequest))
-                {
-                    <span class="badge bg-warning text-dark preference-badge">
-                        @Model.Customer.SpecialRequest
-                    </span>
-                }
-                else
-                {
-                    <p class="text-muted">None specified</p>
-                }
-
-                <p class="mt-4">
-                    <strong>Dining Preference:</strong>
-                </p>
-
-                @if (!string.IsNullOrWhiteSpace(
-                    Model.Customer.DiningPreference))
-                {
-                    <span class="badge bg-info text-dark preference-badge">
-                        @Model.Customer.DiningPreference
-                    </span>
-                }
-                else
-                {
-                    <p class="text-muted">None specified</p>
-                }
-
-            </div>
-        </div>
-
-    </div>
-
-    <!-- RESERVATION AND ORDER HISTORY -->
-    <div class="details-grid">
-
-        <!-- RESERVATION HISTORY -->
-        <div class="details-card">
-
-            <div class="section-heading">
-                <h4>Reservation History</h4>
-                <span class="record-count">
-                    @Model.Reservations.Count records
-                </span>
-            </div>
-
-            <hr class="mb-3 mt-2" />
-
-            <div class="table-responsive">
-
-                <table class="table align-middle">
-
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date & Time</th>
-                            <th>Table</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        @if (Model.Reservations.Any())
+                    <div>
+                        @if (string.Equals(
+                            Model.Customer.Status,
+                            "Active",
+                            StringComparison.OrdinalIgnoreCase))
                         {
-                            foreach (var res in Model.Reservations)
-                            {
-                                <tr>
-
-                                    <td>
-                                        @res.Date.ToString("dd/MM/yyyy")
-                                        <br />
-                                        <small class="text-muted">
-                                            @res.Time.ToString(@"hh\:mm")
-                                        </small>
-                                    </td>
-
-                                    <td>
-                                        @if (res.Table != null)
-                                        {
-                                            <span>
-                                                Table @res.Table.TableNumber
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">
-                                                Unassigned
-                                            </span>
-                                        }
-                                    </td>
-
-                                    <td>
-                                        @{
-                                            string reservationStatus =
-                                                res.Status ?? "Pending";
-
-                                            string reservationClass =
-                                                reservationStatus.ToLowerInvariant()
-                                                switch
-                                                {
-                                                    "confirmed" => "bg-success",
-                                                    "pending" => "bg-warning text-dark",
-                                                    "cancelled" => "bg-danger",
-                                                    _ => "bg-secondary"
-                                                };
-                                        }
-
-                                        <span class="badge @reservationClass">
-                                            @reservationStatus
-                                        </span>
-                                    </td>
-
-                                </tr>
-                            }
+                            <span class="staff-badge staff-badge-success">
+                                Active
+                            </span>
                         }
                         else
                         {
-                            <tr>
-                                <td colspan="3"
-                                    class="text-center text-muted py-4">
-                                    No reservations found.
-                                </td>
-                            </tr>
+                            <span class="staff-badge staff-badge-pending">
+                                @(Model.Customer.Status ?? "Unknown")
+                            </span>
                         }
-
-                    </tbody>
-
-                </table>
-
+                    </div>
+                </div>
             </div>
-        </div>
+        </article>
 
-        <!-- ORDER HISTORY -->
-        <div class="details-card">
+        <article class="staff-card customer-details-card">
+            <h2 class="customer-card-title">
+                Dining Preferences &amp; Requests
+            </h2>
 
-            <div class="section-heading">
-                <h4>Order History</h4>
-                <span class="record-count">
-                    @Model.Orders.Count records
+            <div class="customer-info-list">
+                <div>
+                    <div class="customer-info-label"
+                         style="margin-bottom:7px;">
+                        Special Request
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        Model.Customer.SpecialRequest))
+                    {
+                        <span class="customer-preference customer-request">
+                            @Model.Customer.SpecialRequest
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="color:#94a3b8;">
+                            None specified
+                        </span>
+                    }
+                </div>
+
+                <div>
+                    <div class="customer-info-label"
+                         style="margin-bottom:7px;">
+                        Dining Preference
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        Model.Customer.DiningPreference))
+                    {
+                        <span class="customer-preference">
+                            @Model.Customer.DiningPreference
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="color:#94a3b8;">
+                            None specified
+                        </span>
+                    }
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="customer-history-grid">
+        <article class="staff-card customer-details-card">
+            <div class="history-heading">
+                <div>
+                    <div class="history-title">
+                        Recent Reservations
+                    </div>
+
+                    <div class="history-subtitle">
+                        Latest five reservation records
+                    </div>
+                </div>
+
+                <span class="history-count">
+                    @Model.TotalReservationCount total
                 </span>
             </div>
 
-            <hr class="mb-3 mt-2" />
+            @if (Model.Reservations.Count == 0)
+            {
+                <div class="staff-empty-state">
+                    <div class="staff-empty-title">
+                        No reservations found
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="staff-table-wrapper">
+                    <table class="staff-table history-table">
+                        <thead>
+                            <tr>
+                                <th>Date &amp; Time</th>
+                                <th>Table</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
 
-            <div class="table-responsive">
-
-                <table class="table align-middle">
-
-                    <thead class="table-light">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        @if (Model.Orders.Any())
-                        {
-                            foreach (var order in Model.Orders)
+                        <tbody>
+                            @foreach (var reservation in Model.Reservations)
                             {
-                                <tr>
+                                string status =
+                                    reservation.Status ?? "Pending";
 
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            @reservation.Date.ToString(
+                                                "dd MMM yyyy")
+                                        </strong>
+
+                                        <div style="margin-top:2px;
+                                                    color:#64748b;
+                                                    font-size:11px;">
+                                            @DateTime.Today
+                                                .Add(reservation.Time)
+                                                .ToString("h:mm tt")
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        @(reservation.Table == null
+                                            ? "Unassigned"
+                                            : $"Table {reservation.Table.TableNumber}")
+                                    </td>
+
+                                    <td>
+                                        <span class="@ReservationBadge(status)">
+                                            @status
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="history-footer">
+                    Showing @Model.Reservations.Count most recent of
+                    @Model.TotalReservationCount reservation record(s).
+                </div>
+            }
+        </article>
+
+        <article class="staff-card customer-details-card">
+            <div class="history-heading">
+                <div>
+                    <div class="history-title">
+                        Recent Orders
+                    </div>
+
+                    <div class="history-subtitle">
+                        Latest five order records
+                    </div>
+                </div>
+
+                <span class="history-count">
+                    @Model.TotalOrderCount total
+                </span>
+            </div>
+
+            @if (Model.Orders.Count == 0)
+            {
+                <div class="staff-empty-state">
+                    <div class="staff-empty-title">
+                        No orders found
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="staff-table-wrapper">
+                    <table class="staff-table history-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var order in Model.Orders)
+                            {
+                                string status =
+                                    order.Status ?? "Pending";
+
+                                <tr>
                                     <td>
                                         #@order.OrderID
                                     </td>
 
                                     <td>
                                         @(order.OrderDate?.ToString(
-                                            "dd/MM/yyyy") ?? "-")
+                                            "dd MMM yyyy")
+                                            ?? "Not recorded")
                                     </td>
 
                                     <td>
-                                        RM @(order.TotalAmount?.ToString(
-                                            "0.00") ?? "0.00")
+                                        <strong>
+                                            RM @((order.TotalAmount ?? 0m)
+                                                .ToString("F2"))
+                                        </strong>
                                     </td>
 
                                     <td>
-                                        @{
-                                            string orderStatus =
-                                                order.Status ?? "Pending";
-
-                                            string orderClass =
-                                                orderStatus.ToLowerInvariant()
-                                                switch
-                                                {
-                                                    "completed" => "bg-success",
-                                                    "cancelled" => "bg-danger",
-                                                    "preparing" => "bg-warning text-dark",
-                                                    "ready to serve" => "bg-info text-dark",
-                                                    "served" => "bg-primary",
-                                                    _ => "bg-secondary"
-                                                };
-                                        }
-
-                                        <span class="badge @orderClass">
-                                            @orderStatus
+                                        <span class="@OrderBadge(status)">
+                                            @status
                                         </span>
                                     </td>
-
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="4"
-                                    class="text-center text-muted py-4">
-                                    No orders found.
-                                </td>
-                            </tr>
-                        }
+                        </tbody>
+                    </table>
+                </div>
 
-                    </tbody>
-
-                </table>
-
-            </div>
-        </div>
-
-    </div>
-
+                <div class="history-footer">
+                    Showing @Model.Orders.Count most recent of
+                    @Model.TotalOrderCount order record(s).
+                </div>
+            }
+        </article>
+    </section>
 </div>
-
-<style>
-
-    .customer-details-page {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-
-    /* PAGE HEADER */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #1f2937;
-    }
-
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-    /* CARDS */
-    .details-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .details-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        padding: 30px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-        min-width: 0;
-    }
-
-    .details-card h4 {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 5px;
-    }
-
-    /* CUSTOMER INFORMATION */
-    .info-list p {
-        margin-bottom: 12px;
-        color: #4b5563;
-        overflow-wrap: anywhere;
-    }
-
-    .preference-badge {
-        display: inline-block;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        text-align: left;
-        line-height: 1.5;
-        padding: 8px 12px;
-        max-width: 100%;
-    }
-
-    /* HISTORY */
-    .section-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .record-count {
-        font-size: 12px;
-        color: #6b7280;
-        background: #f3f4f6;
-        padding: 5px 10px;
-        border-radius: 20px;
-    }
-
-    .table thead th {
-        white-space: nowrap;
-        font-size: 13px;
-        color: #4b5563;
-    }
-
-    .table td {
-        font-size: 14px;
-        vertical-align: middle;
-    }
-
-    .table .badge {
-        white-space: nowrap;
-        font-size: 12px;
-        padding: 6px 10px;
-        border-radius: 20px;
-    }
-
-    /* RESPONSIVE DESIGN */
-    @@media (max-width: 900px) {
-
-        .details-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-    }
-
-    @@media (max-width: 600px) {
-
-        .details-card {
-            padding: 18px;
-        }
-
-    }
-
-</style>

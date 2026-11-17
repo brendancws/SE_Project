@@ -1,4 +1,4 @@
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +7,7 @@ using RROMS.Models;
 
 namespace RROMS.Pages.Staff.Customers
 {
+    [Authorize(Roles = "Staff")]
     public class DetailsModel : PageModel
     {
         private readonly ApplicationDbContext _context;
@@ -16,26 +17,34 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public RROMS.Models.Customer Customer { get; set; } = null!;
+        public RROMS.Models.Customer Customer { get; set; }
+            = null!;
 
-        public IList<CustomerOrder> Orders { get; set; }
-            = new List<CustomerOrder>();
+        // Keep these names compatible with the existing Razor page.
+        // Only the five most recent records are loaded.
+        public List<CustomerOrder> Orders { get; set; }
+            = new();
 
-        public IList<Reservation> Reservations { get; set; }
-            = new List<Reservation>();
+        public List<Reservation> Reservations { get; set; }
+            = new();
+
+        public int TotalOrderCount { get; set; }
+
+        public int TotalReservationCount { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
-            // Check whether the Customer ID was provided
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            // Retrieve the selected customer
+            int customerId = id.Value;
+
             var customer = await _context.Customers
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.CustomerID == id);
+                .FirstOrDefaultAsync(item =>
+                    item.CustomerID == customerId);
 
             if (customer == null)
             {
@@ -44,21 +53,49 @@ namespace RROMS.Pages.Staff.Customers
 
             Customer = customer;
 
-            // Retrieve customer reservation history
-            Reservations = await _context.Reservations
-                .AsNoTracking()
-                .Include(r => r.Table)
-                .Where(r => r.CustomerID == id)
-                .OrderByDescending(r => r.Date)
-                .ThenByDescending(r => r.Time)
-                .ToListAsync();
+            TotalReservationCount =
+                await _context.Reservations
+                    .AsNoTracking()
+                    .CountAsync(reservation =>
+                        reservation.CustomerID ==
+                        customerId);
 
-            // Retrieve customer order history
-            Orders = await _context.CustomerOrders
-                .AsNoTracking()
-                .Where(o => o.CustomerID == id)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            TotalOrderCount =
+                await _context.CustomerOrders
+                    .AsNoTracking()
+                    .CountAsync(order =>
+                        order.CustomerID ==
+                        customerId);
+
+            Reservations =
+                await _context.Reservations
+                    .AsNoTracking()
+                    .Include(reservation =>
+                        reservation.Table)
+                    .Where(reservation =>
+                        reservation.CustomerID ==
+                        customerId)
+                    .OrderByDescending(reservation =>
+                        reservation.Date)
+                    .ThenByDescending(reservation =>
+                        reservation.Time)
+                    .ThenByDescending(reservation =>
+                        reservation.ReservationID)
+                    .Take(5)
+                    .ToListAsync();
+
+            Orders =
+                await _context.CustomerOrders
+                    .AsNoTracking()
+                    .Where(order =>
+                        order.CustomerID ==
+                        customerId)
+                    .OrderByDescending(order =>
+                        order.OrderDate)
+                    .ThenByDescending(order =>
+                        order.OrderID)
+                    .Take(5)
+                    .ToListAsync();
 
             return Page();
         }

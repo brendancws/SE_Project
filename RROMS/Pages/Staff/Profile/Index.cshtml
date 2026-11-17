@@ -6,18 +6,176 @@
     Layout = "_StaffLayout";
 }
 
-<div class="profile-page">
+@section Styles {
+    <style>
+        .staff-profile-container {
+            width: 100%;
+            max-width: 1100px;
+        }
 
-    <!-- PAGE HEADER -->
-    <div class="page-header">
-        <div>
-            <h2>My Profile</h2>
-            <p>View and update your personal staff information.</p>
-        </div>
-    </div>
+        .staff-profile-card {
+            margin: 0;
+        }
 
-    <!-- SUCCESS MESSAGE -->
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        .staff-profile-identity {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding-bottom: 21px;
+            border-bottom: 1px solid var(--staff-border);
+        }
+
+        .staff-profile-avatar {
+            display: grid;
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--staff-sidebar-dark);
+            color: #fbbf24;
+            font-size: 26px;
+            font-weight: 850;
+        }
+
+        .staff-profile-name {
+            margin: 0;
+            color: var(--staff-text);
+            font-size: 20px;
+            font-weight: 850;
+            overflow-wrap: anywhere;
+        }
+
+        .staff-profile-role {
+            margin: 4px 0 0;
+            color: var(--staff-text-secondary);
+            font-size: 13px;
+        }
+
+        .staff-profile-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .staff-form-group {
+            min-width: 0;
+        }
+
+        .staff-form-label {
+            display: block;
+            margin-bottom: 7px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .staff-form-control {
+            width: 100%;
+            min-height: 43px;
+            padding: 9px 12px;
+            border: 1px solid var(--staff-border-strong);
+            border-radius: var(--staff-radius-sm);
+            background: #ffffff;
+            color: var(--staff-text);
+            outline: none;
+        }
+
+        .staff-form-control:focus {
+            border-color: var(--staff-primary);
+            box-shadow: var(--staff-focus);
+        }
+
+        .staff-form-control[readonly] {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .staff-form-validation {
+            display: block;
+            margin-top: 5px;
+            color: #b91c1c;
+            font-size: 11px;
+        }
+
+        .staff-profile-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 9px;
+            margin-top: 24px;
+        }
+
+        .staff-security-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 28px;
+            padding-top: 23px;
+            border-top: 1px solid var(--staff-border);
+        }
+
+        .staff-security-title {
+            color: var(--staff-text);
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .staff-security-copy {
+            max-width: 570px;
+            margin: 4px 0 0;
+            color: var(--staff-text-secondary);
+            font-size: 12px;
+        }
+
+        @@media (max-width: 700px) {
+            .staff-profile-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .staff-profile-identity {
+                align-items: flex-start;
+            }
+
+            .staff-profile-avatar {
+                width: 58px;
+                height: 58px;
+                font-size: 21px;
+            }
+
+            .staff-profile-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .staff-profile-actions .staff-button {
+                width: 100%;
+            }
+
+            .staff-security-section {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .staff-security-section .staff-button {
+                width: 100%;
+            }
+        }
+    </style>
+}
+
+<header class="staff-page-header">
+    <h1>My Profile</h1>
+
+    <p>
+        View and update your personal Staff information.
+    </p>
+</header>
+
+<div class="staff-profile-container">
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
         <div class="alert alert-success alert-dismissible fade show"
              role="alert">
@@ -32,373 +190,143 @@
         </div>
     }
 
-    <!-- PROFILE CARD -->
-    <div class="profile-card">
-
-        <div class="profile-header">
-
-            <div class="profile-avatar">
+    <section class="staff-card staff-profile-card">
+        <div class="staff-profile-identity">
+            <div class="staff-profile-avatar"
+                 aria-hidden="true">
                 @(string.IsNullOrWhiteSpace(Model.Input.Name)
                     ? "S"
-                    : Model.Input.Name.Substring(0, 1).ToUpper())
+                    : Model.Input.Name
+                        .Substring(0, 1)
+                        .ToUpperInvariant())
             </div>
 
-            <div class="profile-info">
-                <h4>@Model.Input.Name</h4>
-                <p>@Model.Input.Role</p>
-            </div>
+            <div>
+                <h2 class="staff-profile-name">
+                    @Model.Input.Name
+                </h2>
 
+                <p class="staff-profile-role">
+                    @(string.IsNullOrWhiteSpace(Model.Input.Role)
+                        ? "Staff"
+                        : Model.Input.Role)
+                </p>
+            </div>
         </div>
 
-        <hr />
-
-        <!-- PROFILE UPDATE FORM -->
         <form method="post">
-
             <div asp-validation-summary="ModelOnly"
-                 class="text-danger mb-3">
+                 class="alert alert-danger">
             </div>
 
-            <div class="row g-4">
-
-                <!-- FULL NAME -->
-                <div class="col-md-6">
-
+            <div class="staff-profile-form-grid">
+                <div class="staff-form-group">
                     <label asp-for="Input.Name"
-                           class="form-label">
+                           class="staff-form-label">
                         Full Name
                     </label>
 
                     <input asp-for="Input.Name"
-                           class="form-control"
-                           placeholder="Enter full name" />
+                           class="staff-form-control"
+                           maxlength="100"
+                           placeholder="Enter full name"
+                           autocomplete="name" />
 
                     <span asp-validation-for="Input.Name"
-                          class="text-danger small">
+                          class="staff-form-validation">
                     </span>
-
                 </div>
 
-                <!-- EMAIL ADDRESS -->
-                <div class="col-md-6">
-
+                <div class="staff-form-group">
                     <label asp-for="Input.Email"
-                           class="form-label">
+                           class="staff-form-label">
                         Email Address
                     </label>
 
                     <input asp-for="Input.Email"
-                           class="form-control"
-                           placeholder="Enter email address" />
+                           class="staff-form-control"
+                           type="email"
+                           maxlength="150"
+                           placeholder="Enter email address"
+                           autocomplete="email" />
 
                     <span asp-validation-for="Input.Email"
-                          class="text-danger small">
+                          class="staff-form-validation">
                     </span>
-
                 </div>
 
-                <!-- PHONE NUMBER -->
-                <div class="col-md-6">
-
+                <div class="staff-form-group">
                     <label asp-for="Input.Phone"
-                           class="form-label">
+                           class="staff-form-label">
                         Phone Number
                     </label>
 
                     <input asp-for="Input.Phone"
-                           class="form-control"
-                           placeholder="Enter phone number" />
+                           class="staff-form-control"
+                           maxlength="30"
+                           placeholder="Enter phone number"
+                           autocomplete="tel" />
 
                     <span asp-validation-for="Input.Phone"
-                          class="text-danger small">
+                          class="staff-form-validation">
                     </span>
-
                 </div>
 
-                <!-- ROLE (DISPLAY ONLY) -->
-                <div class="col-md-6">
-
-                    <label class="form-label">
+                <div class="staff-form-group">
+                    <label class="staff-form-label">
                         Role
                     </label>
 
                     <input type="text"
                            value="@Model.Input.Role"
-                           class="form-control"
+                           class="staff-form-control"
                            readonly />
-
                 </div>
 
-                <!-- ACCOUNT STATUS (DISPLAY ONLY) -->
-                <div class="col-md-6">
-
-                    <label class="form-label">
+                <div class="staff-form-group">
+                    <label class="staff-form-label">
                         Account Status
                     </label>
 
                     <input type="text"
                            value="@Model.Input.Status"
-                           class="form-control"
+                           class="staff-form-control"
                            readonly />
-
                 </div>
-
             </div>
 
-            <!-- ACTION BUTTONS -->
-            <div class="action-buttons">
-
+            <div class="staff-profile-actions">
                 <a asp-page="./Index"
-                   class="btn btn-outline-secondary">
+                   class="staff-button staff-button-secondary">
                     Cancel
                 </a>
 
                 <button type="submit"
-                        class="btn save-btn">
+                        class="staff-button staff-button-primary">
                     Save Changes
                 </button>
-
             </div>
-
         </form>
 
-        <!-- ACCOUNT SECURITY SECTION -->
-        <div class="security-section">
-
-            <div class="security-header">
-
-                <div class="security-info">
-
-                    <h5>Account Security</h5>
-
-                    <p>
-                        Keep your account secure by updating
-                        your password regularly.
-                    </p>
-
+        <div class="staff-security-section">
+            <div>
+                <div class="staff-security-title">
+                    Account Security
                 </div>
 
-                <a asp-page="./ChangePassword"
-                   class="btn change-password-btn">
-                    <i class="bi bi-shield-lock me-2"></i>
-                    Change Password
-                </a>
-
+                <p class="staff-security-copy">
+                    Keep the Staff account secure by updating the
+                    password regularly.
+                </p>
             </div>
 
+            <a asp-page="./ChangePassword"
+               class="staff-button staff-button-dark">
+                Change Password
+            </a>
         </div>
-
-    </div>
-
+    </section>
 </div>
-
-<style>
-
-    .profile-page {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-
-    /* PAGE HEADER */
-    .page-header {
-        margin-bottom: 25px;
-    }
-
-        .page-header h2 {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #1f2937;
-        }
-
-        .page-header p {
-            margin: 0;
-            color: #6b7280;
-        }
-
-    /* PROFILE CARD */
-    .profile-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        padding: 30px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
-    /* PROFILE HEADER */
-    .profile-header {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: #1f2937;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 30px;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .profile-info h4 {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 700;
-        color: #1f2937;
-        overflow-wrap: anywhere;
-    }
-
-    .profile-info p {
-        margin-top: 5px;
-        margin-bottom: 0;
-        color: #6b7280;
-    }
-
-    /* FORM */
-    .form-label {
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 8px;
-    }
-
-    .form-control {
-        height: 48px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        padding-left: 14px;
-    }
-
-        .form-control:focus {
-            border-color: #f59e0b;
-            box-shadow: 0 0 0 0.2rem rgba(245,158,11,0.15);
-        }
-
-        .form-control[readonly] {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-    /* ACTION BUTTONS */
-    .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 30px;
-    }
-
-        .action-buttons .btn {
-            min-width: 120px;
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-weight: 600;
-        }
-
-    .save-btn {
-        background: #f59e0b;
-        border: none;
-        color: #111827;
-    }
-
-        .save-btn:hover {
-            background: #d97706;
-            color: white;
-        }
-
-    /* ACCOUNT SECURITY */
-    .security-section {
-        margin-top: 35px;
-        padding-top: 25px;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .security-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-    }
-
-    .security-info h5 {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 8px;
-    }
-
-    .security-info p {
-        color: #6b7280;
-        font-size: 14px;
-        margin-bottom: 0;
-    }
-
-    /* CHANGE PASSWORD BUTTON */
-    .change-password-btn {
-        background: #1f2937;
-        color: #ffffff;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 20px;
-        font-weight: 600;
-        white-space: nowrap;
-        transition: all 0.2s ease;
-    }
-
-        .change-password-btn:hover {
-            background: #374151;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-
-        .change-password-btn:focus-visible {
-            outline: 3px solid #f59e0b;
-            outline-offset: 2px;
-        }
-
-    /* RESPONSIVE */
-    @@media (max-width: 700px) {
-
-        .profile-card {
-            padding: 20px;
-        }
-
-        .profile-header {
-            align-items: flex-start;
-        }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-        }
-
-            .action-buttons .btn {
-                width: 100%;
-            }
-
-        .security-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 15px;
-        }
-
-        .change-password-btn {
-            width: 100%;
-            text-align: center;
-        }
-    }
-
-</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

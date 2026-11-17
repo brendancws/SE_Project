@@ -1,5 +1,4 @@
-﻿
-@page
+﻿@page
 @model RROMS.Pages.Staff.Customers.IndexModel
 
 @{
@@ -7,94 +6,171 @@
     Layout = "_StaffLayout";
 }
 
-<div class="customers-page">
+@section Styles {
+    <style>
+        .customer-table {
+            min-width: 950px;
+        }
 
-    <!-- PAGE HEADER -->
-    <div class="page-header">
+        .customer-preference {
+            display: inline-flex;
+            max-width: 220px;
+            padding: 6px 9px;
+            border-radius: 7px;
+            background: var(--staff-info-soft);
+            color: #075985;
+            font-size: 11px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .customer-request {
+            background: var(--staff-warning-soft);
+            color: #92400e;
+        }
+    </style>
+}
+
+<header class="staff-page-header">
+    <h1>Customers</h1>
+
+    <p>
+        View customer requests, preferences, and recent activity.
+    </p>
+</header>
+
+<section class="staff-summary-grid"
+         aria-label="Customer summary">
+
+    <div class="staff-card staff-summary-card">
+        <div class="staff-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3" />
+                <path d="M3 20v-2a6 6 0 0 1 12 0v2" />
+                <circle cx="17" cy="9" r="2" />
+                <path d="M16 15a5 5 0 0 1 5 5" />
+            </svg>
+        </div>
+
         <div>
-            <h2>Customers</h2>
-            <p>View customer requests, preferences, and reservation history.</p>
+            <div class="staff-summary-label">
+                Total Customers
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.TotalCustomers
+            </div>
         </div>
     </div>
 
-    <!-- SUMMARY CARDS -->
-    <div class="summary-row">
-
-        <!-- TOTAL CUSTOMERS -->
-        <div class="summary-card">
-            <div class="summary-icon">👥</div>
-            <div>
-                <span>Total Customers</span>
-                <h3>@Model.TotalCustomers</h3>
-            </div>
+    <div class="staff-card staff-summary-card">
+        <div class="staff-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M5 3h14v18H5z" />
+                <path d="M8 7h8M8 11h8M8 15h5" />
+            </svg>
         </div>
 
-        <!-- SPECIAL REQUESTS -->
-        <div class="summary-card">
-            <div class="summary-icon">📝</div>
-            <div>
-                <span>Special Requests</span>
-                <h3>@Model.SpecialRequestsCount</h3>
+        <div>
+            <div class="staff-summary-label">
+                Special Requests
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.SpecialRequestsCount
             </div>
         </div>
-
-        <!-- DINING PREFERENCES -->
-        <div class="summary-card">
-            <div class="summary-icon">🍽️</div>
-            <div>
-                <span>Dining Preferences</span>
-                <h3>@Model.DiningPreferencesCount</h3>
-            </div>
-        </div>
-
-        <!-- TOTAL RESERVATIONS -->
-        <div class="summary-card">
-            <div class="summary-icon">📅</div>
-            <div>
-                <span>Reservation Records</span>
-                <h3>@Model.TotalReservationsCount</h3>
-            </div>
-        </div>
-
     </div>
 
-    <!-- CUSTOMER INFORMATION -->
-    <div class="customers-card">
-
-        <div class="table-toolbar">
-
-            <div>
-                <h4>Customer Information</h4>
-                <p>Review customer details and dining information.</p>
-            </div>
-
-            <!-- CUSTOMER SEARCH -->
-            <form method="get" class="search-box">
-
-                <input type="search"
-                       name="Search"
-                       value="@Model.Search"
-                       class="form-control"
-                       placeholder="Search name or phone..." />
-
-                <button type="submit" class="btn btn-dark">
-                    Search
-                </button>
-
-                <a asp-page="/Staff/Customers/Index"
-                   class="btn btn-outline-secondary">
-                    Reset
-                </a>
-
-            </form>
-
+    <div class="staff-card staff-summary-card">
+        <div class="staff-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10" />
+                <path d="M16 3v18M16 3c3 2 4 5 4 8h-4" />
+            </svg>
         </div>
 
-        <!-- CUSTOMER TABLE -->
-        <div class="table-responsive">
+        <div>
+            <div class="staff-summary-label">
+                Dining Preferences
+            </div>
 
-            <table class="table customers-table align-middle">
+            <div class="staff-summary-value">
+                @Model.DiningPreferencesCount
+            </div>
+        </div>
+    </div>
 
+    <div class="staff-card staff-summary-card">
+        <div class="staff-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M16 3v4M8 3v4M3 10h18" />
+            </svg>
+        </div>
+
+        <div>
+            <div class="staff-summary-label">
+                Reservation Records
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.TotalReservationsCount
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="staff-card">
+    <div class="staff-toolbar">
+        <div>
+            <h2 class="staff-toolbar-title">
+                Customer Information
+            </h2>
+
+            <p class="staff-toolbar-copy">
+                Review contact details and dining information.
+            </p>
+        </div>
+
+        <form method="get"
+              class="staff-filter-form">
+
+            <input type="search"
+                   name="Search"
+                   value="@Model.Search"
+                   class="staff-input staff-search-input"
+                   placeholder="Search name, email, or phone"
+                   autocomplete="off" />
+
+            <button type="submit"
+                    class="staff-button staff-button-dark">
+                Search
+            </button>
+
+            <a asp-page="./Index"
+               class="staff-button staff-button-secondary">
+                Reset
+            </a>
+        </form>
+    </div>
+
+    @if (Model.Customers.Count == 0)
+    {
+        <div class="staff-empty-state">
+            <div class="staff-empty-title">
+                No customers found
+            </div>
+
+            <div>
+                Try changing the name, email, or phone search.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="staff-table-wrapper">
+            <table class="staff-table customer-table">
                 <thead>
                     <tr>
                         <th>Customer ID</th>
@@ -102,305 +178,81 @@
                         <th>Contact</th>
                         <th>Special Request</th>
                         <th>Preference</th>
-                        <th>Reservations</th>
                         <th>Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
-
-                    @if (Model.Customers.Any())
-                    {
-                        foreach (var item in Model.Customers)
-                        {
-                            <tr>
-
-                                <!-- CUSTOMER ID -->
-                                <td>
-                                    @item.CustomerID
-                                </td>
-
-                                <!-- CUSTOMER NAME AND EMAIL -->
-                                <td>
-                                    <strong>@item.Name</strong>
-
-                                    <br />
-
-                                    <small class="text-muted">
-                                        @(item.Email ?? "-")
-                                    </small>
-                                </td>
-
-                                <!-- PHONE NUMBER -->
-                                <td>
-                                    @(item.Phone ?? "-")
-                                </td>
-
-                                <!-- SPECIAL REQUEST -->
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(
-                                        item.SpecialRequest))
-                                    {
-                                        <span class="badge bg-warning text-dark">
-                                            @item.SpecialRequest
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            None
-                                        </span>
-                                    }
-                                </td>
-
-                                <!-- DINING PREFERENCE -->
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(
-                                        item.DiningPreference))
-                                    {
-                                        <span class="badge bg-info text-dark">
-                                            @item.DiningPreference
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            None
-                                        </span>
-                                    }
-                                </td>
-
-                                <!-- RESERVATION DETAILS -->
-                                <td>
-                                    <span class="text-muted">
-                                        View history →
-                                    </span>
-                                </td>
-
-                                <!-- VIEW CUSTOMER HISTORY -->
-                                <td>
-                                    <a asp-page="./Details"
-                                       asp-route-id="@item.CustomerID"
-                                       class="btn btn-sm btn-outline-primary">
-                                        View History
-                                    </a>
-                                </td>
-
-                            </tr>
-                        }
-                    }
-                    else
+                    @foreach (var customer in Model.Customers)
                     {
                         <tr>
-                            <td colspan="7"
-                                class="text-center text-muted py-5">
+                            <td>
+                                #@customer.CustomerID
+                            </td>
 
-                                @if (!string.IsNullOrWhiteSpace(Model.Search))
+                            <td>
+                                <strong>@customer.Name</strong>
+
+                                <div style="margin-top:2px;
+                                            color:#64748b;
+                                            font-size:11px;">
+                                    @customer.Email
+                                </div>
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(customer.Phone)
+                                    ? "Not provided"
+                                    : customer.Phone)
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(
+                                    customer.SpecialRequest))
                                 {
-                                    <span>
-                                        No customers match your search.
+                                    <span class="customer-preference customer-request">
+                                        @customer.SpecialRequest
                                     </span>
                                 }
                                 else
                                 {
-                                    <span>
-                                        No customer records found.
+                                    <span style="color:#94a3b8;">
+                                        None
                                     </span>
                                 }
+                            </td>
 
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(
+                                    customer.DiningPreference))
+                                {
+                                    <span class="customer-preference">
+                                        @customer.DiningPreference
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color:#94a3b8;">
+                                        None
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <a asp-page="./Details"
+                                   asp-route-id="@customer.CustomerID"
+                                   class="staff-button staff-button-secondary">
+                                    View History
+                                </a>
                             </td>
                         </tr>
                     }
-
                 </tbody>
-
             </table>
-
         </div>
 
-    </div>
-
-</div>
-
-<style>
-
-    .customers-page {
-        width: 100%;
+        <div class="staff-result-count">
+            @Model.Customers.Count customer record(s) shown
+        </div>
     }
-
-    /* PAGE HEADER */
-    .page-header {
-        margin-bottom: 25px;
-    }
-
-    .page-header h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #1f2937;
-    }
-
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-    /* SUMMARY CARDS */
-    .summary-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-
-    .summary-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    }
-
-    .summary-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        background: #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 23px;
-    }
-
-    .summary-card span {
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .summary-card h3 {
-        margin: 3px 0 0;
-        font-weight: 700;
-    }
-
-    /* CUSTOMER TABLE CARD */
-    .customers-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        padding: 25px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    }
-
-    /* TABLE TOOLBAR */
-    .table-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .table-toolbar h4 {
-        margin-bottom: 3px;
-        font-weight: 700;
-    }
-
-    .table-toolbar p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-    /* SEARCH BOX */
-    .search-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .search-box .form-control {
-        width: 230px;
-        min-height: 40px;
-        border-radius: 10px;
-    }
-
-    .search-box .btn {
-        border-radius: 10px;
-        white-space: nowrap;
-    }
-
-    /* CUSTOMER TABLE */
-    .customers-table {
-        width: 100%;
-    }
-
-    .customers-table thead th {
-        background: #f9fafb;
-        border-bottom: none;
-        color: #4b5563;
-        font-size: 14px;
-        padding: 14px;
-        white-space: nowrap;
-    }
-
-    .customers-table td {
-        padding: 15px 14px;
-        vertical-align: middle;
-    }
-
-    .customers-table tbody tr:hover {
-        background: #fffaf0;
-    }
-
-    .customers-table .badge {
-        display: inline-block;
-        max-width: 220px;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        text-align: left;
-        padding: 7px 10px;
-        font-size: 12px;
-    }
-
-    /* RESPONSIVE DESIGN */
-    @@media (max-width: 1100px) {
-
-        .summary-row {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .table-toolbar {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-    }
-
-    @@media (max-width: 700px) {
-
-        .summary-row {
-            grid-template-columns: 1fr;
-        }
-
-        .search-box {
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .search-box .form-control,
-        .search-box .btn {
-            width: 100%;
-        }
-
-        .customers-card {
-            padding: 15px;
-        }
-
-    }
-
-</style>
+</section>

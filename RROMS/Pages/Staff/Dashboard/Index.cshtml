@@ -1,98 +1,321 @@
-﻿
-@page
+﻿@page
 @model RROMS.Pages.Staff.Dashboard.IndexModel
 
 @{
-    ViewData["Title"] = "Staff Dashboard";
+    ViewData["Title"] = "Dashboard";
     Layout = "_StaffLayout";
+
+    string ReservationBadge(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "confirmed" =>
+                "staff-badge staff-badge-success",
+
+            "pending" =>
+                "staff-badge staff-badge-warning",
+
+            "cancelled" =>
+                "staff-badge staff-badge-danger",
+
+            "completed" =>
+                "staff-badge staff-badge-completed",
+
+            _ =>
+                "staff-badge staff-badge-pending"
+        };
+    }
 }
 
-<div class="staff-dashboard">
+@section Styles {
+    <style>
+        .dashboard-metric-link {
+            color: inherit;
+            text-decoration: none;
+            transition:
+                transform 0.15s ease,
+                border-color 0.15s ease,
+                box-shadow 0.15s ease;
+        }
 
-    <div class="dashboard-header mb-4">
+        .dashboard-metric-link:hover {
+            transform: translateY(-2px);
+            border-color: rgba(245, 158, 11, 0.42);
+            color: inherit;
+            box-shadow:
+                0 10px 22px rgba(15, 23, 42, 0.08);
+        }
+
+        .dashboard-metric-link:focus-visible {
+            outline: none;
+            box-shadow: var(--staff-focus);
+        }
+
+        .dashboard-metric-link.warning {
+            border-color: #fde68a;
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff,
+                    #fffaf0
+                );
+        }
+
+        .dashboard-metric-link.info {
+            border-color: #bae6fd;
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff,
+                    #f0f9ff
+                );
+        }
+
+        .dashboard-metric-link.success {
+            border-color: #bbf7d0;
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff,
+                    #f0fdf4
+                );
+        }
+
+        .dashboard-metric-link.warning
+        .staff-summary-icon {
+            background: var(--staff-warning-soft);
+            color: var(--staff-warning);
+        }
+
+        .dashboard-metric-link.info
+        .staff-summary-icon {
+            background: var(--staff-info-soft);
+            color: var(--staff-info);
+        }
+
+        .dashboard-metric-link.success
+        .staff-summary-icon {
+            background: var(--staff-success-soft);
+            color: var(--staff-success);
+        }
+
+        .dashboard-reservation-table {
+            min-width: 760px;
+        }
+
+        .dashboard-empty {
+            display: grid;
+            min-height: 180px;
+            place-items: center;
+            padding: 26px 20px;
+            text-align: center;
+        }
+
+        .dashboard-empty-icon {
+            display: grid;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 11px;
+            place-items: center;
+            border-radius: 15px;
+            background: var(--staff-primary-soft);
+            color: var(--staff-primary-dark);
+        }
+
+        .dashboard-empty-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dashboard-empty-title {
+            color: #334155;
+            font-size: 14px;
+            font-weight: 850;
+        }
+
+        .dashboard-empty-copy {
+            margin-top: 4px;
+            color: var(--staff-text-secondary);
+            font-size: 12px;
+        }
+    </style>
+}
+
+<header class="staff-page-header">
+    <h1>Operations Dashboard</h1>
+
+    <p>
+        Monitor today’s reservations, active orders, and pending payments.
+    </p>
+</header>
+
+<section class="staff-summary-grid"
+         aria-label="Today’s operational summary">
+
+    <a asp-page="/Staff/Reservations/Index"
+       asp-route-SelectedDate="@DateTime.Today.ToString("yyyy-MM-dd")"
+       asp-route-ShowAll="false"
+       class="staff-card staff-summary-card dashboard-metric-link">
+
+        <div class="staff-summary-icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <rect x="3"
+                      y="5"
+                      width="18"
+                      height="16"
+                      rx="2" />
+
+                <path d="M16 3v4M8 3v4M3 10h18" />
+            </svg>
+        </div>
+
         <div>
-            <h2 class="fw-bold mb-1">Staff Dashboard</h2>
-            <p class="text-muted mb-0">
-                Overview of today's restaurant activities.
+            <div class="staff-summary-label">
+                Today’s Reservations
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.TodayReservations
+            </div>
+        </div>
+    </a>
+
+    <a asp-page="/Staff/Orders/Index"
+       asp-route-StatusFilter="Pending"
+       class="staff-card staff-summary-card dashboard-metric-link warning">
+
+        <div class="staff-summary-icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" />
+                <path d="M9 8h6M9 12h6M9 16h3" />
+            </svg>
+        </div>
+
+        <div>
+            <div class="staff-summary-label">
+                Pending Orders
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.PendingOrders
+            </div>
+        </div>
+    </a>
+
+    <a asp-page="/Staff/Orders/Index"
+       asp-route-StatusFilter="Ready to Serve"
+       class="staff-card staff-summary-card dashboard-metric-link success">
+
+        <div class="staff-summary-icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M6 17h12" />
+                <path d="M8 17v-5a4 4 0 0 1 8 0v5" />
+                <path d="M12 5V3M5 12H3M21 12h-2" />
+                <path d="M4 20h16" />
+            </svg>
+        </div>
+
+        <div>
+            <div class="staff-summary-label">
+                Ready to Serve
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.OrdersReady
+            </div>
+        </div>
+    </a>
+
+    <a asp-page="/Staff/Payments/Index"
+       asp-route-StatusFilter="Pending"
+       class="staff-card staff-summary-card dashboard-metric-link info">
+
+        <div class="staff-summary-icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <rect x="2.5"
+                      y="5"
+                      width="19"
+                      height="14"
+                      rx="2" />
+
+                <path d="M2.5 9h19M6 15h4" />
+            </svg>
+        </div>
+
+        <div>
+            <div class="staff-summary-label">
+                Pending Payments
+            </div>
+
+            <div class="staff-summary-value">
+                @Model.PendingPayments
+            </div>
+        </div>
+    </a>
+</section>
+
+<section class="staff-card">
+    <div class="staff-toolbar">
+        <div>
+            <h2 class="staff-toolbar-title">
+                Today’s Reservations
+            </h2>
+
+            <p class="staff-toolbar-copy">
+                Upcoming bookings scheduled for
+                @DateTime.Today.ToString("dd MMMM yyyy").
             </p>
         </div>
+
+        <a asp-page="/Staff/Reservations/Index"
+           asp-route-ShowAll="true"
+           class="staff-button staff-button-dark">
+            View All Reservations
+        </a>
     </div>
 
-    <!-- DASHBOARD STATISTICS -->
-    <div class="row g-4 mb-4">
-
-        <!-- TODAY'S RESERVATIONS -->
-        <div class="col-md-6 col-lg-3">
-            <div class="dashboard-card">
-                <div class="card-icon">📅</div>
-                <div>
-                    <p class="card-label">Today's Reservations</p>
-                    <h3>@Model.TodayReservations</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- PENDING ORDERS -->
-        <div class="col-md-6 col-lg-3">
-            <div class="dashboard-card">
-                <div class="card-icon">🍽️</div>
-                <div>
-                    <p class="card-label">Pending Orders</p>
-                    <h3>@Model.PendingOrders</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- ORDERS READY -->
-        <div class="col-md-6 col-lg-3">
-            <div class="dashboard-card">
-                <div class="card-icon">✅</div>
-                <div>
-                    <p class="card-label">Orders Ready</p>
-                    <h3>@Model.OrdersReady</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- PENDING PAYMENTS -->
-        <div class="col-md-6 col-lg-3">
-            <div class="dashboard-card">
-                <div class="card-icon">💳</div>
-                <div>
-                    <p class="card-label">Pending Payments</p>
-                    <h3>@Model.PendingPayments</h3>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- TODAY'S RESERVATIONS -->
-    <div class="dashboard-section">
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-
+    @if (Model.TodayReservationList.Count == 0)
+    {
+        <div class="dashboard-empty">
             <div>
-                <h4 class="fw-bold mb-1">
-                    Today's Reservations
-                </h4>
+                <div class="dashboard-empty-icon"
+                     aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3"
+                              y="5"
+                              width="18"
+                              height="16"
+                              rx="2" />
 
-                <small class="text-muted">
-                    Manage upcoming customer reservations
-                </small>
+                        <path d="M16 3v4M8 3v4M3 10h18" />
+                        <path d="m9 16 2 2 4-4" />
+                    </svg>
+                </div>
+
+                <div class="dashboard-empty-title">
+                    No reservations scheduled for today
+                </div>
+
+                <div class="dashboard-empty-copy">
+                    Use View All Reservations to review past and upcoming
+                    bookings.
+                </div>
             </div>
-
-            <a asp-page="/Staff/Reservations/Index"
-               class="btn btn-dark">
-                View All
-            </a>
-
         </div>
-
-        <div class="table-responsive">
-
-            <table class="table align-middle">
-
+    }
+    else
+    {
+        <div class="staff-table-wrapper">
+            <table class="staff-table dashboard-reservation-table">
                 <thead>
                     <tr>
                         <th>Time</th>
@@ -105,181 +328,79 @@
                 </thead>
 
                 <tbody>
-
-                    @if (Model.TodayReservationList.Any())
+                    @foreach (var reservation
+                        in Model.TodayReservationList)
                     {
-                        foreach (var reservation in Model.TodayReservationList)
-                        {
-                            <tr>
+                        string status =
+                            reservation.Status ?? "Pending";
 
-                                <!-- TIME -->
-                                <td>
-                                    @reservation.Time.ToString(@"hh\:mm")
-                                </td>
-
-                                <!-- CUSTOMER -->
-                                <td>
-                                    @(reservation.Customer?.Name ?? "Unknown")
-                                </td>
-
-                                <!-- GUESTS -->
-                                <td>
-                                    @reservation.NumberOfGuests
-                                </td>
-
-                                <!-- TABLE -->
-                                <td>
-                                    @if (reservation.Table != null)
-                                    {
-                                        <span>
-                                            Table @reservation.Table.TableNumber
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            Unassigned
-                                        </span>
-                                    }
-                                </td>
-
-                                <!-- STATUS -->
-                                <td>
-                                    @{
-                                        string status =
-                                            reservation.Status ?? "Pending";
-
-                                        string badgeClass = status switch
-                                        {
-                                            "Confirmed" => "bg-success",
-                                            "Pending" => "bg-warning text-dark",
-                                            "Cancelled" => "bg-danger",
-                                            _ => "bg-secondary"
-                                        };
-                                    }
-
-                                    <span class="badge @badgeClass">
-                                        @status
-                                    </span>
-                                </td>
-
-                                <!-- ACTION -->
-                                <td>
-                                    <a asp-page="/Staff/Reservations/Edit"
-                                       asp-route-id="@reservation.ReservationID"
-                                       class="btn btn-sm btn-outline-warning">
-                                        Edit
-                                    </a>
-                                </td>
-
-                            </tr>
-                        }
-                    }
-                    else
-                    {
                         <tr>
-                            <td colspan="6"
-                                class="text-center text-muted py-4">
-                                No reservations found for today.
+                            <td>
+                                @(DateTime.Today
+                                    .Add(reservation.Time)
+                                    .ToString("h:mm tt"))
+                            </td>
+
+                            <td>
+                                @if (reservation.Customer != null)
+                                {
+                                    <strong>
+                                        @reservation.Customer.Name
+                                    </strong>
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        reservation.Customer.Phone))
+                                    {
+                                        <div style="margin-top:2px;
+                                                    color:#64748b;
+                                                    font-size:11px;">
+                                            @reservation.Customer.Phone
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span style="color:#94a3b8;">
+                                        Unknown customer
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @reservation.NumberOfGuests
+                            </td>
+
+                            <td>
+                                @(reservation.Table == null
+                                    ? "Unassigned"
+                                    : $"Table {reservation.Table.TableNumber}")
+                            </td>
+
+                            <td>
+                                <span class="@ReservationBadge(status)">
+                                    @status
+                                </span>
+                            </td>
+
+                            <td>
+                                <a asp-page="/Staff/Reservations/Edit"
+                                   asp-route-id="@reservation.ReservationID"
+                                   class="staff-button staff-button-secondary">
+                                    Edit
+                                </a>
                             </td>
                         </tr>
                     }
-
                 </tbody>
-
             </table>
-
         </div>
 
-    </div>
-
-</div>
-
-<style>
-
-    .staff-dashboard {
-        padding: 10px 5px;
-    }
-
-    .dashboard-header h2 {
-        color: #202124;
-    }
-
-    .dashboard-card {
-        background: white;
-        border: 1px solid #eeeeee;
-        border-radius: 16px;
-        padding: 22px;
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        min-height: 120px;
-        transition: 0.2s;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    }
-
-    .dashboard-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-
-    .card-icon {
-        width: 55px;
-        height: 55px;
-        border-radius: 14px;
-        background: #f5f5f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 26px;
-    }
-
-    .card-label {
-        margin-bottom: 5px;
-        font-size: 14px;
-        color: #777;
-    }
-
-    .dashboard-card h3 {
-        margin: 0;
-        font-weight: 700;
-    }
-
-    .dashboard-section {
-        background: white;
-        border: 1px solid #eeeeee;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    }
-
-    .table thead th {
-        background: #f8f9fa;
-        color: #555;
-        border-bottom: none;
-        padding: 14px;
-    }
-
-    .table td {
-        padding: 15px 14px;
-    }
-
-    .badge {
-        font-size: 12px;
-        padding: 7px 12px;
-        border-radius: 20px;
-    }
-
-    @@media (max-width: 768px) {
-
-        .dashboard-section {
-            padding: 15px;
+        @if (Model.TodayReservations > Model.TodayReservationList.Count)
+        {
+            <div class="staff-result-count">
+                Showing @Model.TodayReservationList.Count of
+                @Model.TodayReservations reservations scheduled today.
+            </div>
         }
-
-        .dashboard-card {
-            padding: 18px;
-        }
-
     }
-
-</style>
+</section>

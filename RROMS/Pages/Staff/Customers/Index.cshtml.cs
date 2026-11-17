@@ -1,12 +1,12 @@
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
-using RROMS.Models;
 
 namespace RROMS.Pages.Staff.Customers
 {
+    [Authorize(Roles = "Staff")]
     public class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _context;
@@ -16,52 +16,64 @@ namespace RROMS.Pages.Staff.Customers
             _context = context;
         }
 
-        public IList<RROMS.Models.Customer> Customers { get; set; }
-       = new List<RROMS.Models.Customer>();
+        public List<RROMS.Models.Customer> Customers { get; set; }
+            = new();
 
         [BindProperty(SupportsGet = true)]
         public string? Search { get; set; }
 
         public int TotalCustomers { get; set; }
+
         public int SpecialRequestsCount { get; set; }
+
         public int DiningPreferencesCount { get; set; }
+
         public int TotalReservationsCount { get; set; }
 
         public async Task OnGetAsync()
         {
-            // Retrieve overall statistics
+            Search = string.IsNullOrWhiteSpace(Search)
+                ? null
+                : Search.Trim();
+
             TotalCustomers = await _context.Customers
+                .AsNoTracking()
                 .CountAsync();
 
             SpecialRequestsCount = await _context.Customers
-                .CountAsync(c =>
-                    c.SpecialRequest != null &&
-                    c.SpecialRequest != "");
+                .AsNoTracking()
+                .CountAsync(customer =>
+                    customer.SpecialRequest != null &&
+                    customer.SpecialRequest != "");
 
             DiningPreferencesCount = await _context.Customers
-                .CountAsync(c =>
-                    c.DiningPreference != null &&
-                    c.DiningPreference != "");
+                .AsNoTracking()
+                .CountAsync(customer =>
+                    customer.DiningPreference != null &&
+                    customer.DiningPreference != "");
 
             TotalReservationsCount = await _context.Reservations
+                .AsNoTracking()
                 .CountAsync();
 
-            // Customer search
-            var query = _context.Customers.AsQueryable();
+            var query = _context.Customers
+                .AsNoTracking()
+                .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(Search))
+            if (Search != null)
             {
-                string searchTerm = Search.Trim();
-
-                query = query.Where(c =>
-                    c.Name.Contains(searchTerm) ||
-                    (c.Phone != null &&
-                     c.Phone.Contains(searchTerm)));
+                query = query.Where(customer =>
+                    customer.Name.Contains(Search) ||
+                    customer.Email.Contains(Search) ||
+                    (
+                        customer.Phone != null &&
+                        customer.Phone.Contains(Search)
+                    ));
             }
 
-            // Retrieve matching customers
             Customers = await query
-                .OrderBy(c => c.Name)
+                .OrderBy(customer => customer.Name)
+                .ThenBy(customer => customer.CustomerID)
                 .ToListAsync();
         }
     }
