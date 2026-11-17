@@ -19,6 +19,10 @@ namespace RROMS.Pages.Admin.Staff
         [BindProperty]
         public RROMS.Models.Staff Input { get; set; } = new();
 
+        public int AssignedOrderCount { get; set; }
+
+        public string? ErrorMessage { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var staff = await _db.Staff
@@ -28,11 +32,16 @@ namespace RROMS.Pages.Admin.Staff
 
             if (staff == null)
             {
-                return RedirectToPage("Index");
+                return RedirectToPage("./Index");
             }
 
             Input = staff;
             Input.Password = string.Empty;
+
+            AssignedOrderCount = await _db.CustomerOrders
+                .AsNoTracking()
+                .CountAsync(order =>
+                    order.StaffID == id);
 
             return Page();
         }
@@ -43,16 +52,34 @@ namespace RROMS.Pages.Admin.Staff
                 .FirstOrDefaultAsync(item =>
                     item.StaffID == Input.StaffID);
 
-            if (staff != null)
+            if (staff == null)
             {
-                _db.Staff.Remove(staff);
-                await _db.SaveChangesAsync();
-
-                TempData["StatusMessage"] =
-                    "The Staff account was deleted.";
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("Index");
+            AssignedOrderCount = await _db.CustomerOrders
+                .AsNoTracking()
+                .CountAsync(order =>
+                    order.StaffID == staff.StaffID);
+
+            if (AssignedOrderCount > 0)
+            {
+                Input = staff;
+                Input.Password = string.Empty;
+
+                ErrorMessage =
+                    $"This Staff account cannot be deleted because it is assigned to {AssignedOrderCount} order record(s). Set the account to Inactive instead.";
+
+                return Page();
+            }
+
+            _db.Staff.Remove(staff);
+            await _db.SaveChangesAsync();
+
+            TempData["StatusMessage"] =
+                "The Staff account was deleted.";
+
+            return RedirectToPage("./Index");
         }
     }
 }

@@ -1,58 +1,257 @@
 ﻿@page
 @model RROMS.Pages.Admin.Customers.IndexModel
+
 @{
     ViewData["Title"] = "Customers";
     Layout = "_AdminLayout";
 }
 
-<h1>Customer Accounts</h1>
-<p class="subtitle">Manage customer accounts and access.</p>
+<header class="admin-page-header">
+    <div>
+        <h1>Customer Accounts</h1>
 
-<div class="card">
-    <a href="/Admin/Customers/Create" style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">+ Add Customer</a>
+        <p class="subtitle">
+            Manage customer profiles and account access.
+        </p>
+    </div>
+
+    <a asp-page="./Create"
+       class="admin-button admin-button-primary">
+        + Add Customer
+    </a>
+</header>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="admin-alert admin-alert-success">
+        @statusMessage
+    </div>
+}
+
+<section class="account-summary-grid"
+         aria-label="Customer account summary">
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Total Customers
+        </div>
+
+        <div class="account-summary-value">
+            @(Model.ActiveCount + Model.InactiveCount)
+        </div>
+    </div>
+
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Active
+        </div>
+
+        <div class="account-summary-value success">
+            @Model.ActiveCount
+        </div>
+    </div>
+
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Inactive
+        </div>
+
+        <div class="account-summary-value danger">
+            @Model.InactiveCount
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <form method="get" class="account-filter-form">
+        <div class="account-filter-field">
+            <label for="customer-search">
+                Search
+            </label>
+
+            <input id="customer-search"
+                   class="admin-input"
+                   type="search"
+                   name="search"
+                   value="@Model.Search"
+                   placeholder="Name, email, or phone"
+                   autocomplete="off" />
+        </div>
+
+        <div class="account-filter-field">
+            <label for="customer-status">
+                Account Status
+            </label>
+
+            <select id="customer-status"
+                    class="admin-select"
+                    name="status">
+                <option value="all"
+                        selected="@(Model.Status == "all")">
+                    All statuses
+                </option>
+
+                <option value="active"
+                        selected="@(Model.Status == "active")">
+                    Active
+                </option>
+
+                <option value="inactive"
+                        selected="@(Model.Status == "inactive")">
+                    Inactive
+                </option>
+            </select>
+        </div>
+
+        <button type="submit"
+                class="admin-button admin-button-primary">
+            Apply
+        </button>
+
+        <a asp-page="./Index"
+           class="admin-button admin-button-secondary">
+            Reset
+        </a>
+    </form>
+
+    <div class="admin-toolbar">
+        <div class="account-result-count">
+            @if (Model.TotalResults == 0)
+            {
+                <span>No matching customers</span>
+            }
+            else
+            {
+                <span>
+                    Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                    of @Model.TotalResults customers
+                </span>
+            }
+        </div>
+    </div>
 
     @if (Model.Customers.Count == 0)
     {
-        <p style="color:#64748b;">No customers yet.</p>
+        <div class="admin-empty-state">
+            <div class="admin-empty-title">
+                No customer accounts found
+            </div>
+
+            <div>
+                Try changing the search text or status filter.
+            </div>
+        </div>
     }
     else
     {
-        <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                    <th style="padding:10px 8px;">Name</th>
-                    <th style="padding:10px 8px;">Email</th>
-                    <th style="padding:10px 8px;">Phone</th>
-                    <th style="padding:10px 8px;">Status</th>
-                    <th style="padding:10px 8px;">Joined</th>
-                    <th style="padding:10px 8px; text-align:right;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in Model.Customers)
-                {
-                    <tr style="border-bottom:1px solid #f1f5f9;">
-                        <td style="padding:12px 8px; font-weight:600;">@c.Name</td>
-                        <td style="padding:12px 8px; color:#475569;">@c.Email</td>
-                        <td style="padding:12px 8px; color:#475569;">@c.Phone</td>
-                        <td style="padding:12px 8px;">
-                            @if (c.IsActive)
-                            {
-                                <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">Active</span>
-                            }
-                            else
-                            {
-                                <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">Inactive</span>
-                            }
-                        </td>
-                        <td style="padding:12px 8px; color:#475569; font-size:13px;">@(c.CreatedAt?.ToString("yyyy-MM-dd") ?? "Not recorded")</td>
-                        <td style="padding:12px 8px; text-align:right;">
-                            <a href="/Admin/Customers/Edit?id=@c.CustomerID" style="color:#0284c7; text-decoration:none; margin-right:10px;">Edit</a>
-                            <a href="/Admin/Customers/Delete?id=@c.CustomerID" style="color:#dc2626; text-decoration:none;">Delete</a>
-                        </td>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                    @foreach (var customer in Model.Customers)
+                    {
+                        bool isActive = string.Equals(
+                            customer.Status,
+                            "Active",
+                            StringComparison.OrdinalIgnoreCase);
+
+                        <tr>
+                            <td>
+                                <strong>@customer.Name</strong>
+                            </td>
+
+                            <td class="account-contact">
+                                @customer.Email
+                            </td>
+
+                            <td class="account-contact">
+                                @(string.IsNullOrWhiteSpace(customer.Phone)
+                                    ? "Not provided"
+                                    : customer.Phone)
+                            </td>
+
+                            <td>
+                                @if (isActive)
+                                {
+                                    <span class="admin-badge admin-badge-success">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="admin-badge admin-badge-danger">
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="account-joined">
+                                @(customer.DateRegistered?.ToString(
+                                    "dd MMM yyyy") ?? "Not recorded")
+                            </td>
+
+                            <td>
+                                <div class="admin-row-actions">
+                                    <a asp-page="./Edit"
+                                       asp-route-id="@customer.CustomerID"
+                                       class="admin-action-button admin-action-button-edit">
+                                        Edit
+                                    </a>
+
+                                    <a asp-page="./Delete"
+                                       asp-route-id="@customer.CustomerID"
+                                       class="admin-action-button admin-action-button-delete">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
-</div>
+
+    @if (Model.TotalResults > 0)
+    {
+        <nav class="account-pagination"
+             aria-label="Customer result pages">
+            <div class="account-page-status">
+                Page @Model.PageNumber of @Model.TotalPages
+            </div>
+
+            <div class="account-page-links">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-status="@Model.Status"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       class="admin-button admin-button-secondary">
+                        ← Previous
+                    </a>
+                }
+
+                @if (Model.HasNextPage)
+                {
+                    <a asp-page="./Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-status="@Model.Status"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       class="admin-button admin-button-secondary">
+                        Next →
+                    </a>
+                }
+            </div>
+        </nav>
+    }
+</section>

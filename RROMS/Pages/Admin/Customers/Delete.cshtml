@@ -1,20 +1,121 @@
 ﻿@page
 @model RROMS.Pages.Admin.Customers.DeleteModel
+
 @{
     ViewData["Title"] = "Delete Customer";
     Layout = "_AdminLayout";
 }
 
 <h1>Delete Customer</h1>
-<p class="subtitle">Are you sure you want to delete this customer?</p>
 
-<div class="card" style="max-width:560px;">
-    <p><strong>Name:</strong> @Model.Customer.Name</p>
-    <p><strong>Email:</strong> @Model.Customer.Email</p>
+<p class="subtitle">
+    Review the customer and all linked restaurant activity.
+</p>
 
-    <form method="post" style="margin-top:20px;">
-        <input type="hidden" asp-for="Customer.CustomerID" />
-        <button type="submit" style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Yes, Delete</button>
-        <a href="/Admin/Customers" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
-    </form>
-</div>
+<section class="card admin-form-card">
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="admin-alert admin-alert-danger">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    <div class="admin-record-details">
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Name</div>
+            <div>@Model.Customer.Name</div>
+        </div>
+
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Email</div>
+            <div>@Model.Customer.Email</div>
+        </div>
+
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Phone</div>
+            <div>
+                @(string.IsNullOrWhiteSpace(Model.Customer.Phone)
+                    ? "Not provided"
+                    : Model.Customer.Phone)
+            </div>
+        </div>
+
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Status</div>
+            <div>@(Model.Customer.Status ?? "Unknown")</div>
+        </div>
+    </div>
+
+    <div class="admin-summary-grid"
+         style="margin-top:20px;">
+        <div class="card admin-summary-card">
+            <div class="admin-summary-label">Reservations</div>
+            <div class="admin-summary-value">@Model.ReservationCount</div>
+        </div>
+
+        <div class="card admin-summary-card">
+            <div class="admin-summary-label">Orders</div>
+            <div class="admin-summary-value">@Model.OrderCount</div>
+        </div>
+
+        <div class="card admin-summary-card">
+            <div class="admin-summary-label">Payments</div>
+            <div class="admin-summary-value">@Model.PaymentCount</div>
+        </div>
+
+        <div class="card admin-summary-card">
+            <div class="admin-summary-label">Notifications</div>
+            <div class="admin-summary-value">@Model.NotificationCount</div>
+        </div>
+    </div>
+
+    @if (Model.HasHistory)
+    {
+        <div class="admin-warning-zone">
+            <strong>This customer has restaurant activity history.</strong>
+
+            <div style="margin-top:5px;">
+                Deleting the account would damage reservations, orders,
+                payments, notifications, or feedback records. Set the
+                customer to Inactive instead.
+            </div>
+        </div>
+
+        <div class="admin-form-actions">
+            <a asp-page="./Edit"
+               asp-route-id="@Model.Customer.CustomerID"
+               class="admin-button admin-button-primary">
+                Edit Customer
+            </a>
+
+            <a asp-page="./Index"
+               class="admin-button admin-button-secondary">
+                Back to Customers
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="admin-danger-zone">
+            This customer has no linked restaurant history. Permanent
+            deletion cannot be undone.
+        </div>
+
+        <form method="post">
+            <input type="hidden"
+                   asp-for="Customer.CustomerID" />
+
+            <div class="admin-form-actions">
+                <button type="submit"
+                        class="admin-button admin-button-danger">
+                    Yes, Delete
+                </button>
+
+                <a asp-page="./Index"
+                   class="admin-button admin-button-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    }
+</section>

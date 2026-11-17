@@ -7,57 +7,102 @@
 }
 
 <h1>Delete Staff Member</h1>
+
 <p class="subtitle">
-    Confirm whether this Staff account should be permanently deleted.
+    Review the account and its order history before continuing.
 </p>
 
-<div class="card" style="max-width:560px;">
-    <p>
-        <strong>Name:</strong>
-        @Model.Input.Name
-    </p>
+<section class="card admin-form-card">
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="admin-alert admin-alert-danger">
+            @Model.ErrorMessage
+        </div>
+    }
 
-    <p>
-        <strong>Email:</strong>
-        @Model.Input.Email
-    </p>
+    <div class="admin-record-details">
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Name</div>
+            <div>@Model.Input.Name</div>
+        </div>
 
-    <p>
-        <strong>Phone:</strong>
-        @(string.IsNullOrWhiteSpace(Model.Input.Phone)
-            ? "Not provided"
-            : Model.Input.Phone)
-    </p>
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Email</div>
+            <div>@Model.Input.Email</div>
+        </div>
 
-    <p>
-        <strong>Role:</strong>
-        @(Model.Input.Role ?? "Staff")
-    </p>
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Phone</div>
+            <div>
+                @(string.IsNullOrWhiteSpace(Model.Input.Phone)
+                    ? "Not provided"
+                    : Model.Input.Phone)
+            </div>
+        </div>
 
-    <p>
-        <strong>Status:</strong>
-        @(Model.Input.Status ?? "Unknown")
-    </p>
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Role</div>
+            <div>@(Model.Input.Role ?? "Staff")</div>
+        </div>
 
-    <div style="margin-top:20px; padding:12px; border-radius:8px; background:#fef2f2; color:#991b1b;">
-        Deleting this account cannot be undone. If the account should only
-        be prevented from signing in, cancel this action and set its status
-        to Inactive instead.
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Status</div>
+            <div>@(Model.Input.Status ?? "Unknown")</div>
+        </div>
+
+        <div class="admin-record-detail">
+            <div class="admin-record-label">Assigned Orders</div>
+            <div>@Model.AssignedOrderCount record(s)</div>
+        </div>
     </div>
 
-    <form method="post"
-          style="margin-top:20px;">
-        <input asp-for="Input.StaffID"
-               type="hidden" />
+    @if (Model.AssignedOrderCount > 0)
+    {
+        <div class="admin-warning-zone">
+            <strong>This Staff account has order history.</strong>
 
-        <button type="submit"
-                style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
-            Yes, Delete
-        </button>
+            <div style="margin-top:5px;">
+                Deleting the account would damage historical order records.
+                Edit the account and set the status to Inactive instead.
+            </div>
+        </div>
 
-        <a asp-page="Index"
-           style="margin-left:10px; color:#64748b; text-decoration:none;">
-            Cancel
-        </a>
-    </form>
-</div>
+        <div class="admin-form-actions">
+            <a asp-page="./Edit"
+               asp-route-id="@Model.Input.StaffID"
+               class="admin-button admin-button-primary">
+                Edit Staff Account
+            </a>
+
+            <a asp-page="./Index"
+               class="admin-button admin-button-secondary">
+                Back to Staff
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="admin-danger-zone">
+            This action permanently deletes the Staff account and cannot
+            be undone. Use Inactive status when access only needs to be
+            disabled.
+        </div>
+
+        <form method="post">
+            <input asp-for="Input.StaffID"
+                   type="hidden" />
+
+            <div class="admin-form-actions">
+                <button type="submit"
+                        class="admin-button admin-button-danger">
+                    Yes, Delete
+                </button>
+
+                <a asp-page="./Index"
+                   class="admin-button admin-button-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    }
+</section>

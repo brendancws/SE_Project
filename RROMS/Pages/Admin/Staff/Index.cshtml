@@ -6,42 +6,150 @@
     Layout = "_AdminLayout";
 }
 
-<h1>Staff Accounts</h1>
-<p class="subtitle">
-    Manage Restaurant Staff accounts and access status.
-</p>
+<header class="admin-page-header">
+    <div>
+        <h1>Staff Accounts</h1>
+
+        <p class="subtitle">
+            Manage restaurant Staff accounts and access status.
+        </p>
+    </div>
+
+    <a asp-page="./Create"
+       class="admin-button admin-button-primary">
+        + Add Staff
+    </a>
+</header>
 
 @if (TempData["StatusMessage"] is string statusMessage)
 {
-    <div style="margin-bottom:16px; padding:12px 14px; border-radius:8px; background:#dcfce7; color:#166534;">
+    <div class="admin-alert admin-alert-success">
         @statusMessage
     </div>
 }
 
-<div class="card">
-    <a asp-page="Create"
-       style="display:inline-block; background:#f59e0b; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:20px;">
-        + Add Staff
-    </a>
+<section class="account-summary-grid"
+         aria-label="Staff account summary">
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Total Staff
+        </div>
+
+        <div class="account-summary-value">
+            @(Model.ActiveCount + Model.InactiveCount)
+        </div>
+    </div>
+
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Active
+        </div>
+
+        <div class="account-summary-value success">
+            @Model.ActiveCount
+        </div>
+    </div>
+
+    <div class="card account-summary-card">
+        <div class="account-summary-label">
+            Inactive
+        </div>
+
+        <div class="account-summary-value danger">
+            @Model.InactiveCount
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <form method="get" class="account-filter-form">
+        <div class="account-filter-field">
+            <label for="staff-search">
+                Search
+            </label>
+
+            <input id="staff-search"
+                   class="admin-input"
+                   type="search"
+                   name="search"
+                   value="@Model.Search"
+                   placeholder="Name, email, or phone"
+                   autocomplete="off" />
+        </div>
+
+        <div class="account-filter-field">
+            <label for="staff-status">
+                Account Status
+            </label>
+
+            <select id="staff-status"
+                    class="admin-select"
+                    name="status">
+                <option value="all"
+                        selected="@(Model.Status == "all")">
+                    All statuses
+                </option>
+
+                <option value="active"
+                        selected="@(Model.Status == "active")">
+                    Active
+                </option>
+
+                <option value="inactive"
+                        selected="@(Model.Status == "inactive")">
+                    Inactive
+                </option>
+            </select>
+        </div>
+
+        <button type="submit"
+                class="admin-button admin-button-primary">
+            Apply
+        </button>
+
+        <a asp-page="./Index"
+           class="admin-button admin-button-secondary">
+            Reset
+        </a>
+    </form>
+
+    <div class="admin-toolbar">
+        <div class="account-result-count">
+            @if (Model.TotalResults == 1)
+            {
+                <span>1 Staff account found</span>
+            }
+            else
+            {
+                <span>@Model.TotalResults Staff accounts found</span>
+            }
+        </div>
+    </div>
 
     @if (Model.StaffMembers.Count == 0)
     {
-        <p style="color:#64748b;">
-            No Staff accounts were found.
-        </p>
+        <div class="admin-empty-state">
+            <div class="admin-empty-title">
+                No Staff accounts found
+            </div>
+
+            <div>
+                Try changing the search text or status filter.
+            </div>
+        </div>
     }
     else
     {
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse;">
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
                 <thead>
-                    <tr style="text-align:left; border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
-                        <th style="padding:10px 8px;">Name</th>
-                        <th style="padding:10px 8px;">Email</th>
-                        <th style="padding:10px 8px;">Phone</th>
-                        <th style="padding:10px 8px;">Role</th>
-                        <th style="padding:10px 8px;">Status</th>
-                        <th style="padding:10px 8px; text-align:right;">Actions</th>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
 
@@ -53,54 +161,56 @@
                             "Active",
                             StringComparison.OrdinalIgnoreCase);
 
-                        <tr style="border-bottom:1px solid #f1f5f9;">
-                            <td style="padding:12px 8px; font-weight:600;">
-                                @staff.Name
+                        <tr>
+                            <td>
+                                <strong>@staff.Name</strong>
                             </td>
 
-                            <td style="padding:12px 8px; color:#475569;">
+                            <td class="account-contact">
                                 @staff.Email
                             </td>
 
-                            <td style="padding:12px 8px; color:#475569;">
+                            <td class="account-contact">
                                 @(string.IsNullOrWhiteSpace(staff.Phone)
                                     ? "Not provided"
                                     : staff.Phone)
                             </td>
 
-                            <td style="padding:12px 8px;">
-                                <span style="background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:20px; font-size:12px;">
+                            <td>
+                                <span class="admin-badge admin-badge-info">
                                     @(staff.Role ?? "Staff")
                                 </span>
                             </td>
 
-                            <td style="padding:12px 8px;">
+                            <td>
                                 @if (isActive)
                                 {
-                                    <span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:20px; font-size:12px;">
+                                    <span class="admin-badge admin-badge-success">
                                         Active
                                     </span>
                                 }
                                 else
                                 {
-                                    <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:12px;">
+                                    <span class="admin-badge admin-badge-danger">
                                         Inactive
                                     </span>
                                 }
                             </td>
 
-                            <td style="padding:12px 8px; text-align:right; white-space:nowrap;">
-                                <a asp-page="Edit"
-                                   asp-route-id="@staff.StaffID"
-                                   style="color:#0284c7; text-decoration:none; margin-right:10px;">
-                                    Edit
-                                </a>
+                            <td>
+                                <div class="admin-row-actions">
+                                    <a asp-page="./Edit"
+                                       asp-route-id="@staff.StaffID"
+                                       class="admin-action-button admin-action-button-edit">
+                                        Edit
+                                    </a>
 
-                                <a asp-page="Delete"
-                                   asp-route-id="@staff.StaffID"
-                                   style="color:#dc2626; text-decoration:none;">
-                                    Delete
-                                </a>
+                                    <a asp-page="./Delete"
+                                       asp-route-id="@staff.StaffID"
+                                       class="admin-action-button admin-action-button-delete">
+                                        Delete
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -108,4 +218,4 @@
             </table>
         </div>
     }
-</div>
+</section>

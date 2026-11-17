@@ -1036,3 +1036,143 @@ button {
         justify-content: flex-start;
     }
 }
+
+/* ----------------------------------------------------------
+   Account management
+   ---------------------------------------------------------- */
+
+.account-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.account-summary-card {
+    margin: 0;
+    padding: 16px 18px;
+}
+
+.account-summary-label {
+    color: var(--admin-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-summary-value {
+    margin-top: 4px;
+    color: var(--admin-text);
+    font-size: 22px;
+    font-weight: 850;
+}
+
+    .account-summary-value.success {
+        color: var(--admin-success);
+    }
+
+    .account-summary-value.danger {
+        color: var(--admin-danger);
+    }
+
+.account-filter-form {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(150px, 210px) auto auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    background: var(--admin-surface-muted);
+}
+
+.account-filter-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.account-result-count {
+    color: var(--admin-text-secondary);
+    font-size: 12px;
+}
+
+.account-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.account-page-status {
+    color: var(--admin-text-secondary);
+    font-size: 12px;
+}
+
+.account-page-links {
+    display: flex;
+    gap: 8px;
+}
+
+.account-contact {
+    color: #475569;
+}
+
+.account-joined {
+    color: #64748b;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.account-form-section {
+    margin-bottom: 23px;
+    padding-bottom: 4px;
+}
+
+    .account-form-section + .account-form-section {
+        padding-top: 21px;
+        border-top: 1px solid var(--admin-border);
+    }
+
+.account-form-section-title {
+    margin-bottom: 14px;
+    color: var(--admin-text);
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.account-form-section-copy {
+    margin: -9px 0 15px;
+    color: var(--admin-text-secondary);
+    font-size: 11px;
+}
+
+@media (max-width: 900px) {
+    .account-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .account-summary-grid,
+    .account-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .account-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .account-page-links {
+        width: 100%;
+    }
+
+        .account-page-links .admin-button {
+            flex: 1;
+        }
+}
