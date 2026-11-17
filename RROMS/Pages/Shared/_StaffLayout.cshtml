@@ -1,5 +1,4 @@
-﻿
-@using System.Security.Claims
+﻿@using System.Security.Claims
 
 @{
     string staffName =
@@ -8,7 +7,7 @@
     string staffInitial =
         string.IsNullOrWhiteSpace(staffName)
             ? "S"
-            : staffName.Substring(0, 1).ToUpper();
+            : staffName.Substring(0, 1).ToUpperInvariant();
 
     string currentPage =
         ViewContext.RouteData.Values["page"]?.ToString() ?? "";
@@ -16,347 +15,255 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewData["Title"] - Dineflow</title>
+    <title>@ViewData["Title"] — DineFlow Staff</title>
 
     <link rel="stylesheet"
           href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <style>
+    <link rel="stylesheet"
+          href="~/css/staff.css"
+          asp-append-version="true" />
 
-        body {
-            margin: 0;
-            background: #f6f7f9;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        .staff-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        .staff-sidebar {
-            width: 250px;
-            background: #1f2937;
-            color: white;
-            padding: 25px 18px;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        .staff-logo {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 35px;
-            padding-left: 10px;
-        }
-
-        .staff-logo span {
-            color: #f59e0b;
-        }
-
-        /* NAVIGATION */
-        .staff-nav a,
-        .staff-logout-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            transition: 0.2s;
-            font-size: 16px;
-            font-family: inherit;
-        }
-
-        .staff-nav a:hover,
-        .staff-logout-btn:hover {
-            background: #374151;
-            color: white;
-        }
-
-        .staff-nav a.active {
-            background: #f59e0b;
-            color: #111827;
-            font-weight: 600;
-        }
-
-        /* LOGOUT BUTTON */
-        .staff-logout-btn {
-            border: none;
-            background: transparent;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .staff-logout-form {
-            margin: 0;
-        }
-
-        /* MAIN CONTENT */
-        .staff-main {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            min-width: 0;
-        }
-
-        /* TOP BAR */
-        .staff-topbar {
-            min-height: 70px;
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 32px;
-        }
-
-        .staff-page-content {
-            padding: 30px;
-        }
-
-        /* PROFILE AREA */
-        .profile-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .profile-details {
-            text-align: right;
-        }
-
-        .profile-details strong {
-            color: #1f2937;
-        }
-
-        .profile-circle {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #1f2937;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        /* RESPONSIVE */
-        @@media (max-width: 900px) {
-
-            .staff-sidebar {
-                width: 200px;
-            }
-
-            .staff-main {
-                margin-left: 200px;
-                width: calc(100% - 200px);
-            }
-
-            .staff-page-content {
-                padding: 20px;
-            }
-
-            .staff-topbar {
-                padding: 12px 20px;
-            }
-        }
-
-        @@media (max-width: 600px) {
-
-            .staff-sidebar {
-                width: 75px;
-                padding: 20px 10px;
-            }
-
-            .staff-logo {
-                font-size: 13px;
-                padding-left: 0;
-                text-align: center;
-                overflow-wrap: anywhere;
-            }
-
-            .staff-nav a,
-            .staff-logout-btn {
-                justify-content: center;
-                gap: 0;
-                padding: 12px 5px;
-                font-size: 0;
-            }
-
-            .staff-nav a span,
-            .staff-logout-btn span {
-                font-size: 22px;
-            }
-
-            .staff-main {
-                margin-left: 75px;
-                width: calc(100% - 75px);
-            }
-
-            .staff-topbar {
-                padding: 10px 15px;
-            }
-
-            .staff-page-content {
-                padding: 15px;
-            }
-
-            .profile-details {
-                display: none;
-            }
-        }
-
-    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
-
     <div class="staff-wrapper">
+        <aside id="staff-sidebar"
+               class="staff-sidebar"
+               aria-label="Staff navigation">
+            <div class="staff-brand">
+                <div class="staff-brand-mark"
+                     aria-hidden="true">
+                    D
+                </div>
 
-        <!-- SIDEBAR -->
-        <aside class="staff-sidebar">
+                <div>
+                    <div class="staff-brand-name">
+                        DineFlow
+                    </div>
 
-            <div class="staff-logo">
-                Dine<span>flow</span>
+                    <div class="staff-brand-caption">
+                        Staff Operations
+                    </div>
+                </div>
             </div>
 
             <nav class="staff-nav">
-
-                <!-- DASHBOARD -->
                 <a asp-page="/Staff/Dashboard/Index"
-                   class="@(currentPage.StartsWith("/Staff/Dashboard")
-                       ? "active" : "")">
-                    <span>🏠</span>
-                    Dashboard
+                   class="@(currentPage.StartsWith("/Staff/Dashboard") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 11 12 3l9 8" />
+                            <path d="M5 10v10h14V10M9 20v-6h6v6" />
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
                 </a>
 
-                <!-- RESERVATIONS -->
                 <a asp-page="/Staff/Reservations/Index"
-                   class="@(currentPage.StartsWith("/Staff/Reservations")
-                       ? "active" : "")">
-                    <span>📅</span>
-                    Reservations
+                   class="@(currentPage.StartsWith("/Staff/Reservations") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="3" y="5" width="18" height="16" rx="2" />
+                            <path d="M16 3v4M8 3v4M3 10h18" />
+                        </svg>
+                    </span>
+                    <span>Reservations</span>
                 </a>
 
-                <!-- ORDERS -->
                 <a asp-page="/Staff/Orders/Index"
-                   class="@(currentPage.StartsWith("/Staff/Orders")
-                       ? "active" : "")">
-                    <span>🍽️</span>
-                    Orders
+                   class="@(currentPage.StartsWith("/Staff/Orders") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" />
+                            <path d="M9 8h6M9 12h6M9 16h3" />
+                        </svg>
+                    </span>
+                    <span>Orders</span>
                 </a>
 
-                <!-- PAYMENTS -->
                 <a asp-page="/Staff/Payments/Index"
-                   class="@(currentPage.StartsWith("/Staff/Payments")
-                       ? "active" : "")">
-                    <span>💳</span>
-                    Payments
+                   class="@(currentPage.StartsWith("/Staff/Payments") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="2.5" y="5" width="19" height="14" rx="2" />
+                            <path d="M2.5 9h19M6 15h4" />
+                        </svg>
+                    </span>
+                    <span>Payments</span>
                 </a>
 
-                <!-- CUSTOMERS -->
                 <a asp-page="/Staff/Customers/Index"
-                   class="@(currentPage.StartsWith("/Staff/Customers")
-                       ? "active" : "")">
-                    <span>👥</span>
-                    Customers
+                   class="@(currentPage.StartsWith("/Staff/Customers") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="9" cy="8" r="3" />
+                            <path d="M3 20v-2a6 6 0 0 1 12 0v2" />
+                            <circle cx="17" cy="9" r="2" />
+                            <path d="M16 15a5 5 0 0 1 5 5" />
+                        </svg>
+                    </span>
+                    <span>Customers</span>
                 </a>
 
-                <!-- FEEDBACK -->
-<a asp-page="/Staff/Feedback/Index"
-   class="@(currentPage.StartsWith("/Staff/Feedback")
-       ? "active" : "")">
-    <span>💬</span>
-    Feedback
-</a>
+                <a asp-page="/Staff/Feedback/Index"
+                   class="@(currentPage.StartsWith("/Staff/Feedback") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 5h16v11H9l-5 4V5z" />
+                            <path d="M8 9h8M8 12h5" />
+                        </svg>
+                    </span>
+                    <span>Feedback</span>
+                </a>
 
-                <!-- PROFILE -->
                 <a asp-page="/Staff/Profile/Index"
-                   class="@(currentPage.StartsWith("/Staff/Profile")
-                       ? "active" : "")">
-                    <span>👤</span>
-                    Profile
+                   class="@(currentPage.StartsWith("/Staff/Profile") ? "active" : "")">
+                    <span class="staff-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 21a8 8 0 0 1 16 0" />
+                        </svg>
+                    </span>
+                    <span>Profile</span>
                 </a>
 
-                <hr style="border-color:#4b5563;" />
+                <hr class="staff-nav-divider" />
 
-                <!-- REAL LOGOUT -->
                 <form method="post"
                       asp-page="/Staff/Logout"
                       class="staff-logout-form">
+                    @Html.AntiForgeryToken()
 
                     <button type="submit"
                             class="staff-logout-btn">
-                        <span>🚪</span>
-                        Logout
+                        <span class="staff-nav-icon"
+                              aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M10 17l5-5-5-5" />
+                                <path d="M15 12H3" />
+                                <path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+                            </svg>
+                        </span>
+                        <span>Logout</span>
                     </button>
-
                 </form>
-
             </nav>
-
         </aside>
 
-        <!-- MAIN -->
-        <main class="staff-main">
+        <button id="staff-sidebar-backdrop"
+                type="button"
+                class="staff-sidebar-backdrop"
+                aria-label="Close navigation">
+        </button>
 
-            <!-- TOP BAR -->
-            <div class="staff-topbar">
+        <div class="staff-main">
+            <header class="staff-topbar">
+                <button id="staff-mobile-menu"
+                        type="button"
+                        class="staff-mobile-menu"
+                        aria-controls="staff-sidebar"
+                        aria-expanded="false"
+                        aria-label="Open navigation">
+                    ☰
+                </button>
 
-                <div>
-                    <strong>Restaurant Staff Panel</strong>
-                </div>
-
-                <!-- DYNAMIC STAFF PROFILE -->
-                <div class="profile-area">
-
-                    <div class="profile-details">
-                        <small class="text-muted">
-                            Signed in as
-                        </small>
-                        <br />
-
-                        <strong>@staffName</strong>
+                <div class="staff-topbar-heading">
+                    <div class="staff-topbar-eyebrow">
+                        Restaurant Staff Panel
                     </div>
 
-                    <div class="profile-circle">
+                    <div class="staff-topbar-title">
+                        @ViewData["Title"]
+                    </div>
+                </div>
+
+                <div class="profile-area">
+                    <div class="profile-details">
+                        <span class="profile-label">
+                            Signed in as
+                        </span>
+
+                        <strong class="profile-name">
+                            @staffName
+                        </strong>
+                    </div>
+
+                    <div class="profile-circle"
+                         aria-hidden="true">
                         @staffInitial
                     </div>
-
                 </div>
+            </header>
 
-            </div>
-
-            <!-- PAGE CONTENT -->
-            <div class="staff-page-content">
+            <main class="staff-page-content">
                 @RenderBody()
-            </div>
-
-        </main>
-
+            </main>
+        </div>
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js">
     </script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        (() => {
+            const body = document.body;
+            const menuButton =
+                document.getElementById("staff-mobile-menu");
+            const backdrop =
+                document.getElementById("staff-sidebar-backdrop");
+            const sidebar =
+                document.getElementById("staff-sidebar");
 
+            const setSidebarOpen = (isOpen) => {
+                body.classList.toggle(
+                    "staff-sidebar-open",
+                    isOpen);
+
+                menuButton?.setAttribute(
+                    "aria-expanded",
+                    isOpen ? "true" : "false");
+            };
+
+            menuButton?.addEventListener("click", () => {
+                setSidebarOpen(
+                    !body.classList.contains(
+                        "staff-sidebar-open"));
+            });
+
+            backdrop?.addEventListener("click", () => {
+                setSidebarOpen(false);
+            });
+
+            sidebar?.querySelectorAll("a").forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth <= 900) {
+                        setSidebarOpen(false);
+                    }
+                });
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    setSidebarOpen(false);
+                }
+            });
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 900) {
+                    setSidebarOpen(false);
+                }
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
