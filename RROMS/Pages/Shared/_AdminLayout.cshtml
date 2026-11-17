@@ -2,216 +2,175 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — RROMS Admin</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f1f5f9; }
 
-        .admin-shell { display: flex; min-height: 100vh; }
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
 
-        .sidebar {
-            width: 220px;
-            background: #1e293b;
-            color: #cbd5e1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            flex-shrink: 0;
-        }
-        .sidebar .logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: #f59e0b;
-            padding: 0 24px 24px;
-            letter-spacing: 1px;
-        }
-        .sidebar .nav { display: flex; flex-direction: column; }
-        .sidebar .nav-group {
-    padding: 18px 24px 7px;
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
+    <title>@ViewData["Title"] — DineFlow Admin</title>
 
-.sidebar .nav-group:first-child {
-    padding-top: 4px;
-}
+    <link rel="stylesheet"
+          href="~/css/admin.css"
+          asp-append-version="true" />
 
-.sidebar .nav-group:not(:first-child) {
-    margin-top: 4px;
-    border-top: 1px solid rgba(148, 163, 184, 0.14);
-}
-        .sidebar .nav a {
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px 24px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.15s;
-        }
-        .sidebar .nav a:hover { background: #334155; color: #fff; }
-        .sidebar .nav a.active { background: #f59e0b; color: #fff; font-weight: 600; }
-        .sidebar .nav .icon { width: 18px; text-align: center; }
-
-        .main { flex: 1; display: flex; flex-direction: column; }
-
-        .topbar {
-            background: #fff;
-            padding: 16px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .topbar .panel-title { font-size: 16px; font-weight: 600; color: #0f172a; }
-        .topbar .user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #334155; }
-        .topbar .user .avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #1e293b; color: #f59e0b;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700;
-        }
-        .logout-form {
-    margin-left: 12px;
-}
-
-.logout-button {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 12px;
-}
-
-.logout-button:hover {
-    color: #dc2626;
-    text-decoration: underline;
-}
-
-.logout-button:focus-visible {
-    border-radius: 3px;
-    outline: 2px solid #f59e0b;
-    outline-offset: 3px;
-}
-
-        .content { padding: 28px; }
-        .content h1 { color: #0f172a; margin-bottom: 6px; font-size: 26px; }
-        .content .subtitle { color: #64748b; font-size: 14px; margin-bottom: 24px; }
-
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
-        }
-    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
     <div class="admin-shell">
-        <aside class="sidebar">
-            <div class="logo">RROMS</div>
-            <nav class="nav" aria-label="Administrator navigation">
-    <div class="nav-group">Overview</div>
+        <aside id="admin-sidebar"
+               class="sidebar"
+               aria-label="Administrator sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-mark"
+                     aria-hidden="true">
+                    D
+                </div>
 
-    <a href="/Admin/Dashboard"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
-        <span class="icon">🏠</span>
-        Dashboard
-    </a>
+                <div class="sidebar-brand-copy">
+                    <div class="sidebar-brand-name">
+                        DineFlow
+                    </div>
 
-    <div class="nav-group">Operations</div>
+                    <div class="sidebar-brand-caption">
+                        Administrator
+                    </div>
+                </div>
+            </div>
 
-    <a href="/Admin/Reservations"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Reservations") ? "active" : "")">
-        <span class="icon">📅</span>
-        Reservations
-    </a>
+            <nav class="nav"
+                 aria-label="Administrator navigation">
+                <div class="nav-group">Overview</div>
 
-    <a href="/Admin/Orders"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Orders") ? "active" : "")">
-        <span class="icon">🧾</span>
-        Orders
-    </a>
+                <a href="/Admin/Dashboard"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">🏠</span>
+                    <span>Dashboard</span>
+                </a>
 
-    <a href="/Admin/Payments"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Payments") ? "active" : "")">
-        <span class="icon">💳</span>
-        Payments
-    </a>
+                <div class="nav-group">Operations</div>
 
-    <a href="/Admin/Reports"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Reports") ? "active" : "")">
-        <span class="icon">📊</span>
-        Reports
-    </a>
+                <a href="/Admin/Reservations"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Reservations") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">📅</span>
+                    <span>Reservations</span>
+                </a>
 
-    <div class="nav-group">Restaurant Setup</div>
+                <a href="/Admin/Orders"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Orders") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">🧾</span>
+                    <span>Orders</span>
+                </a>
 
-    <a href="/Admin/Tables"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Tables") ? "active" : "")">
-        <span class="icon">🪑</span>
-        Tables
-    </a>
+                <a href="/Admin/Payments"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Payments") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">💳</span>
+                    <span>Payments</span>
+                </a>
 
-    <a href="/Admin/OpeningHours"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/OpeningHours") ? "active" : "")">
-        <span class="icon">🕒</span>
-        Opening Hours
-    </a>
+                <a href="/Admin/Reports"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Reports") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">📊</span>
+                    <span>Reports</span>
+                </a>
 
-    <div class="nav-group">Menu Management</div>
+                <div class="nav-group">Restaurant Setup</div>
 
-    <a href="/Admin/Categories"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Categories") ? "active" : "")">
-        <span class="icon">📂</span>
-        Menu Categories
-    </a>
+                <a href="/Admin/Tables"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Tables") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">🪑</span>
+                    <span>Tables</span>
+                </a>
 
-    <a href="/Admin/MenuItems"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/MenuItems") ? "active" : "")">
-        <span class="icon">🍽️</span>
-        Menu Items
-    </a>
+                <a href="/Admin/OpeningHours"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/OpeningHours") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">🕒</span>
+                    <span>Opening Hours</span>
+                </a>
 
-    <div class="nav-group">User Management</div>
+                <div class="nav-group">Menu Management</div>
 
-    <a href="/Admin/Staff"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Staff") ? "active" : "")">
-        <span class="icon">👥</span>
-        Staff
-    </a>
+                <a href="/Admin/Categories"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Categories") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">📂</span>
+                    <span>Menu Categories</span>
+                </a>
 
-    <a href="/Admin/Customers"
-       class="@(Context.Request.Path.StartsWithSegments("/Admin/Customers") ? "active" : "")">
-        <span class="icon">👤</span>
-        Customers
-    </a>
-</nav>
+                <a href="/Admin/MenuItems"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/MenuItems") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">🍽️</span>
+                    <span>Menu Items</span>
+                </a>
+
+                <div class="nav-group">User Management</div>
+
+                <a href="/Admin/Staff"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Staff") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">👥</span>
+                    <span>Staff</span>
+                </a>
+
+                <a href="/Admin/Customers"
+                   class="@(Context.Request.Path.StartsWithSegments("/Admin/Customers") ? "active" : "")">
+                    <span class="icon" aria-hidden="true">👤</span>
+                    <span>Customers</span>
+                </a>
+            </nav>
         </aside>
+
+        <button id="sidebar-backdrop"
+                type="button"
+                class="sidebar-backdrop"
+                aria-label="Close navigation">
+        </button>
 
         <div class="main">
             <header class="topbar">
-                <div class="panel-title">@ViewData["Title"]</div>
-                <div class="user">
-                    <div class="avatar">@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</div>
-                    <div>Signed in as<br /><strong>@User.Identity?.Name</strong></div>
-                    <form method="post"
-      asp-page="/Account/Logout"
-      class="logout-form">
-    @Html.AntiForgeryToken()
+                <button id="mobile-menu-button"
+                        type="button"
+                        class="mobile-menu-button"
+                        aria-controls="admin-sidebar"
+                        aria-expanded="false"
+                        aria-label="Open navigation">
+                    ☰
+                </button>
 
-    <button type="submit" class="logout-button">
-        Logout
-    </button>
-</form>
+                <div class="topbar-heading">
+                    <div class="topbar-eyebrow">
+                        Administrator Portal
+                    </div>
+
+                    <div class="panel-title">
+                        @ViewData["Title"]
+                    </div>
+                </div>
+
+                <div class="user">
+                    <div class="avatar" aria-hidden="true">
+                        @(User.Identity?.Name?
+                            .Substring(0, 1)
+                            .ToUpper() ?? "A")
+                    </div>
+
+                    <div class="user-copy">
+                        <span class="user-label">
+                            Signed in as
+                        </span>
+
+                        <strong class="user-name">
+                            @User.Identity?.Name
+                        </strong>
+                    </div>
+
+                    <form method="post"
+                          asp-page="/Account/Logout"
+                          class="logout-form">
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="logout-button">
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </header>
 
@@ -221,6 +180,54 @@
         </div>
     </div>
 
-    @RenderSection("Scripts", required: false)
+    <script>
+        (() => {
+            const body = document.body;
+            const menuButton =
+                document.getElementById("mobile-menu-button");
+            const backdrop =
+                document.getElementById("sidebar-backdrop");
+            const sidebar =
+                document.getElementById("admin-sidebar");
+
+            const setSidebarOpen = (isOpen) => {
+                body.classList.toggle("sidebar-open", isOpen);
+                menuButton?.setAttribute(
+                    "aria-expanded",
+                    isOpen ? "true" : "false");
+            };
+
+            menuButton?.addEventListener("click", () => {
+                setSidebarOpen(
+                    !body.classList.contains("sidebar-open"));
+            });
+
+            backdrop?.addEventListener("click", () => {
+                setSidebarOpen(false);
+            });
+
+            sidebar?.querySelectorAll("a").forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth <= 900) {
+                        setSidebarOpen(false);
+                    }
+                });
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    setSidebarOpen(false);
+                }
+            });
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 900) {
+                    setSidebarOpen(false);
+                }
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
