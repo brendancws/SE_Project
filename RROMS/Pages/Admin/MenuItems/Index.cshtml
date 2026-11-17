@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RROMS.Pages.Admin.MenuItems.IndexModel
 @{
     ViewData["Title"] = "Menu Items";
@@ -195,25 +195,6 @@
         color: #991b1b;
     }
 
-    .menu-actions {
-        text-align: right;
-        white-space: nowrap;
-    }
-
-    .menu-action-link {
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .menu-action-link.edit {
-        margin-right: 12px;
-        color: #0284c7;
-    }
-
-    .menu-action-link.delete {
-        color: #dc2626;
-    }
 
     .menu-empty {
         padding: 32px 12px;
@@ -324,7 +305,7 @@
             else
             {
                 <span>
-                    Showing @Model.FirstResultNumber–@Model.LastResultNumber
+                    Showing @Model.FirstResultNumber�@Model.LastResultNumber
                     of @Model.TotalResults
                 </span>
             }
@@ -441,7 +422,7 @@
                                     {
                                         <div class="menu-item-image menu-item-placeholder"
                                              aria-hidden="true">
-                                            🍽️
+                                            ???
                                         </div>
                                     }
 
@@ -461,7 +442,7 @@
                             </td>
 
                             <td style="color:#475569;">
-                                @(item.Category?.CategoryName ?? "—")
+                                @(item.Category?.CategoryName ?? "�")
                             </td>
 
                             <td style="color:#0f172a; font-weight:700;">
@@ -483,19 +464,21 @@
                                 }
                             </td>
 
-                            <td class="menu-actions">
-                                <a asp-page="./Edit"
-                                   asp-route-id="@item.MenuItemID"
-                                   class="menu-action-link edit">
-                                    Edit
-                                </a>
+                            <td>
+    <div class="admin-row-actions">
+        <a asp-page="./Edit"
+           asp-route-id="@item.MenuItemID"
+           class="admin-action-button admin-action-button-edit">
+            Edit
+        </a>
 
-                                <a asp-page="./Delete"
-                                   asp-route-id="@item.MenuItemID"
-                                   class="menu-action-link delete">
-                                    Delete
-                                </a>
-                            </td>
+        <a asp-page="./Delete"
+           asp-route-id="@item.MenuItemID"
+           class="admin-action-button admin-action-button-delete">
+            Delete
+        </a>
+    </div>
+</td>
                         </tr>
                     }
                 </tbody>
@@ -519,14 +502,14 @@
                        asp-route-availability="@Model.Availability"
                        asp-route-pageNumber="@(Model.PageNumber - 1)"
                        class="menu-page-link">
-                        ← Previous
+                        ? Previous
                     </a>
                 }
                 else
                 {
                     <span class="menu-page-link disabled"
                           aria-disabled="true">
-                        ← Previous
+                        ? Previous
                     </span>
                 }
 
@@ -538,14 +521,14 @@
                        asp-route-availability="@Model.Availability"
                        asp-route-pageNumber="@(Model.PageNumber + 1)"
                        class="menu-page-link">
-                        Next →
+                        Next ?
                     </a>
                 }
                 else
                 {
                     <span class="menu-page-link disabled"
                           aria-disabled="true">
-                        Next →
+                        Next ?
                     </span>
                 }
             </div>

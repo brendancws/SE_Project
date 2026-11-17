@@ -149,25 +149,6 @@
         font-weight: 700;
     }
 
-    .category-actions {
-        text-align: right;
-        white-space: nowrap;
-    }
-
-    .category-action-link {
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .category-action-link.edit {
-        margin-right: 12px;
-        color: #0284c7;
-    }
-
-    .category-action-link.delete {
-        color: #dc2626;
-    }
 
     .category-empty {
         padding: 32px 12px;
@@ -289,19 +270,21 @@
                                 </span>
                             </td>
 
-                            <td class="category-actions">
-                                <a asp-page="./Edit"
-                                   asp-route-id="@category.CategoryID"
-                                   class="category-action-link edit">
-                                    Edit
-                                </a>
+                            <td>
+    <div class="admin-row-actions">
+        <a asp-page="./Edit"
+           asp-route-id="@category.CategoryID"
+           class="admin-action-button admin-action-button-edit">
+            Edit
+        </a>
 
-                                <a asp-page="./Delete"
-                                   asp-route-id="@category.CategoryID"
-                                   class="category-action-link delete">
-                                    Delete
-                                </a>
-                            </td>
+        <a asp-page="./Delete"
+           asp-route-id="@category.CategoryID"
+           class="admin-action-button admin-action-button-delete">
+            Delete
+        </a>
+    </div>
+</td>
                         </tr>
                     }
                 </tbody>

@@ -1,77 +1,245 @@
 ﻿@page
 @model RROMS.Pages.Admin.MenuItems.CreateModel
+
 @{
     ViewData["Title"] = "Add Menu Item";
     Layout = "_AdminLayout";
 }
 
 <h1>Add Menu Item</h1>
-<p class="subtitle">Create a new item on the menu.</p>
 
-<div class="card" style="max-width:560px;">
-    <form method="post" enctype="multipart/form-data">
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Name *</label>
-            <input asp-for="Item.Name" placeholder="e.g. Nasi Lemak" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Item.Name" style="color:#dc2626; font-size:12px;"></span>
-        </div>
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Description</label>
-            <textarea asp-for="Item.Description" rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;"></textarea>
-            <span asp-validation-for="Item.Description" style="color:#dc2626; font-size:12px;"></span>
-        </div>
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Price (RM) *</label>
-            <input asp-for="Item.Price" type="number" step="0.01" min="0.01" style="width:140px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <span asp-validation-for="Item.Price" style="color:#dc2626; font-size:12px;"></span>
-        </div>
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Category *</label>
-            <select asp-for="Item.MenuCategoryId" asp-items="Model.CategoryOptions" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
-                <option value="">-- Select a category --</option>
-            </select>
-            <span asp-validation-for="Item.MenuCategoryId" style="color:#dc2626; font-size:12px;"></span>
+<p class="subtitle">
+    Create a menu item with pricing, category, image, and availability.
+</p>
+
+<section class="card menu-form-card">
+    <form method="post"
+          enctype="multipart/form-data">
+
+        <div asp-validation-summary="ModelOnly"
+             class="admin-alert admin-alert-danger">
         </div>
 
-        <!-- Image upload -->
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Item Photo</label>
-            <input asp-for="ImageFile" type="file" accept="image/*" id="imageInput"
-                   style="width:100%; padding:8px; border:1px dashed #cbd5e1; border-radius:8px; background:#f8fafc;" />
-            <span asp-validation-for="ImageFile" style="color:#dc2626; font-size:12px;"></span>
-            <div style="font-size:12px; color:#94a3b8; margin-top:4px;">JPG, PNG, GIF, or WEBP. Max 2MB.</div>
-            <img id="preview" src="" alt="" style="display:none; margin-top:12px; max-width:200px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+        <div class="menu-form-section">
+            <div class="menu-form-section-title">
+                Item details
+            </div>
+
+            <div class="menu-form-section-copy">
+                Enter the information customers will see on the menu.
+            </div>
+
+            <div class="admin-form-group">
+                <label asp-for="Item.Name"
+                       class="admin-label">
+                    Name *
+                </label>
+
+                <input asp-for="Item.Name"
+                       class="admin-input"
+                       maxlength="150"
+                       placeholder="e.g. Nasi Lemak"
+                       autocomplete="off" />
+
+                <span asp-validation-for="Item.Name"
+                      class="admin-validation">
+                </span>
+            </div>
+
+            <div class="admin-form-group">
+                <label asp-for="Item.Description"
+                       class="admin-label">
+                    Description
+                </label>
+
+                <textarea asp-for="Item.Description"
+                          class="admin-textarea"
+                          rows="4"
+                          maxlength="1000"
+                          placeholder="Briefly describe the dish and its main ingredients."></textarea>
+
+                <span asp-validation-for="Item.Description"
+                      class="admin-validation">
+                </span>
+            </div>
+
+            <div class="menu-form-grid">
+                <div class="admin-form-group">
+                    <label asp-for="Item.CategoryID"
+                           class="admin-label">
+                        Category *
+                    </label>
+
+                    <select asp-for="Item.CategoryID"
+                            asp-items="Model.CategoryOptions"
+                            class="admin-select">
+                        <option value="">
+                            Select a category
+                        </option>
+                    </select>
+
+                    <span asp-validation-for="Item.CategoryID"
+                          class="admin-validation">
+                    </span>
+                </div>
+
+                <div class="admin-form-group">
+                    <label asp-for="Item.Price"
+                           class="admin-label">
+                        Price (RM) *
+                    </label>
+
+                    <input asp-for="Item.Price"
+                           class="admin-input menu-price-input"
+                           type="number"
+                           step="0.01"
+                           min="0.01"
+                           max="9999.99" />
+
+                    <span asp-validation-for="Item.Price"
+                          class="admin-validation">
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <!-- Optional URL fallback -->
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Or paste Image URL (optional)</label>
-            <input asp-for="Item.ImageUrl" placeholder="https://..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-            <div style="font-size:12px; color:#94a3b8; margin-top:4px;">If you upload a photo above, this will be ignored.</div>
+        <div class="menu-form-section">
+            <div class="menu-form-section-title">
+                Item image
+            </div>
+
+            <div class="menu-form-section-copy">
+                Upload a menu photo or provide an image URL. An uploaded
+                file takes priority over the URL.
+            </div>
+
+            <div class="admin-form-group">
+                <label for="imageInput"
+                       class="admin-label">
+                    Upload Photo
+                </label>
+
+                <div class="menu-upload-box">
+                    <input asp-for="ImageFile"
+                           id="imageInput"
+                           type="file"
+                           accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp" />
+
+                    <div class="menu-upload-help">
+                        JPG, JPEG, PNG, GIF, or WEBP. Maximum file size:
+                        2 MB.
+                    </div>
+
+                    <img id="preview"
+                         class="menu-image-preview"
+                         src=""
+                         alt="Selected menu item preview" />
+                </div>
+
+                <span asp-validation-for="ImageFile"
+                      class="admin-validation">
+                </span>
+            </div>
+
+            <div class="admin-form-group">
+                <label asp-for="Item.ImageURL"
+                       class="admin-label">
+                    Image URL
+                </label>
+
+                <input asp-for="Item.ImageURL"
+                       class="admin-input"
+                       type="url"
+                       placeholder="https://example.com/menu-item.jpg" />
+
+                <div class="admin-help-text">
+                    Optional. This URL is ignored when a photo is uploaded.
+                </div>
+            </div>
         </div>
 
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Available</label>
-            <input asp-for="Item.IsAvailable" type="checkbox" checked />
+        <div class="menu-form-section">
+            <div class="menu-form-section-title">
+                Availability
+            </div>
+
+            <div class="menu-form-section-copy">
+                Control whether customers can currently order this item.
+            </div>
+
+            <label class="admin-checkbox-row">
+                <input asp-for="Item.IsAvailable"
+       type="checkbox" />
+
+                <span class="admin-checkbox-copy">
+                    <span class="admin-checkbox-title">
+                        Available for ordering
+                    </span>
+
+                    <span class="admin-checkbox-help">
+                        Clear this option when the item is temporarily
+                        unavailable.
+                    </span>
+                </span>
+            </label>
         </div>
 
-        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
-        <a href="/Admin/MenuItems" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+        <div class="admin-form-actions">
+            <button type="submit"
+                    class="admin-button admin-button-primary">
+                Create Menu Item
+            </button>
+
+            <a asp-page="./Index"
+               class="admin-button admin-button-secondary">
+                Cancel
+            </a>
+        </div>
     </form>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
-        document.getElementById('imageInput').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            const preview = document.getElementById('preview');
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
-            }
-        });
+        (() => {
+            const input =
+                document.getElementById("imageInput");
+
+            const preview =
+                document.getElementById("preview");
+
+            let previewUrl = null;
+
+            const clearPreview = () => {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    previewUrl = null;
+                }
+
+                preview?.removeAttribute("src");
+                preview?.classList.remove("visible");
+            };
+
+            input?.addEventListener("change", () => {
+                clearPreview();
+
+                const file = input.files?.[0];
+
+                if (!file || !preview) {
+                    return;
+                }
+
+                previewUrl = URL.createObjectURL(file);
+                preview.src = previewUrl;
+                preview.classList.add("visible");
+            });
+
+            window.addEventListener("beforeunload", () => {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+            });
+        })();
     </script>
 }

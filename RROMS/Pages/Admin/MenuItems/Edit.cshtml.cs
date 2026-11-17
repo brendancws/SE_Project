@@ -14,38 +14,100 @@ namespace RROMS.Pages.Admin.MenuItems
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
 
-        public EditModel(ApplicationDbContext db, IWebHostEnvironment env)
+        private static readonly string[] AllowedExtensions =
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".webp"
+        };
+
+        public EditModel(
+            ApplicationDbContext db,
+            IWebHostEnvironment env)
         {
             _db = db;
             _env = env;
         }
 
-        [BindProperty] public MenuItem Item { get; set; } = new();
-        [BindProperty] public IFormFile? ImageFile { get; set; }
+        [BindProperty]
+        public MenuItem Item { get; set; } = new();
+
+        [BindProperty]
+        public IFormFile? ImageFile { get; set; }
+
         public SelectList CategoryOptions { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var item = await _db.MenuItems.FindAsync(id);
-            if (item == null) return RedirectToPage("Index");
+            var item = await _db.MenuItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(menuItem =>
+                    menuItem.MenuItemID == id);
+
+            if (item == null)
+            {
+                return RedirectToPage("./Index");
+            }
+
             Item = item;
+
             await LoadCategoriesAsync();
+
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             var existingItem = await _db.MenuItems
-                .FirstOrDefaultAsync(item =>
-                    item.MenuItemID == Item.MenuItemID);
+                .FirstOrDefaultAsync(menuItem =>
+                    menuItem.MenuItemID ==
+                    Item.MenuItemID);
 
             if (existingItem == null)
             {
-                return RedirectToPage("Index");
+                return RedirectToPage("./Index");
+            }
+
+            Item.Name = Item.Name?.Trim() ?? string.Empty;
+
+            Item.Description =
+                string.IsNullOrWhiteSpace(Item.Description)
+                    ? null
+                    : Item.Description.Trim();
+
+            if (string.IsNullOrWhiteSpace(Item.Name))
+            {
+                ModelState.AddModelError(
+                    "Item.Name",
+                    "Menu item name is required.");
+            }
+
+            if (Item.Price <= 0m)
+            {
+                ModelState.AddModelError(
+                    "Item.Price",
+                    "Price must be greater than RM 0.00.");
+            }
+
+            bool categoryExists = await _db.MenuCategories
+                .AsNoTracking()
+                .AnyAsync(category =>
+                    category.CategoryID ==
+                    Item.CategoryID);
+
+            if (!categoryExists)
+            {
+                ModelState.AddModelError(
+                    "Item.CategoryID",
+                    "Select a valid menu category.");
             }
 
             if (!ModelState.IsValid)
             {
+                Item.ImageURL = existingItem.ImageURL;
+
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -58,14 +120,16 @@ namespace RROMS.Pages.Admin.MenuItems
 
             if (ImageFile != null && ImageFile.Length > 0)
             {
-                var savedPath =
+                string? savedPath =
                     await SaveUploadedImageAsync(ImageFile);
 
                 if (savedPath == null)
                 {
+                    Item.ImageURL = existingItem.ImageURL;
+
                     ModelState.AddModelError(
                         "ImageFile",
-                        "Only .jpg, .jpeg, .png, .gif or .webp files under 2 MB are allowed.");
+                        "Only JPG, PNG, GIF, or WEBP files up to 2 MB are allowed.");
 
                     await LoadCategoriesAsync();
                     return Page();
@@ -76,26 +140,46 @@ namespace RROMS.Pages.Admin.MenuItems
 
             await _db.SaveChangesAsync();
 
-            return RedirectToPage("Index");
+            return RedirectToPage("./Index");
         }
 
-        private async Task<string?> SaveUploadedImageAsync(IFormFile file)
+        private async Task<string?> SaveUploadedImageAsync(
+            IFormFile file)
         {
-            var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExt.Contains(ext)) return null;
-            if (file.Length > 2 * 1024 * 1024) return null;
+            string extension = Path
+                .GetExtension(file.FileName)
+                .ToLowerInvariant();
 
-            var folder = Path.Combine(_env.WebRootPath, "uploads", "menu");
+            if (!AllowedExtensions.Contains(extension))
+            {
+                return null;
+            }
+
+            if (file.Length <= 0 ||
+                file.Length > 2 * 1024 * 1024)
+            {
+                return null;
+            }
+
+            string folder = Path.Combine(
+                _env.WebRootPath,
+                "uploads",
+                "menu");
+
             Directory.CreateDirectory(folder);
 
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var fullPath = Path.Combine(folder, fileName);
+            string fileName =
+                $"{Guid.NewGuid():N}{extension}";
 
-            using (var stream = new FileStream(fullPath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+            string fullPath =
+                Path.Combine(folder, fileName);
+
+            await using var stream =
+                new FileStream(
+                    fullPath,
+                    FileMode.CreateNew);
+
+            await file.CopyToAsync(stream);
 
             return $"/uploads/menu/{fileName}";
         }
@@ -104,13 +188,15 @@ namespace RROMS.Pages.Admin.MenuItems
         {
             var categories = await _db.MenuCategories
                 .AsNoTracking()
-                .OrderBy(category => category.CategoryName)
+                .OrderBy(category =>
+                    category.CategoryName)
                 .ToListAsync();
 
             CategoryOptions = new SelectList(
                 categories,
                 nameof(MenuCategory.CategoryID),
-                nameof(MenuCategory.CategoryName));
+                nameof(MenuCategory.CategoryName),
+                Item.CategoryID);
         }
     }
 }
