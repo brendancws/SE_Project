@@ -1,32 +1,126 @@
 ﻿@page
 @model RROMS.Pages.Admin.OpeningHours.EditModel
+
 @{
     ViewData["Title"] = "Edit Opening Hours";
     Layout = "_AdminLayout";
 }
 
 <h1>Edit @Model.Hour.Day Hours</h1>
-<p class="subtitle">Update opening and closing times.</p>
 
-<div class="card" style="max-width:560px;">
+<p class="subtitle">
+    Set the restaurant's opening and closing time for @Model.Hour.Day.
+</p>
+
+<section class="card admin-form-card">
     <form method="post">
-        <input type="hidden" asp-for="Hour.Id" />
-        <input type="hidden" asp-for="Hour.Day" />
+        <input type="hidden"
+               asp-for="Hour.Id" />
 
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Open Time</label>
-            <input asp-for="Hour.OpenTime" type="time" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-        </div>
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Close Time</label>
-            <input asp-for="Hour.CloseTime" type="time" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;" />
-        </div>
-        <div style="margin-bottom:16px;">
-            <label style="display:block; font-size:13px; color:#334155; margin-bottom:6px; font-weight:600;">Closed all day</label>
-            <input asp-for="Hour.IsClosed" type="checkbox" />
+        <input type="hidden"
+               asp-for="Hour.Day" />
+
+        <div asp-validation-summary="ModelOnly"
+             class="admin-alert admin-alert-danger">
         </div>
 
-        <button type="submit" style="background:#f59e0b; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save Changes</button>
-        <a href="/Admin/OpeningHours" style="margin-left:10px; color:#64748b; text-decoration:none;">Cancel</a>
+        <div id="opening-time-fields"
+             class="admin-time-grid">
+            <div class="admin-form-group">
+                <label asp-for="Hour.OpenTime"
+                       class="admin-label">
+                    Opening Time
+                </label>
+
+                <input asp-for="Hour.OpenTime"
+                       type="time"
+                       class="admin-input" />
+
+                <span asp-validation-for="Hour.OpenTime"
+                      class="admin-validation">
+                </span>
+            </div>
+
+            <div class="admin-form-group">
+                <label asp-for="Hour.CloseTime"
+                       class="admin-label">
+                    Closing Time
+                </label>
+
+                <input asp-for="Hour.CloseTime"
+                       type="time"
+                       class="admin-input" />
+
+                <span asp-validation-for="Hour.CloseTime"
+                      class="admin-validation">
+                </span>
+            </div>
+        </div>
+
+        <div class="admin-form-group">
+            <label class="admin-label">
+                Day Status
+            </label>
+
+            <label class="admin-checkbox-row">
+                <input asp-for="Hour.IsClosed"
+                       id="closed-all-day"
+                       type="checkbox" />
+
+                <span class="admin-checkbox-copy">
+                    <span class="admin-checkbox-title">
+                        Closed all day
+                    </span>
+
+                    <span class="admin-checkbox-help">
+                        Opening and closing times will not be used while
+                        this option is selected.
+                    </span>
+                </span>
+            </label>
+        </div>
+
+        <div class="admin-form-actions">
+            <button type="submit"
+                    class="admin-button admin-button-primary">
+                Save Changes
+            </button>
+
+            <a asp-page="./Index"
+               class="admin-button admin-button-secondary">
+                Cancel
+            </a>
+        </div>
     </form>
-</div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const closedCheckbox =
+                document.getElementById("closed-all-day");
+
+            const timeInputs =
+                document.querySelectorAll(
+                    "#opening-time-fields input[type='time']");
+
+            const updateTimeFields = () => {
+                const isClosed =
+                    closedCheckbox?.checked === true;
+
+                timeInputs.forEach((input) => {
+                    input.disabled = isClosed;
+                    input.classList.toggle(
+                        "admin-readonly",
+                        isClosed);
+                });
+            };
+
+            closedCheckbox?.addEventListener(
+                "change",
+                updateTimeFields);
+
+            updateTimeFields();
+        })();
+    </script>
+}

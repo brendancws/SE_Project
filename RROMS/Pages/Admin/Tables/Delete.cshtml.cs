@@ -11,27 +11,71 @@ namespace RROMS.Pages.Admin.Tables
     public class DeleteModel : PageModel
     {
         private readonly ApplicationDbContext _db;
-        public DeleteModel(ApplicationDbContext db) => _db = db;
 
-        [BindProperty] public RestaurantTable Table { get; set; } = new();
+        public DeleteModel(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        [BindProperty]
+        public RestaurantTable Table { get; set; } = new();
+
+        public int ReservationCount { get; set; }
+
+        public string? ErrorMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var t = await _db.RestaurantTables.FindAsync(id);
-            if (t == null) return RedirectToPage("Index");
-            Table = t;
+            var table = await _db.RestaurantTables
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item =>
+                    item.TableID == id);
+
+            if (table == null)
+            {
+                return RedirectToPage("./Index");
+            }
+
+            Table = table;
+
+            ReservationCount = await _db.Reservations
+                .AsNoTracking()
+                .CountAsync(reservation =>
+                    reservation.TableID == id);
+
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var t = await _db.RestaurantTables.FindAsync(Table.Id);
-            if (t != null)
+            var table = await _db.RestaurantTables
+                .FirstOrDefaultAsync(item =>
+                    item.TableID == Table.TableID);
+
+            if (table == null)
             {
-                _db.RestaurantTables.Remove(t);
-                await _db.SaveChangesAsync();
+                return RedirectToPage("./Index");
             }
-            return RedirectToPage("Index");
+
+            ReservationCount = await _db.Reservations
+                .AsNoTracking()
+                .CountAsync(reservation =>
+                    reservation.TableID == table.TableID);
+
+            if (ReservationCount > 0)
+            {
+                Table = table;
+
+                ErrorMessage =
+                    $"Table {table.TableNumber} cannot be deleted because it is referenced by {ReservationCount} reservation record(s). Mark the table as unavailable instead.";
+
+                return Page();
+            }
+
+            _db.RestaurantTables.Remove(table);
+            await _db.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
         }
     }
 }

@@ -1,26 +1,73 @@
 ﻿@page
 @model RROMS.Pages.Admin.Reports.IndexModel
+
 @{
     ViewData["Title"] = "Reports";
     Layout = "_AdminLayout";
 }
 
-<h1>Reports</h1>
-<p class="subtitle">Generate filtered reports for your restaurant.</p>
+<header class="admin-page-header">
+    <div>
+        <h1>Reports</h1>
 
-<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;">
-    <a href="/Admin/Reports/Reservations" style="text-decoration:none;">
-        <div class="card" style="cursor:pointer; transition: box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
-            <div style="font-size:32px; margin-bottom:12px;">📅</div>
-            <div style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:6px;">Reservations Report</div>
-            <div style="color:#64748b; font-size:14px;">Filter by date range and status. View counts, guests, and details.</div>
+        <p class="subtitle">
+            Analyse reservation activity and restaurant sales.
+        </p>
+    </div>
+</header>
+
+<section class="report-card-grid"
+         aria-label="Administrator reports">
+    <a asp-page="./Reservations"
+       class="card report-card">
+        <div class="report-card-icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M16 3v4M8 3v4M3 10h18" />
+                <path d="M8 14h3M8 17h6" />
+            </svg>
+        </div>
+
+        <div class="report-card-content">
+            <div class="report-card-title">
+                Reservations Report
+            </div>
+
+            <div class="report-card-description">
+                Filter bookings by date and status, review guest totals,
+                inspect table assignments, and export reservation records.
+            </div>
+
+            <div class="report-card-action">
+                Open reservations report →
+            </div>
         </div>
     </a>
-    <a href="/Admin/Reports/Sales" style="text-decoration:none;">
-        <div class="card" style="cursor:pointer; transition: box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
-            <div style="font-size:32px; margin-bottom:12px;">💰</div>
-            <div style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:6px;">Sales Report</div>
-            <div style="color:#64748b; font-size:14px;">Filter orders by date and status. View revenue and order breakdown.</div>
+
+    <a asp-page="./Sales"
+       class="card report-card sales">
+        <div class="report-card-icon sales"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 19V9M10 19V5M16 19v-7M22 19H2" />
+                <path d="m4 7 6-4 6 6 6-5" />
+            </svg>
+        </div>
+
+        <div class="report-card-content">
+            <div class="report-card-title">
+                Sales Report
+            </div>
+
+            <div class="report-card-description">
+                Review order totals, served revenue, pending revenue,
+                average order value, and detailed sales records.
+            </div>
+
+            <div class="report-card-action">
+                Open sales report →
+            </div>
         </div>
     </a>
-</div>
+</section>
