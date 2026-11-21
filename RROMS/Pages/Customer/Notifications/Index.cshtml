@@ -1,16 +1,17 @@
 ﻿@page
 @model RROMS.Pages.Customer.Notifications.IndexModel
+
 @{
     ViewData["Title"] = "Notifications";
 
     int totalNotifications =
-        Model.Notifications.Count;
+        Model.TotalNotifications;
 
     int unreadNotifications =
-        Model.UnreadCount;
+        Model.UnreadNotifications;
 
     int readNotifications =
-        totalNotifications - unreadNotifications;
+        Model.ReadNotifications;
 }
 
 <div class="container py-4 notifications-page">
@@ -29,10 +30,14 @@
         </div>
 
         <div class="notifications-header-actions">
-            @if (Model.UnreadCount > 0)
+            @if (Model.UnreadNotifications > 0)
             {
                 <form method="post"
                       asp-page-handler="MarkAllRead">
+
+                    <input type="hidden"
+                           name="filter"
+                           value="@Model.Filter" />
 
                     <button type="submit"
                             class="mark-all-button">
@@ -107,7 +112,38 @@
         </article>
     </section>
 
-    @if (!Model.Notifications.Any())
+    <nav class="notification-filters"
+         aria-label="Notification filters">
+
+        <a asp-page="/Customer/Notifications/Index"
+           asp-route-filter="all"
+           asp-route-p="1"
+           class="notification-filter-link
+                  @(Model.Filter == "all" ? "active" : "")">
+            <span>All</span>
+            <strong>@Model.TotalNotifications</strong>
+        </a>
+
+        <a asp-page="/Customer/Notifications/Index"
+           asp-route-filter="unread"
+           asp-route-p="1"
+           class="notification-filter-link
+                  @(Model.Filter == "unread" ? "active" : "")">
+            <span>Unread</span>
+            <strong>@Model.UnreadNotifications</strong>
+        </a>
+
+        <a asp-page="/Customer/Notifications/Index"
+           asp-route-filter="read"
+           asp-route-p="1"
+           class="notification-filter-link
+                  @(Model.Filter == "read" ? "active" : "")">
+            <span>Read</span>
+            <strong>@Model.ReadNotifications</strong>
+        </a>
+    </nav>
+
+    @if (Model.FilteredCount == 0)
     {
         <section class="notifications-empty-state">
             <div class="notifications-empty-icon"
@@ -115,13 +151,43 @@
                 🔔
             </div>
 
-            <h2>No notifications yet</h2>
+            @if (Model.Filter == "unread")
+            {
+                <h2>No unread notifications</h2>
 
-            <p>
-                Reservation, order, payment, and restaurant updates
-                will appear here when activity occurs.
-            </p>
+                <p>
+                    You have reviewed every notification. New
+                    reservation, order, and payment updates will
+                    appear here when available.
+                </p>
+            }
+            else if (Model.Filter == "read")
+            {
+                <h2>No read notifications</h2>
 
+                <p>
+                    Notifications that you mark as read will appear
+                    in this view.
+                </p>
+            }
+            else
+            {
+                <h2>No notifications yet</h2>
+
+                <p>
+                    Reservation, order, payment, and restaurant
+                    updates will appear here when activity occurs.
+                </p>
+            }
+
+            @if (Model.Filter != "all")
+            {
+                <a asp-page="/Customer/Notifications/Index"
+                   asp-route-filter="all"
+                   class="show-all-notifications-link">
+                    View All Notifications
+                </a>
+            }
         </section>
     }
     else
@@ -133,12 +199,12 @@
                         Recent Activity
                     </span>
 
-                    <h2>Your Updates</h2>
+                    <h2>@Model.FilterTitle</h2>
                 </div>
 
                 <span class="notification-count">
-                    @totalNotifications
-                    @(totalNotifications == 1
+                    @Model.FilteredCount
+                    @(Model.FilteredCount == 1
                         ? "notification"
                         : "notifications")
                 </span>
@@ -194,8 +260,11 @@
                         notificationIcon = "N";
                     }
 
-                    <article class="notification-item @(isUnread ? "unread" : "read")">
-                        <div class="notification-icon @notificationTypeClass"
+                    <article class="notification-item
+                                    @(isUnread ? "unread" : "read")">
+
+                        <div class="notification-icon
+                                    @notificationTypeClass"
                              aria-hidden="true">
                             @notificationIcon
                         </div>
@@ -226,6 +295,14 @@
                                     <form method="post"
                                           asp-page-handler="MarkRead"
                                           asp-route-id="@notification.NotificationID">
+
+                                        <input type="hidden"
+                                               name="filter"
+                                               value="@Model.Filter" />
+
+                                        <input type="hidden"
+                                               name="p"
+                                               value="@Model.PageNumber" />
 
                                         <button type="submit"
                                                 class="mark-read-button">
@@ -265,6 +342,57 @@
                             </div>
                         </div>
                     </article>
+                }
+            </div>
+
+            <div class="notification-results-footer">
+                <div class="notification-results-count">
+                    Showing
+                    <strong>
+                        @Model.FirstResultNumber–@Model.LastResultNumber
+                    </strong>
+                    of
+                    <strong>@Model.FilteredCount</strong>
+                    @Model.Filter.ToLowerInvariant()
+                    notifications
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="notification-pagination"
+                         aria-label="Notification pages">
+
+                        <div>
+                            @if (Model.HasPreviousPage)
+                            {
+                                <a asp-page="/Customer/Notifications/Index"
+                                   asp-route-filter="@Model.Filter"
+                                   asp-route-p="@(Model.PageNumber - 1)"
+                                   class="notification-page-link">
+                                    ← Previous
+                                </a>
+                            }
+                        </div>
+
+                        <span class="notification-page-status">
+                            Page
+                            <strong>@Model.PageNumber</strong>
+                            of
+                            <strong>@Model.TotalPages</strong>
+                        </span>
+
+                        <div class="notification-next-link">
+                            @if (Model.HasNextPage)
+                            {
+                                <a asp-page="/Customer/Notifications/Index"
+                                   asp-route-filter="@Model.Filter"
+                                   asp-route-p="@(Model.PageNumber + 1)"
+                                   class="notification-page-link">
+                                    Next →
+                                </a>
+                            }
+                        </div>
+                    </nav>
                 }
             </div>
         </section>
@@ -325,17 +453,12 @@
         align-items: center;
         justify-content: center;
         padding: 9px 15px;
-        border: 1px solid;
+        border: 1px solid #f59e0b;
         border-radius: 10px;
-        font-size: 12px;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .mark-all-button {
-        border-color: #f59e0b;
         color: #111827;
         background: #f59e0b;
+        font-size: 12px;
+        font-weight: 800;
     }
 
     .mark-all-button:hover {
@@ -399,7 +522,7 @@
         grid-template-columns:
             repeat(3, minmax(0, 1fr));
         gap: 15px;
-        margin-bottom: 23px;
+        margin-bottom: 18px;
     }
 
     .notification-summary-card {
@@ -459,6 +582,61 @@
         font-size: 11px;
     }
 
+    .notification-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 23px;
+        padding: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 13px;
+        background: white;
+        box-shadow:
+            0 7px 20px rgba(31, 41, 55, 0.04);
+    }
+
+    .notification-filter-link {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        color: #4b5563;
+        background: transparent;
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .notification-filter-link:hover {
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .notification-filter-link.active {
+        border-color: #f59e0b;
+        color: #78350f;
+        background: #fffbeb;
+    }
+
+    .notification-filter-link strong {
+        min-width: 22px;
+        padding: 3px 6px;
+        border-radius: 999px;
+        color: #4b5563;
+        background: #f3f4f6;
+        font-size: 9px;
+        text-align: center;
+    }
+
+    .notification-filter-link.active strong {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
     .notifications-empty-state {
         padding: 70px 30px;
         border: 1px dashed #d1d5db;
@@ -494,6 +672,26 @@
         color: #6b7280;
         font-size: 13px;
         line-height: 1.55;
+    }
+
+    .show-all-notifications-link {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border: 1px solid #f59e0b;
+        border-radius: 9px;
+        color: #92400e;
+        background: #fffbeb;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .show-all-notifications-link:hover {
+        color: white;
+        background: #d97706;
     }
 
     .notifications-list-section {
@@ -603,6 +801,11 @@
         gap: 18px;
     }
 
+    .notification-item-top form {
+        flex-shrink: 0;
+        margin: 0;
+    }
+
     .notification-label-row {
         display: flex;
         align-items: center;
@@ -651,7 +854,8 @@
         overflow-wrap: anywhere;
     }
 
-    .notification-item.read .notification-message {
+    .notification-item.read
+    .notification-message {
         color: #6b7280;
         font-weight: 500;
     }
@@ -686,6 +890,68 @@
         background: #d97706;
     }
 
+    .notification-results-footer {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .notification-results-count {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .notification-results-count strong {
+        color: #111827;
+        font-weight: 800;
+    }
+
+    .notification-pagination {
+        display: grid;
+        grid-template-columns:
+            minmax(110px, 1fr)
+            auto
+            minmax(110px, 1fr);
+        align-items: center;
+        gap: 16px;
+        margin-top: 13px;
+    }
+
+    .notification-next-link {
+        text-align: right;
+    }
+
+    .notification-page-link {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        color: #374151;
+        background: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .notification-page-link:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .notification-page-status {
+        color: #6b7280;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .notification-page-status strong {
+        color: #111827;
+    }
+
     @@media (max-width: 760px) {
         .notifications-header {
             align-items: flex-start;
@@ -693,13 +959,19 @@
         }
 
         .notifications-header-actions,
-.notifications-header-actions form,
-.mark-all-button {
-    width: 100%;
-}
+        .notifications-header-actions form,
+        .mark-all-button {
+            width: 100%;
+        }
 
         .notification-summary-grid {
             grid-template-columns: 1fr;
+        }
+
+        .notification-filters {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
         }
 
         .notifications-list-heading {
@@ -723,6 +995,14 @@
             flex-direction: column;
         }
 
+        .notification-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .notification-filter-link {
+            justify-content: space-between;
+        }
+
         .notification-item {
             grid-template-columns: 1fr;
         }
@@ -740,6 +1020,24 @@
         .success-message-close {
             grid-column: 1 / -1;
             justify-self: end;
+        }
+
+        .notification-results-count {
+            text-align: center;
+        }
+
+        .notification-pagination {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .notification-pagination > div,
+        .notification-next-link {
+            text-align: center;
+        }
+
+        .notification-page-link {
+            width: 100%;
         }
     }
 </style>

@@ -1,158 +1,159 @@
 ﻿@page
 @model RROMS.Pages.Customer.Reservations.IndexModel
+
 @{
     ViewData["Title"] = "My Reservations";
 
     int totalReservations =
-        Model.MyReservations.Count;
+        Model.TotalReservations;
 
     int activeReservations =
-        Model.MyReservations.Count(reservation =>
-            Model.CanCancel(reservation));
+        Model.ActiveReservations;
 
     int confirmedReservations =
-        Model.MyReservations.Count(reservation =>
-            string.Equals(
-                reservation.Status,
-                "Confirmed",
-                StringComparison.OrdinalIgnoreCase));
+        Model.ConfirmedReservations;
 
     int cancelledReservations =
-        Model.MyReservations.Count(reservation =>
-            string.Equals(
-                reservation.Status,
-                "Cancelled",
-                StringComparison.OrdinalIgnoreCase));
+        Model.CancelledReservations;
 }
 
 <div class="container py-4">
-<header class="reservations-header">
-    <div>
-        <span class="reservations-eyebrow">
-            Dining Reservations
-        </span>
+    <header class="reservations-header">
+        <div>
+            <span class="reservations-eyebrow">
+                Dining Reservations
+            </span>
 
-        <h1>My Reservations</h1>
+            <h1>My Reservations</h1>
 
-        <p>
-            Manage upcoming visits, track confirmation updates,
-            and review your previous bookings.
-        </p>
-    </div>
+            <p>
+                Manage upcoming visits, track confirmation updates,
+                and review your previous bookings.
+            </p>
+        </div>
 
-    <a asp-page="/Customer/Reservations/Create"
-       class="book-table-button">
-        <span aria-hidden="true">+</span>
-        Book a Table
-    </a>
-</header>
+        <a asp-page="/Customer/Reservations/Create"
+           class="book-table-button">
+            <span aria-hidden="true">+</span>
+            Book a Table
+        </a>
+    </header>
 
-<section class="reservation-summary-grid"
-         aria-label="Reservation overview">
+    <section class="reservation-summary-grid"
+             aria-label="Reservation overview">
 
-    <article class="reservation-summary-card">
-        <span class="summary-label">
-            Total Bookings
-        </span>
+        <article class="reservation-summary-card">
+            <span class="summary-label">
+                Total Bookings
+            </span>
 
-        <strong>@totalReservations</strong>
+            <strong>@totalReservations</strong>
 
-        <small>
-            All reservation records
-        </small>
-    </article>
+            <small>
+                All reservation records
+            </small>
+        </article>
 
-    <article class="reservation-summary-card">
-        <span class="summary-label">
-            Active Bookings
-        </span>
+        <article class="reservation-summary-card">
+            <span class="summary-label">
+                Active Bookings
+            </span>
 
-        <strong>@activeReservations</strong>
+            <strong>@activeReservations</strong>
 
-        <small>
-            Upcoming and editable
-        </small>
-    </article>
+            <small>
+                Upcoming and editable
+            </small>
+        </article>
 
-    <article class="reservation-summary-card">
-        <span class="summary-label">
-            Confirmed
-        </span>
+        <article class="reservation-summary-card">
+            <span class="summary-label">
+                Confirmed
+            </span>
 
-        <strong>@confirmedReservations</strong>
+            <strong>@confirmedReservations</strong>
 
-        <small>
-            Confirmed by the restaurant
-        </small>
-    </article>
+            <small>
+                Confirmed by the restaurant
+            </small>
+        </article>
 
-    <article class="reservation-summary-card">
-        <span class="summary-label">
-            Cancelled
-        </span>
+        <article class="reservation-summary-card">
+            <span class="summary-label">
+                Cancelled
+            </span>
 
-        <strong>@cancelledReservations</strong>
+            <strong>@cancelledReservations</strong>
 
-        <small>
-            Cancelled reservations
-        </small>
-    </article>
-</section>
+            <small>
+                Cancelled reservations
+            </small>
+        </article>
+    </section>
 
     <div class="card border-0 bg-light mb-4 no-print">
-    <div class="card-body py-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <span class="fw-semibold">
-                    Live reservation tracking:
-                </span>
+        <div class="card-body py-3">
+            <div class="d-flex justify-content-between
+                        align-items-center flex-wrap gap-2">
 
-                <span class="text-success">
-                    On
-                </span>
-
-                <span class="text-muted small ms-2">
-                    Last checked:
-                    <span id="lastReservationStatusCheck">
-                        Not checked yet
+                <div>
+                    <span class="fw-semibold">
+                        Live reservation tracking:
                     </span>
-                </span>
+
+                    <span class="text-success">
+                        On
+                    </span>
+
+                    <span class="text-muted small ms-2">
+                        Last checked:
+
+                        <span id="lastReservationStatusCheck">
+                            Not checked yet
+                        </span>
+                    </span>
+                </div>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        onclick="window.location.reload()">
+                    Refresh Full Page
+                </button>
             </div>
 
-            <button type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    onclick="window.location.reload()">
-                Refresh Full Page
-            </button>
-        </div>
+            <div id="reservationStatusChangeNotice"
+                 class="alert alert-info mt-3 mb-0 d-none"
+                 role="status">
 
-        <div id="reservationStatusChangeNotice"
-             class="alert alert-info mt-3 mb-0 d-none"
-             role="status">
-            <strong>Reservation status updated.</strong>
-            Refresh the full page to update reservation details
-and available actions.
+                <strong>
+                    Reservation status updated.
+                </strong>
 
-            <button type="button"
-                    class="btn btn-sm btn-primary ms-2"
-                    onclick="window.location.reload()">
-                Refresh Full Page
-            </button>
-        </div>
+                Refresh the full page to update reservation details
+                and available actions.
 
-        <div id="reservationStatusPollingError"
-             class="alert alert-warning mt-3 mb-0 d-none"
-             role="status">
-            Live reservation updates are temporarily unavailable.
-            Use Refresh Full Page to check the latest information.
+                <button type="button"
+                        class="btn btn-sm btn-primary ms-2"
+                        onclick="window.location.reload()">
+                    Refresh Full Page
+                </button>
+            </div>
+
+            <div id="reservationStatusPollingError"
+                 class="alert alert-warning mt-3 mb-0 d-none"
+                 role="status">
+
+                Live reservation updates are temporarily unavailable.
+                Use Refresh Full Page to check the latest information.
+            </div>
         </div>
     </div>
-</div>
 
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
         <div class="alert alert-success alert-dismissible fade show"
              role="alert">
+
             @Model.StatusMessage
 
             <button type="button"
@@ -164,24 +165,26 @@ and available actions.
     }
 
     @if (TempData["FeedbackMessage"] is string feedbackMessage &&
-     !string.IsNullOrWhiteSpace(feedbackMessage))
-{
-    <div class="alert alert-success alert-dismissible fade show"
-         role="alert">
-        @feedbackMessage
+         !string.IsNullOrWhiteSpace(feedbackMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
 
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Close">
-        </button>
-    </div>
-}
+            @feedbackMessage
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show"
              role="alert">
+
             @Model.ErrorMessage
 
             <button type="button"
@@ -192,260 +195,324 @@ and available actions.
         </div>
     }
 
-    @if (!Model.MyReservations.Any())
-{
-    <section class="reservations-empty-state">
-        <div class="empty-reservation-icon" aria-hidden="true">
-            🍽️
-        </div>
-
-        <h2>No reservations yet</h2>
-
-        <p>
-            Your upcoming table reservations will appear here.
-            Book your first table to start planning your visit.
-        </p>
-
-        <a asp-page="/Customer/Reservations/Create"
-           class="book-table-button">
-            <span aria-hidden="true">+</span>
-            Book a Table
-        </a>
-    </section>
-}
-    else
+    @if (Model.TotalReservations == 0)
     {
-    <section class="reservation-list-section">
-        <div class="reservation-list-heading">
-            <div>
-                <span class="reservations-eyebrow">
-                    Booking History
-                </span>
-
-                <h2>Your Reservations</h2>
+        <section class="reservations-empty-state">
+            <div class="empty-reservation-icon"
+                 aria-hidden="true">
+                🍽️
             </div>
 
-            <span class="reservation-count">
-                @totalReservations
-                @(totalReservations == 1 ? "booking" : "bookings")
-            </span>
-        </div>
+            <h2>No reservations yet</h2>
 
-        <div class="reservation-card-list">
-            @foreach (var reservation in Model.MyReservations)
-            {
-                string status =
-                    reservation.Status ?? "Pending";
+            <p>
+                Your upcoming table reservations will appear here.
+                Book your first table to start planning your visit.
+            </p>
 
-                string statusClass =
-                    status.ToLowerInvariant() switch
-                    {
-                        "confirmed" => "confirmed",
-                        "pending" => "pending",
-                        "cancelled" => "cancelled",
-                        _ => "other"
-                    };
+            <a asp-page="/Customer/Reservations/Create"
+               class="book-table-button">
+                <span aria-hidden="true">+</span>
+                Book a Table
+            </a>
+        </section>
+    }
+    else
+    {
+        <section class="reservation-list-section">
+            <div class="reservation-list-heading">
+                <div>
+                    <span class="reservations-eyebrow">
+                        Booking History
+                    </span>
 
-                string statusExplanation =
-                    status.ToLowerInvariant() switch
-                    {
-                        "confirmed" =>
-                            "Your table has been confirmed.",
+                    <h2>Your Reservations</h2>
+                </div>
 
-                        "cancelled" =>
-                            "This reservation was cancelled.",
+                <span class="reservation-count">
+                    @totalReservations
+                    @(totalReservations == 1
+                        ? "booking"
+                        : "bookings")
+                </span>
+            </div>
 
-                        _ =>
-                            "Awaiting confirmation from the restaurant."
-                    };
+            <div class="reservation-card-list">
+                @foreach (var reservation in Model.MyReservations)
+                {
+                    string status =
+                        reservation.Status ?? "Pending";
 
-                string explanationClass =
-                    status.ToLowerInvariant() switch
-                    {
-                        "confirmed" => "text-success",
-                        "cancelled" => "text-danger",
-                        _ => "text-muted"
-                    };
+                    string statusClass =
+                        status.ToLowerInvariant() switch
+                        {
+                            "confirmed" => "confirmed",
+                            "pending" => "pending",
+                            "cancelled" => "cancelled",
+                            _ => "other"
+                        };
 
-                <article class="reservation-card"
-                         data-reservation-id="@reservation.ReservationID"
-                         data-current-status="@status">
+                    string statusExplanation =
+                        status.ToLowerInvariant() switch
+                        {
+                            "confirmed" =>
+                                "Your table has been confirmed.",
 
-                    <div class="reservation-date-block">
-                        <strong>
-                            @reservation.Date.ToString("dd")
-                        </strong>
+                            "cancelled" =>
+                                "This reservation was cancelled.",
 
-                        <span>
-                            @reservation.Date.ToString("MMM")
+                            _ =>
+                                "Awaiting confirmation from the restaurant."
+                        };
+
+                    string explanationClass =
+                        status.ToLowerInvariant() switch
+                        {
+                            "confirmed" => "text-success",
+                            "cancelled" => "text-danger",
+                            _ => "text-muted"
+                        };
+
+                    <article class="reservation-card"
+                             data-reservation-id="@reservation.ReservationID"
+                             data-current-status="@status">
+
+                        <div class="reservation-date-block">
+                            <strong>
+                                @reservation.Date.ToString("dd")
+                            </strong>
+
+                            <span>
+                                @reservation.Date.ToString("MMM")
+                            </span>
+                        </div>
+
+                        <div class="reservation-card-content">
+                            <div class="reservation-card-top">
+                                <div>
+                                    <span class="reservation-reference">
+                                        RESERVATION
+                                        #@reservation.ReservationID
+                                    </span>
+
+                                    <h3>
+                                        @reservation.Date.ToString(
+                                            "dddd, dd MMMM yyyy")
+                                    </h3>
+                                </div>
+
+                                <div class="reservation-status-area">
+                                    <span class="status-pill
+                                                 @statusClass
+                                                 reservation-status-badge">
+                                        @status
+                                    </span>
+
+                                    <div class="reservation-status-explanation
+                                                @explanationClass">
+                                        @statusExplanation
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="reservation-details-grid">
+                                <div class="reservation-detail">
+                                    <span class="detail-label">
+                                        Time
+                                    </span>
+
+                                    <strong>
+                                        @reservation.Time.ToString(@"hh\:mm")
+                                    </strong>
+                                </div>
+
+                                <div class="reservation-detail">
+                                    <span class="detail-label">
+                                        Table
+                                    </span>
+
+                                    <strong>
+                                        @(reservation.Table?.TableNumber
+                                            ?? "-")
+                                    </strong>
+                                </div>
+
+                                <div class="reservation-detail">
+                                    <span class="detail-label">
+                                        Guests
+                                    </span>
+
+                                    <strong>
+                                        @reservation.NumberOfGuests
+                                    </strong>
+                                </div>
+
+                                <div class="reservation-detail">
+                                    <span class="detail-label">
+                                        Reference
+                                    </span>
+
+                                    <strong>
+                                        #@reservation.ReservationID
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="reservation-card-actions">
+                                <a asp-page="/Customer/Reservations/Confirmation"
+                                   asp-route-id="@reservation.ReservationID"
+                                   class="reservation-action confirmation">
+                                    Confirmation
+                                </a>
+
+                                @if (Model.CanLeaveFeedback(reservation))
+                                {
+                                    <a asp-page="/Customer/Reservations/Feedback"
+                                       asp-route-id="@reservation.ReservationID"
+                                       class="reservation-action feedback">
+                                        Leave Feedback
+                                    </a>
+                                }
+                                else if (Model.HasSubmittedFeedback(
+                                    reservation))
+                                {
+                                    <a asp-page="/Customer/Reservations/Feedback"
+                                       asp-route-id="@reservation.ReservationID"
+                                       class="reservation-action feedback">
+                                        View Feedback
+                                    </a>
+                                }
+
+                                @if (Model.CanCancel(reservation))
+                                {
+                                    <a asp-page="/Customer/Reservations/Edit"
+                                       asp-route-id="@reservation.ReservationID"
+                                       class="reservation-action edit">
+                                        Edit
+                                    </a>
+
+                                    <form id="cancelReservationForm-@reservation.ReservationID"
+                                          method="post"
+                                          asp-page-handler="Cancel"
+                                          asp-route-id="@reservation.ReservationID">
+
+                                        <input type="hidden"
+                                               name="p"
+                                               value="@Model.PageNumber" />
+
+                                        <button type="button"
+                                                class="reservation-action cancel"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#cancelReservationModal-@reservation.ReservationID">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+
+                        @if (Model.CanCancel(reservation))
+                        {
+                            <div class="modal fade"
+                                 id="cancelReservationModal-@reservation.ReservationID"
+                                 tabindex="-1"
+                                 aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"
+                                                id="cancelReservationModalLabel-@reservation.ReservationID">
+                                                Cancel reservation
+                                            </h5>
+
+                                            <button type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            Cancel this reservation on
+                                            @reservation.Date.ToString(
+                                                "dd MMM yyyy")
+                                            at
+                                            @reservation.Time.ToString(
+                                                @"hh\:mm")?
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Keep reservation
+                                            </button>
+
+                                            <button type="submit"
+                                                    class="btn btn-danger"
+                                                    form="cancelReservationForm-@reservation.ReservationID">
+                                                Yes, cancel reservation
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+
+            <div class="reservation-results-footer">
+                <div class="reservation-results-count">
+                    Showing
+                    <strong>
+                        @Model.FirstResultNumber–@Model.LastResultNumber
+                    </strong>
+                    of
+                    <strong>@Model.TotalReservations</strong>
+                    reservations
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="reservation-pagination"
+                         aria-label="Reservation pages">
+
+                        <div>
+                            @if (Model.HasPreviousPage)
+                            {
+                                <a asp-page="/Customer/Reservations/Index"
+                                   asp-route-p="@(Model.PageNumber - 1)"
+                                   class="reservation-page-link">
+                                    ← Previous
+                                </a>
+                            }
+                        </div>
+
+                        <span class="reservation-page-status">
+                            Page
+                            <strong>@Model.PageNumber</strong>
+                            of
+                            <strong>@Model.TotalPages</strong>
                         </span>
-                    </div>
 
-                    <div class="reservation-card-content">
-                        <div class="reservation-card-top">
-                            <div>
-                                <span class="reservation-reference">
-                                    RESERVATION #@reservation.ReservationID
-                                </span>
-
-                                <h3>
-                                    @reservation.Date.ToString("dddd, dd MMMM yyyy")
-                                </h3>
-                            </div>
-
-                            <div class="reservation-status-area">
-                                <span class="status-pill @statusClass reservation-status-badge">
-                                    @status
-                                </span>
-
-                                <div class="reservation-status-explanation @explanationClass">
-                                    @statusExplanation
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="reservation-details-grid">
-                            <div class="reservation-detail">
-                                <span class="detail-label">
-                                    Time
-                                </span>
-
-                                <strong>
-                                    @reservation.Time.ToString(@"hh\:mm")
-                                </strong>
-                            </div>
-
-                            <div class="reservation-detail">
-                                <span class="detail-label">
-                                    Table
-                                </span>
-
-                                <strong>
-                                    @(reservation.Table?.TableNumber ?? "-")
-                                </strong>
-                            </div>
-
-                            <div class="reservation-detail">
-                                <span class="detail-label">
-                                    Guests
-                                </span>
-
-                                <strong>
-                                    @reservation.NumberOfGuests
-                                </strong>
-                            </div>
-
-                            <div class="reservation-detail">
-                                <span class="detail-label">
-                                    Reference
-                                </span>
-
-                                <strong>
-                                    #@reservation.ReservationID
-                                </strong>
-                            </div>
-                        </div>
-
-                        <div class="reservation-card-actions">
-                            <a asp-page="/Customer/Reservations/Confirmation"
-                               asp-route-id="@reservation.ReservationID"
-                               class="reservation-action confirmation">
-                                Confirmation
-                            </a>
-
-                            @if (Model.CanLeaveFeedback(reservation))
+                        <div class="reservation-next-link">
+                            @if (Model.HasNextPage)
                             {
-                                <a asp-page="/Customer/Reservations/Feedback"
-                                   asp-route-id="@reservation.ReservationID"
-                                   class="reservation-action feedback">
-                                    Leave Feedback
+                                <a asp-page="/Customer/Reservations/Index"
+                                   asp-route-p="@(Model.PageNumber + 1)"
+                                   class="reservation-page-link">
+                                    Next →
                                 </a>
                             }
-                            else if (Model.HasSubmittedFeedback(reservation))
-                            {
-                                <a asp-page="/Customer/Reservations/Feedback"
-                                   asp-route-id="@reservation.ReservationID"
-                                   class="reservation-action feedback">
-                                    View Feedback
-                                </a>
-                            }
-
-                            @if (Model.CanCancel(reservation))
-                            {
-                                <a asp-page="/Customer/Reservations/Edit"
-                                   asp-route-id="@reservation.ReservationID"
-                                   class="reservation-action edit">
-                                    Edit
-                                </a>
-
-                                <form id="cancelReservationForm-@reservation.ReservationID"
-                                      method="post"
-                                      asp-page-handler="Cancel"
-                                      asp-route-id="@reservation.ReservationID">
-
-                                    <button type="button"
-                                            class="reservation-action cancel"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#cancelReservationModal-@reservation.ReservationID">
-                                        Cancel
-                                    </button>
-                                </form>
-                            }
                         </div>
-                    </div>
-
-                    @if (Model.CanCancel(reservation))
-                    {
-                        <div class="modal fade"
-                             id="cancelReservationModal-@reservation.ReservationID"
-                             tabindex="-1"
-                             aria-labelledby="cancelReservationModalLabel-@reservation.ReservationID"
-                             aria-hidden="true">
-
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content text-start">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"
-                                            id="cancelReservationModalLabel-@reservation.ReservationID">
-                                            Cancel reservation
-                                        </h5>
-
-                                        <button type="button"
-                                                class="btn-close"
-                                                data-bs-dismiss="modal"
-                                                aria-label="Close">
-                                        </button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        Cancel this reservation on
-                                        @reservation.Date.ToString("dd MMM yyyy")
-                                        at
-                                        @reservation.Time.ToString(@"hh\:mm")?
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="button"
-                                                class="btn btn-outline-secondary"
-                                                data-bs-dismiss="modal">
-                                            Keep reservation
-                                        </button>
-
-                                        <button type="submit"
-                                                class="btn btn-danger"
-                                                form="cancelReservationForm-@reservation.ReservationID">
-                                            Yes, cancel reservation
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </article>
-            }
-        </div>
-    </section>
-}
+                    </nav>
+                }
+            </div>
+        </section>
+    }
 </div>
 
 <style>
@@ -552,28 +619,6 @@ and available actions.
         overflow-wrap: anywhere;
     }
 
-    @@media (max-width: 1100px) {
-        .reservation-summary-grid {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @@media (max-width: 760px) {
-        .reservations-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .book-table-button {
-            width: 100%;
-        }
-
-        .reservation-summary-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
     .reservation-list-section {
         margin-top: 24px;
     }
@@ -611,7 +656,8 @@ and available actions.
 
     .reservation-card {
         display: grid;
-        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-columns:
+            92px minmax(0, 1fr);
         overflow: hidden;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
@@ -830,10 +876,129 @@ and available actions.
         background: #dc2626;
     }
 
+    .reservations-empty-state {
+        padding: 75px 30px;
+        border: 1px dashed #d1d5db;
+        border-radius: 19px;
+        background: white;
+        text-align: center;
+        box-shadow:
+            0 9px 26px rgba(31, 41, 55, 0.05);
+    }
+
+    .empty-reservation-icon {
+        width: 66px;
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 17px;
+        border-radius: 19px;
+        background: #fff7ed;
+        font-size: 29px;
+    }
+
+    .reservations-empty-state h2 {
+        margin-bottom: 8px;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .reservations-empty-state p {
+        max-width: 520px;
+        margin: 0 auto 20px;
+        color: #6b7280;
+    }
+
+    .reservation-results-footer {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .reservation-results-count {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .reservation-results-count strong {
+        color: #111827;
+        font-weight: 800;
+    }
+
+    .reservation-pagination {
+        display: grid;
+        grid-template-columns:
+            minmax(110px, 1fr)
+            auto
+            minmax(110px, 1fr);
+        align-items: center;
+        gap: 16px;
+        margin-top: 13px;
+    }
+
+    .reservation-next-link {
+        text-align: right;
+    }
+
+    .reservation-page-link {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        color: #374151;
+        background: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .reservation-page-link:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .reservation-page-status {
+        color: #6b7280;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .reservation-page-status strong {
+        color: #111827;
+    }
+
+    @@media (max-width: 1100px) {
+        .reservation-summary-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+
     @@media (max-width: 900px) {
         .reservation-details-grid {
             grid-template-columns:
                 repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .reservations-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .book-table-button {
+            width: 100%;
+        }
+
+        .reservation-summary-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -881,48 +1046,33 @@ and available actions.
             width: 100%;
         }
 
-                .reservation-action {
+        .reservation-action {
             width: 100%;
         }
     }
 
-    .reservations-empty-state {
-        padding: 75px 30px;
-        border: 1px dashed #d1d5db;
-        border-radius: 19px;
-        background: white;
-        text-align: center;
-        box-shadow:
-            0 9px 26px rgba(31, 41, 55, 0.05);
-    }
+    @@media (max-width: 520px) {
+        .reservation-results-count {
+            text-align: center;
+        }
 
-    .empty-reservation-icon {
-        width: 66px;
-        height: 66px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 17px;
-        border-radius: 19px;
-        background: #fff7ed;
-        font-size: 29px;
-    }
+        .reservation-pagination {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
 
-    .reservations-empty-state h2 {
-        margin-bottom: 8px;
-        color: #111827;
-        font-size: 23px;
-        font-weight: 800;
-    }
+        .reservation-pagination > div,
+        .reservation-next-link {
+            text-align: center;
+        }
 
-    .reservations-empty-state p {
-        max-width: 520px;
-        margin: 0 auto 20px;
-        color: #6b7280;
+        .reservation-page-link {
+            width: 100%;
+        }
     }
 </style>
 
-    @section Scripts {
+@section Scripts {
     <script>
         (function () {
             const lastCheckElement =
@@ -941,36 +1091,48 @@ and available actions.
                 );
 
             function badgeClassFor(status) {
-    switch ((status || "").toLowerCase()) {
-        case "confirmed":
-            return "confirmed";
-        case "pending":
-            return "pending";
-        case "cancelled":
-            return "cancelled";
-        default:
-            return "other";
-    }
-}
+                switch ((status || "").toLowerCase()) {
+                    case "confirmed":
+                        return "confirmed";
+
+                    case "pending":
+                        return "pending";
+
+                    case "cancelled":
+                        return "cancelled";
+
+                    default:
+                        return "other";
+                }
+            }
 
             function explanationFor(status) {
                 switch ((status || "").toLowerCase()) {
                     case "confirmed":
                         return {
-                            text: "Reservation confirmed.",
-                            className: "text-success"
+                            text:
+                                "Reservation confirmed.",
+
+                            className:
+                                "text-success"
                         };
 
                     case "cancelled":
                         return {
-                            text: "Reservation cancelled.",
-                            className: "text-danger"
+                            text:
+                                "Reservation cancelled.",
+
+                            className:
+                                "text-danger"
                         };
 
                     default:
                         return {
-                            text: "Awaiting staff confirmation.",
-                            className: "text-muted"
+                            text:
+                                "Awaiting staff confirmation.",
+
+                            className:
+                                "text-muted"
                         };
                 }
             }
@@ -992,38 +1154,50 @@ and available actions.
                         ".reservation-status-explanation"
                     );
 
-                badge.textContent = newStatus;
+                if (!badge ||
+                    !explanationContainer) {
+                    return false;
+                }
+
+                badge.textContent =
+                    newStatus;
 
                 badge.className =
-    "status-pill reservation-status-badge " +
-    badgeClassFor(newStatus);
+                    "status-pill " +
+                    "reservation-status-badge " +
+                    badgeClassFor(newStatus);
 
                 const explanation =
                     explanationFor(newStatus);
 
-                explanationContainer.innerHTML =
-                    '<span class="' +
-                    explanation.className +
-                    '">' +
-                    explanation.text +
-                    '</span>';
+                explanationContainer.textContent =
+                    explanation.text;
 
-                row.dataset.currentStatus = newStatus;
+                explanationContainer.className =
+                    "reservation-status-explanation " +
+                    explanation.className;
+
+                row.dataset.currentStatus =
+                    newStatus;
 
                 return oldStatus !== newStatus;
             }
 
             async function pollReservationStatuses() {
                 try {
-                    const response = await fetch(
-                        "?handler=Statuses",
-                        {
-                            headers: {
-                                "Accept": "application/json"
-                            },
-                            cache: "no-store"
-                        }
-                    );
+                    const response =
+                        await fetch(
+                            "?handler=Statuses",
+                            {
+                                headers: {
+                                    "Accept":
+                                        "application/json"
+                                },
+
+                                cache:
+                                    "no-store"
+                            }
+                        );
 
                     if (!response.ok) {
                         throw new Error(
@@ -1034,7 +1208,8 @@ and available actions.
                     const statuses =
                         await response.json();
 
-                    let anyChanged = false;
+                    let anyChanged =
+                        false;
 
                     statuses.forEach(function (item) {
                         const row =
@@ -1052,25 +1227,36 @@ and available actions.
                             row,
                             item.status
                         )) {
-                            anyChanged = true;
+                            anyChanged =
+                                true;
                         }
                     });
 
-                    lastCheckElement.textContent =
-                        new Date()
-                            .toLocaleTimeString();
+                    if (lastCheckElement) {
+                        lastCheckElement.textContent =
+                            new Date()
+                                .toLocaleTimeString();
+                    }
 
-                    pollingError.classList.add("d-none");
+                    if (pollingError) {
+                        pollingError.classList.add(
+                            "d-none"
+                        );
+                    }
 
-                    if (anyChanged) {
+                    if (anyChanged &&
+                        changeNotice) {
                         changeNotice.classList.remove(
                             "d-none"
                         );
                     }
-                } catch (error) {
-                    pollingError.classList.remove(
-                        "d-none"
-                    );
+                }
+                catch (error) {
+                    if (pollingError) {
+                        pollingError.classList.remove(
+                            "d-none"
+                        );
+                    }
                 }
             }
 

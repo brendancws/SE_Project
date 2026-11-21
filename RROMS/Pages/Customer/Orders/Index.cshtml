@@ -1,36 +1,21 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.Orders.IndexModel
+
 @{
     ViewData["Title"] = "My Orders";
 
     int totalOrders =
-        Model.Orders.Count;
+        Model.TotalOrders;
 
     int activeOrders =
-        Model.Orders.Count(order =>
-            !string.Equals(
-                order.Status,
-                "Completed",
-                StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(
-                order.Status,
-                "Cancelled",
-                StringComparison.OrdinalIgnoreCase));
+        Model.ActiveOrders;
 
     int completedOrders =
-        Model.Orders.Count(order =>
-            string.Equals(
-                order.Status,
-                "Completed",
-                StringComparison.OrdinalIgnoreCase));
+        Model.CompletedOrders;
 
     int paidOrders =
-        Model.Orders.Count(order =>
-            string.Equals(
-                order.PaymentStatus,
-                "Paid",
-                StringComparison.OrdinalIgnoreCase));
+        Model.PaidOrders;
 }
 
 <div class="container py-4 customer-orders-page">
@@ -120,6 +105,7 @@
 
                 <span class="live-tracking-time">
                     Last checked:
+
                     <span id="lastStatusCheck">
                         Not checked yet
                     </span>
@@ -157,10 +143,12 @@
              class="status-polling-error d-none"
              role="status">
 
-            <strong>Live updates are temporarily unavailable.</strong>
+            <strong>
+                Live updates are temporarily unavailable.
+            </strong>
 
             <span>
-                Use Refresh Full Page to check the latest information.
+                Use Check Now to retrieve the latest information.
             </span>
         </div>
     </section>
@@ -185,7 +173,7 @@
         </div>
     }
 
-    @if (!Model.Orders.Any())
+    @if (Model.TotalOrders == 0)
     {
         <section class="orders-empty-state">
             <div class="orders-empty-icon"
@@ -283,11 +271,14 @@
                             </div>
 
                             <div class="order-status-group">
-                                <span class="order-status-pill @orderStatusClass order-status-badge">
+                                <span class="order-status-pill
+                                             @orderStatusClass
+                                             order-status-badge">
                                     @orderStatus
                                 </span>
 
-                                <span class="payment-status-pill @paymentStatusClass">
+                                <span class="payment-status-pill
+                                             @paymentStatusClass">
                                     Payment: @paymentStatus
                                 </span>
                             </div>
@@ -308,14 +299,14 @@
                                 <span>Order Time</span>
 
                                 <strong>
-                                    @(order.OrderDate?.ToString("HH:mm")
+                                    @(order.OrderDate?.ToString(
+                                        "HH:mm")
                                         ?? "-")
                                 </strong>
                             </div>
 
                             <div class="order-overview-item">
                                 <span>Items</span>
-
                                 <strong>@totalItems</strong>
                             </div>
 
@@ -412,12 +403,13 @@
                                 </div>
                             </div>
 
-                            <div class="order-cancelled-message @(string.Equals(
-                                    orderStatus,
-                                    "Cancelled",
-                                    StringComparison.OrdinalIgnoreCase)
-                                        ? ""
-                                        : "d-none")">
+                            <div class="order-cancelled-message
+                                        @(string.Equals(
+                                            orderStatus,
+                                            "Cancelled",
+                                            StringComparison.OrdinalIgnoreCase)
+                                            ? ""
+                                            : "d-none")">
 
                                 <strong>Order cancelled</strong>
 
@@ -432,9 +424,12 @@
                             <div class="order-items-heading">
                                 <div>
                                     <span>Order Items</span>
+
                                     <strong>
                                         @totalItems
-                                        @(totalItems == 1 ? "item" : "items")
+                                        @(totalItems == 1
+                                            ? "item"
+                                            : "items")
                                     </strong>
                                 </div>
                             </div>
@@ -480,6 +475,54 @@
                             </div>
                         </section>
                     </article>
+                }
+            </div>
+
+            <div class="order-results-footer">
+                <div class="order-results-count">
+                    Showing
+                    <strong>
+                        @Model.FirstResultNumber–@Model.LastResultNumber
+                    </strong>
+                    of
+                    <strong>@Model.TotalOrders</strong>
+                    orders
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="order-pagination"
+                         aria-label="Order pages">
+
+                        <div>
+                            @if (Model.HasPreviousPage)
+                            {
+                                <a asp-page="/Customer/Orders/Index"
+                                   asp-route-p="@(Model.PageNumber - 1)"
+                                   class="order-page-link">
+                                    ← Previous
+                                </a>
+                            }
+                        </div>
+
+                        <span class="order-page-status">
+                            Page
+                            <strong>@Model.PageNumber</strong>
+                            of
+                            <strong>@Model.TotalPages</strong>
+                        </span>
+
+                        <div class="order-next-link">
+                            @if (Model.HasNextPage)
+                            {
+                                <a asp-page="/Customer/Orders/Index"
+                                   asp-route-p="@(Model.PageNumber + 1)"
+                                   class="order-page-link">
+                                    Next →
+                                </a>
+                            }
+                        </div>
+                    </nav>
                 }
             </div>
         </section>
@@ -1063,9 +1106,9 @@
 
     .order-progress-step {
         display: flex;
-        flex-direction: column;
-        align-items: center;
         min-width: 76px;
+        align-items: center;
+        flex-direction: column;
         color: #9ca3af;
         font-size: 10px;
         text-align: center;
@@ -1078,16 +1121,14 @@
         border: 3px solid #d1d5db;
         border-radius: 50%;
         background: white;
-        transition: 0.2s;
     }
 
     .order-progress-line {
-        flex: 1;
         min-width: 25px;
         height: 3px;
+        flex: 1;
         margin-top: 8px;
         background: #d1d5db;
-        transition: 0.2s;
     }
 
     .order-progress-step.completed,
@@ -1096,12 +1137,14 @@
         font-weight: 700;
     }
 
-    .order-progress-step.completed .order-progress-dot {
+    .order-progress-step.completed
+    .order-progress-dot {
         border-color: #059669;
         background: #059669;
     }
 
-    .order-progress-step.current .order-progress-dot {
+    .order-progress-step.current
+    .order-progress-dot {
         border-color: #2563eb;
         background: white;
         box-shadow:
@@ -1156,8 +1199,8 @@
 
     .order-item-main {
         display: flex;
-        align-items: center;
         min-width: 0;
+        align-items: center;
         gap: 9px;
     }
 
@@ -1217,6 +1260,68 @@
         font-weight: 850;
     }
 
+    .order-results-footer {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .order-results-count {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .order-results-count strong {
+        color: #111827;
+        font-weight: 800;
+    }
+
+    .order-pagination {
+        display: grid;
+        grid-template-columns:
+            minmax(110px, 1fr)
+            auto
+            minmax(110px, 1fr);
+        align-items: center;
+        gap: 16px;
+        margin-top: 13px;
+    }
+
+    .order-next-link {
+        text-align: right;
+    }
+
+    .order-page-link {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        color: #374151;
+        background: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .order-page-link:hover {
+        border-color: #f59e0b;
+        color: #92400e;
+        background: #fff7ed;
+    }
+
+    .order-page-status {
+        color: #6b7280;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .order-page-status strong {
+        color: #111827;
+    }
+
     @@media (max-width: 900px) {
         .order-summary-grid {
             grid-template-columns:
@@ -1242,51 +1347,30 @@
     }
 
     @@media (max-width: 680px) {
-        .orders-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .order-more-button {
-            width: 100%;
-        }
-
+        .orders-header,
+        .orders-list-heading,
         .live-tracking-row,
-        .status-change-notice {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .refresh-orders-button,
-        .refresh-notice-button {
-            width: 100%;
-        }
-
-        .orders-list-heading {
+        .status-change-notice,
+        .progress-section-heading {
             align-items: flex-start;
             flex-direction: column;
         }
 
-        .order-card-header {
+        .order-more-button,
+        .refresh-orders-button,
+        .refresh-notice-button,
+        .receipt-action {
+            width: 100%;
+        }
+
+        .order-card-header,
+        .order-overview-grid {
             grid-template-columns: 1fr;
         }
 
         .order-reference {
             width: max-content;
             min-width: 78px;
-        }
-
-        .order-overview-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .progress-section-heading {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .receipt-action {
-            width: 100%;
         }
 
         .order-item-row {
@@ -1297,6 +1381,26 @@
         .order-item-price {
             width: 100%;
             text-align: left;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .order-results-count {
+            text-align: center;
+        }
+
+        .order-pagination {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .order-pagination > div,
+        .order-next-link {
+            text-align: center;
+        }
+
+        .order-page-link {
+            width: 100%;
         }
     }
 
@@ -1384,7 +1488,8 @@
                         ".order-cancelled-message"
                     );
 
-                if (!progress || !cancelledMessage) {
+                if (!progress ||
+                    !cancelledMessage) {
                     return;
                 }
 
@@ -1515,16 +1620,19 @@
 
             async function pollStatuses() {
                 try {
-                    const response = await fetch(
-                        "?handler=Statuses",
-                        {
-                            headers: {
-                                "Accept":
-                                    "application/json"
-                            },
-                            cache: "no-store"
-                        }
-                    );
+                    const response =
+                        await fetch(
+                            "?handler=Statuses",
+                            {
+                                headers: {
+                                    "Accept":
+                                        "application/json"
+                                },
+
+                                cache:
+                                    "no-store"
+                            }
+                        );
 
                     if (!response.ok) {
                         throw new Error(
@@ -1535,7 +1643,8 @@
                     const statuses =
                         await response.json();
 
-                    let anyChanged = false;
+                    let anyChanged =
+                        false;
 
                     statuses.forEach(function (item) {
                         const card =
@@ -1553,7 +1662,8 @@
                             card,
                             item.status
                         )) {
-                            anyChanged = true;
+                            anyChanged =
+                                true;
                         }
                     });
 
