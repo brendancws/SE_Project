@@ -1,105 +1,12 @@
 ﻿@page "{id:int}"
 @model RROMS.Pages.Customer.Reservations.ConfirmationModel
+
 @{
     ViewData["Title"] = "Reservation Confirmation";
 }
 
 @if (Model.Reservation != null)
 {
-    <div class="container py-4" style="max-width: 760px;">
-        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-            <h2 class="mb-0">Reservation Confirmation</h2>
-
-            <div class="d-flex gap-2">
-                <button type="button"
-                        class="btn btn-primary"
-                        onclick="window.print()">
-                    Print / Save as PDF
-                </button>
-
-                <a asp-page="/Customer/Reservations/Index"
-                   class="btn btn-outline-secondary">
-                    Back
-                </a>
-            </div>
-        </div>
-
-        <div class="card shadow-sm confirmation-document">
-            <div class="card-body p-4 p-md-5">
-                <div class="text-center border-bottom pb-4 mb-4">
-                    <h1 class="h3 mb-1">
-                        Dine<span class="text-warning">flow</span>
-                    </h1>
-
-                    <p class="text-muted mb-3">
-                        Restaurant Reservation Confirmation
-                    </p>
-
-                    <h2 class="h4 mb-2">
-                        @Model.BookingReference
-                    </h2>
-
-                    <span class="badge @RROMS.Pages.Customer.Reservations.ConfirmationModel.StatusBadgeClass(Model.Reservation.Status)">
-                        @(Model.Reservation.Status ?? "Pending")
-                    </span>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Customer</p>
-                        <p class="fw-semibold mb-0">@Model.CustomerName</p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Booking Reference</p>
-                        <p class="fw-semibold mb-0">@Model.BookingReference</p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Reservation Date</p>
-                        <p class="fw-semibold mb-0">
-                            @Model.Reservation.Date.ToString("dd MMM yyyy")
-                        </p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Reservation Time</p>
-                        <p class="fw-semibold mb-0">
-                            @Model.Reservation.Time.ToString(@"hh\:mm")
-                        </p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Table</p>
-                        <p class="fw-semibold mb-0">
-                            @(Model.Reservation.Table?.TableNumber ?? "-")
-                        </p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Number of Guests</p>
-                        <p class="fw-semibold mb-0">
-                            @Model.Reservation.NumberOfGuests
-                        </p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Reservation Status</p>
-                        <p class="fw-semibold mb-0">
-                            @(Model.Reservation.Status ?? "Pending")
-                        </p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p class="text-muted small mb-1">Created At</p>
-                        <p class="fw-semibold mb-0">
-                            @(Model.Reservation.CreatedAt?.ToString("dd MMM yyyy, HH:mm")
-                                ?? "Not recorded")
-                        </p>
-                    </div>
-                </div>
-
-                @{
     string reservationStatus =
         Model.Reservation.Status ?? "Pending";
 
@@ -119,31 +26,335 @@
     string statusAlertClass =
         reservationStatus.ToLowerInvariant() switch
         {
-            "confirmed" => "confirmation-note confirmed",
-            "cancelled" => "confirmation-note cancelled",
-            _ => "confirmation-note pending"
+            "confirmed" =>
+                "confirmation-note confirmed",
+
+            "cancelled" =>
+                "confirmation-note cancelled",
+
+            _ =>
+                "confirmation-note pending"
         };
-}
 
-<div class="@statusAlertClass">
-    <strong>@statusMessage</strong>
+    string reservationTime =
+        DateTime.Today
+            .Add(Model.Reservation.Time)
+            .ToString("h:mm tt");
 
-    <span>
-        Please keep this confirmation for reference when contacting
-        the restaurant.
-    </span>
-</div>
+    string createdAt =
+        Model.Reservation.CreatedAt?.ToString(
+            "dd MMM yyyy, h:mm tt")
+        ?? "Not recorded";
+
+    <div class="container py-4 confirmation-page">
+        <header class="confirmation-page-header no-print">
+            <div>
+                <span class="confirmation-eyebrow">
+                    Dining Reservations
+                </span>
+
+                <h1>Reservation Confirmation</h1>
+
+                <p>
+                    Review your booking details and print or save a
+                    copy for your records.
+                </p>
             </div>
-        </div>
+
+            <div class="confirmation-page-actions">
+                <button type="button"
+                        class="print-confirmation-button"
+                        onclick="window.print()">
+                    Print / Save as PDF
+                </button>
+
+                <a asp-page="/Customer/Reservations/Index"
+                   class="back-reservations-button">
+                    Back to My Reservations
+                </a>
+            </div>
+        </header>
+
+        <article class="confirmation-document">
+            <header class="confirmation-document-header">
+                <div class="confirmation-brand">
+                    <span>Dine</span><strong>flow</strong>
+                </div>
+
+                <p>
+                    Restaurant Reservation Confirmation
+                </p>
+
+                <h2>@Model.BookingReference</h2>
+
+                <span class="confirmation-status-badge
+                             @RROMS.Pages.Customer.Reservations.ConfirmationModel.StatusBadgeClass(
+                                 Model.Reservation.Status)">
+                    @reservationStatus
+                </span>
+            </header>
+
+            <section class="confirmation-summary">
+                <div class="confirmation-summary-item">
+                    <span>Customer</span>
+                    <strong>@Model.CustomerName</strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Booking Reference</span>
+                    <strong>@Model.BookingReference</strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Reservation Date</span>
+
+                    <strong>
+                        @Model.Reservation.Date.ToString(
+                            "dd MMM yyyy")
+                    </strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Reservation Time</span>
+                    <strong>@reservationTime</strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Table</span>
+
+                    <strong>
+                        @(Model.Reservation.Table?.TableNumber
+                            ?? "-")
+                    </strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Number of Guests</span>
+                    <strong>@Model.Reservation.NumberOfGuests</strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Reservation Status</span>
+                    <strong>@reservationStatus</strong>
+                </div>
+
+                <div class="confirmation-summary-item">
+                    <span>Created At</span>
+                    <strong>@createdAt</strong>
+                </div>
+            </section>
+
+            <section class="@statusAlertClass">
+                <strong>@statusMessage</strong>
+
+                <span>
+                    Please keep this confirmation for reference when
+                    contacting the restaurant.
+                </span>
+            </section>
+
+            <footer class="confirmation-document-footer">
+                <span>
+                    Booking Reference
+                </span>
+
+                <strong>
+                    @Model.BookingReference
+                </strong>
+
+                <p>
+                    Present this confirmation when contacting the
+                    restaurant about your reservation.
+                </p>
+            </footer>
+        </article>
     </div>
 }
 
 <style>
-        .confirmation-note {
+    .confirmation-page {
+        max-width: 900px;
+    }
+
+    .confirmation-page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .confirmation-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #d97706;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .confirmation-page-header h1 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 31px;
+        font-weight: 800;
+    }
+
+    .confirmation-page-header p {
+        max-width: 570px;
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    .confirmation-page-actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 9px;
+    }
+
+    .print-confirmation-button,
+    .back-reservations-button {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 15px;
+        border: 1px solid;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .print-confirmation-button {
+        border-color: #f59e0b;
+        color: #111827;
+        background: #f59e0b;
+    }
+
+    .print-confirmation-button:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .back-reservations-button {
+        border-color: #d1d5db;
+        color: #374151;
+        background: white;
+        text-decoration: none;
+    }
+
+    .back-reservations-button:hover {
+        border-color: #9ca3af;
+        color: #111827;
+        background: #f9fafb;
+    }
+
+    .confirmation-document {
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 12px 34px rgba(31, 41, 55, 0.08);
+    }
+
+    .confirmation-document-header {
+        padding: 31px 30px 27px;
+        border-bottom: 1px solid #e5e7eb;
+        background:
+            radial-gradient(
+                circle at 82% 18%,
+                rgba(245, 158, 11, 0.14),
+                transparent 29%
+            ),
+            linear-gradient(
+                135deg,
+                #fffdf8,
+                #ffffff
+            );
+        text-align: center;
+    }
+
+    .confirmation-brand {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 4px;
+        color: #111827;
+        font-size: 28px;
+        font-weight: 850;
+        letter-spacing: -0.04em;
+    }
+
+    .confirmation-brand strong {
+        color: #f59e0b;
+    }
+
+    .confirmation-document-header p {
+        margin: 0 0 15px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .confirmation-document-header h2 {
+        margin: 0 0 10px;
+        color: #111827;
+        font-size: 22px;
+        font-weight: 850;
+        letter-spacing: 0.025em;
+    }
+
+    .confirmation-status-badge {
+        display: inline-flex;
+        padding: 6px 11px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 850;
+    }
+
+    .confirmation-summary {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding: 28px 30px 24px;
+    }
+
+    .confirmation-summary-item {
+        min-width: 0;
+        padding: 14px 15px;
+        border-radius: 11px;
+        background: #f9fafb;
+    }
+
+    .confirmation-summary-item span,
+    .confirmation-summary-item strong {
+        display: block;
+    }
+
+    .confirmation-summary-item span {
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .confirmation-summary-item strong {
+        color: #1f2937;
+        font-size: 13px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .confirmation-note {
         display: grid;
         gap: 5px;
-        margin-top: 24px;
-        padding: 15px 17px;
+        margin: 0 30px 24px;
+        padding: 16px 18px;
         border: 1px solid;
         border-radius: 12px;
     }
@@ -175,9 +386,74 @@
         background: #fef2f2;
     }
 
+    .confirmation-document-footer {
+        display: grid;
+        gap: 4px;
+        margin: 0 30px 30px;
+        padding: 15px 17px;
+        border-top: 1px solid #e5e7eb;
+        color: #6b7280;
+        text-align: center;
+    }
+
+    .confirmation-document-footer span {
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .confirmation-document-footer strong {
+        color: #111827;
+        font-size: 15px;
+        font-weight: 850;
+    }
+
+    .confirmation-document-footer p {
+        margin: 2px 0 0;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    @@media (max-width: 680px) {
+        .confirmation-page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .confirmation-page-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .print-confirmation-button,
+        .back-reservations-button {
+            width: 100%;
+        }
+
+        .confirmation-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
     @@media print {
+        html,
         body {
+            width: 100% !important;
+            min-width: 0 !important;
+            margin: 0 !important;
             background: white !important;
+            font-size: 10pt !important;
+        }
+
+        .customer-wrapper {
+            display: block !important;
+            min-height: 0 !important;
         }
 
         .customer-sidebar,
@@ -187,17 +463,112 @@
         }
 
         .customer-main {
-            margin-left: 0 !important;
+            display: block !important;
             width: 100% !important;
+            min-width: 0 !important;
+            margin: 0 !important;
         }
 
         .customer-page-content {
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
             padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .confirmation-page {
+            width: 100% !important;
+            max-width: 186mm !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
         }
 
         .confirmation-document {
-            border: none !important;
+            width: 100% !important;
+            overflow: visible !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
+        }
+
+        .confirmation-document-header {
+            padding: 20px 22px 17px !important;
+        }
+
+        .confirmation-brand {
+            font-size: 22pt !important;
+        }
+
+        .confirmation-document-header p {
+            margin-bottom: 9px !important;
+            font-size: 9.5pt !important;
+        }
+
+        .confirmation-document-header h2 {
+            margin-bottom: 7px !important;
+            font-size: 16pt !important;
+        }
+
+        .confirmation-status-badge {
+            padding: 5px 10px !important;
+            font-size: 9pt !important;
+        }
+
+        .confirmation-summary {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+            padding: 17px 18px 15px !important;
+        }
+
+        .confirmation-summary-item {
+            padding: 10px 12px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .confirmation-summary-item span {
+            margin-bottom: 4px !important;
+            font-size: 8.5pt !important;
+        }
+
+        .confirmation-summary-item strong {
+            font-size: 11pt !important;
+        }
+
+        .confirmation-note {
+            margin: 0 18px 15px !important;
+            padding: 12px 14px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .confirmation-note strong {
+            font-size: 10.5pt !important;
+        }
+
+        .confirmation-note span {
+            font-size: 10pt !important;
+        }
+
+        .confirmation-document-footer {
+            margin: 0 18px 17px !important;
+            padding: 11px 13px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .confirmation-document-footer span {
+            font-size: 8pt !important;
+        }
+
+        .confirmation-document-footer strong {
+            font-size: 11.5pt !important;
+        }
+
+        .confirmation-document-footer p {
+            font-size: 9pt !important;
         }
     }
 </style>
