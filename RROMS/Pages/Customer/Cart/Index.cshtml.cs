@@ -6,12 +6,13 @@ using RROMS.Data;
 
 namespace RROMS.Pages.Customer.Cart
 {
-    // Protected by the "CustomerOnly" folder convention in Program.cs
+    // Protected by the "CustomerOnly" folder convention in Program.cs.
     public class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _context;
 
-        public IndexModel(ApplicationDbContext context)
+        public IndexModel(
+            ApplicationDbContext context)
         {
             _context = context;
         }
@@ -19,18 +20,35 @@ namespace RROMS.Pages.Customer.Cart
         public class CartDisplayLine
         {
             public int MenuItemID { get; set; }
-            public string Name { get; set; } = string.Empty;
+
+            public string Name { get; set; }
+                = string.Empty;
+
+            public string? ImageURL { get; set; }
+
             public decimal UnitPrice { get; set; }
+
             public int Quantity { get; set; }
+
             public bool IsAvailable { get; set; }
-            public decimal Subtotal => UnitPrice * Quantity;
+
+            public decimal Subtotal =>
+                UnitPrice * Quantity;
         }
 
-        public List<CartDisplayLine> Lines { get; private set; } = new();
+        public List<CartDisplayLine> Lines
+        {
+            get;
+            private set;
+        } = new();
 
-        public decimal Total => Lines.Sum(l => l.Subtotal);
+        public decimal Total =>
+            Lines.Sum(line =>
+                line.Subtotal);
 
-        public bool HasUnavailable => Lines.Any(l => !l.IsAvailable);
+        public bool HasUnavailable =>
+            Lines.Any(line =>
+                !line.IsAvailable);
 
         [TempData]
         public string? StatusMessage { get; set; }
@@ -40,28 +58,39 @@ namespace RROMS.Pages.Customer.Cart
 
         public async Task<IActionResult> OnGetAsync()
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            await LoadLinesAsync(customerId.Value);
+            await LoadLinesAsync(
+                customerId.Value);
+
             return Page();
         }
 
-        // Called by the "Add to cart" button on the Menu page
-        public async Task<IActionResult> OnPostAddAsync(int menuItemId, int quantity = 1)
+        // Called by the Add to Cart button on the Menu page.
+        public async Task<IActionResult> OnPostAddAsync(
+            int menuItemId,
+            int quantity = 1)
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            var item = await _context.MenuItems
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.MenuItemID == menuItemId);
+            var item =
+                await _context.MenuItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(menuItem =>
+                        menuItem.MenuItemID ==
+                            menuItemId);
 
             if (item == null)
             {
@@ -70,75 +99,118 @@ namespace RROMS.Pages.Customer.Cart
 
             if (item.Availability != true)
             {
-                TempData["CartError"] = $"{item.Name} is currently unavailable and cannot be added.";
-                return RedirectToPage("/Customer/Menu/Index");
+                TempData["CartError"] =
+                    $"{item.Name} is currently unavailable " +
+                    "and cannot be added.";
+
+                return RedirectToPage(
+                    "/Customer/Menu/Index");
             }
 
-            CartSession.Add(HttpContext.Session, customerId.Value, menuItemId, quantity);
+            CartSession.Add(
+                HttpContext.Session,
+                customerId.Value,
+                menuItemId,
+                quantity);
 
-            TempData["CartMessage"] = $"{item.Name} added to your cart.";
-            return RedirectToPage("/Customer/Menu/Index");
+            TempData["CartMessage"] =
+                $"{item.Name} added to your cart.";
+
+            return RedirectToPage(
+                "/Customer/Menu/Index");
         }
 
-        // Quantity of 0 removes the item
-        public IActionResult OnPostUpdate(int menuItemId, int quantity)
+        // A quantity of zero removes the item.
+        public IActionResult OnPostUpdate(
+            int menuItemId,
+            int quantity)
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            CartSession.SetQuantity(HttpContext.Session, customerId.Value, menuItemId, quantity);
+            CartSession.SetQuantity(
+                HttpContext.Session,
+                customerId.Value,
+                menuItemId,
+                quantity);
+
             return RedirectToPage();
         }
 
-        public IActionResult OnPostRemove(int menuItemId)
+        public IActionResult OnPostRemove(
+            int menuItemId)
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            CartSession.Remove(HttpContext.Session, customerId.Value, menuItemId);
-            StatusMessage = "Item removed from your cart.";
+            CartSession.Remove(
+                HttpContext.Session,
+                customerId.Value,
+                menuItemId);
+
+            StatusMessage =
+                "Item removed from your cart.";
+
             return RedirectToPage();
         }
 
         public IActionResult OnPostClear()
         {
-            int? customerId = GetCurrentCustomerId();
+            int? customerId =
+                GetCurrentCustomerId();
+
             if (customerId == null)
             {
                 return Challenge();
             }
 
-            CartSession.Clear(HttpContext.Session, customerId.Value);
-            StatusMessage = "Your cart has been cleared.";
+            CartSession.Clear(
+                HttpContext.Session,
+                customerId.Value);
+
+            StatusMessage =
+                "Your cart has been cleared.";
+
             return RedirectToPage();
         }
 
-        private async Task LoadLinesAsync(int customerId)
+        private async Task LoadLinesAsync(
+            int customerId)
         {
             var cart =
                 CartSession.Get(
                     HttpContext.Session,
                     customerId);
 
-            var ids = cart
-                .Select(line => line.MenuItemID)
-                .ToList();
+            var ids =
+                cart
+                    .Select(line =>
+                        line.MenuItemID)
+                    .ToList();
 
-            var items = await _context.MenuItems
-                .AsNoTracking()
-                .Where(item =>
-                    ids.Contains(item.MenuItemID))
-                .ToListAsync();
+            var items =
+                await _context.MenuItems
+                    .AsNoTracking()
+                    .Where(item =>
+                        ids.Contains(
+                            item.MenuItemID))
+                    .ToListAsync();
 
-            var validItemIds = items
-                .Select(item => item.MenuItemID)
-                .ToHashSet();
+            var validItemIds =
+                items
+                    .Select(item =>
+                        item.MenuItemID)
+                    .ToHashSet();
 
             bool removedStaleItems =
                 cart.RemoveAll(line =>
@@ -153,36 +225,52 @@ namespace RROMS.Pages.Customer.Cart
                     cart);
             }
 
-            Lines = cart
-                .Join(
-                    items,
-                    line => line.MenuItemID,
-                    item => item.MenuItemID,
-                    (line, item) =>
-                        new CartDisplayLine
-                        {
-                            MenuItemID =
-                                item.MenuItemID,
+            Lines =
+                cart
+                    .Join(
+                        items,
+                        line =>
+                            line.MenuItemID,
+                        item =>
+                            item.MenuItemID,
+                        (line, item) =>
+                            new CartDisplayLine
+                            {
+                                MenuItemID =
+                                    item.MenuItemID,
 
-                            Name =
-                                item.Name,
+                                Name =
+                                    item.Name,
 
-                            UnitPrice =
-                                item.Price,
+                                ImageURL =
+                                    item.ImageURL,
 
-                            Quantity =
-                                line.Quantity,
+                                UnitPrice =
+                                    item.Price,
 
-                            IsAvailable =
-                                item.Availability == true
-                        })
-                .ToList();
+                                Quantity =
+                                    line.Quantity,
+
+                                IsAvailable =
+                                    item.Availability ==
+                                    true
+                            })
+                    .ToList();
         }
 
         private int? GetCurrentCustomerId()
         {
-            string? idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(idValue, out int id) && id > 0 ? id : null;
+            string? idValue =
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
+
+            return
+                int.TryParse(
+                    idValue,
+                    out int id) &&
+                id > 0
+                    ? id
+                    : null;
         }
     }
 }

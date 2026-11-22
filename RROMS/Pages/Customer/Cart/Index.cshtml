@@ -127,10 +127,28 @@
                     @foreach (var line in Model.Lines)
                     {
                         <article class="cart-item @(line.IsAvailable ? "" : "cart-item-unavailable")">
-                            <div class="cart-item-visual"
-                                 aria-hidden="true">
-                                @GetMenuInitials(line.Name)
-                            </div>
+                            <div class="cart-item-visual">
+    @if (!string.IsNullOrWhiteSpace(line.ImageURL))
+    {
+        <img src="@line.ImageURL"
+             alt="@line.Name"
+             class="cart-item-image"
+             loading="lazy"
+             onerror="this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none');" />
+
+        <span class="cart-item-initials d-none"
+              aria-hidden="true">
+            @GetMenuInitials(line.Name)
+        </span>
+    }
+    else
+    {
+        <span class="cart-item-initials"
+              aria-hidden="true">
+            @GetMenuInitials(line.Name)
+        </span>
+    }
+</div>
 
                             <div class="cart-item-details">
                                 <div class="cart-item-title-row">
@@ -572,22 +590,51 @@
     }
 
     .cart-item-visual {
-        width: 82px;
-        height: 82px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 15px;
-        color: #92400e;
-        background:
-            linear-gradient(
-                135deg,
-                #ffedd5,
-                #fde68a
-            );
-        font-size: 21px;
-        font-weight: 850;
-    }
+    position: relative;
+    width: 82px;
+    height: 82px;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #fde7c2;
+    border-radius: 15px;
+    color: #92400e;
+    background:
+        linear-gradient(
+            135deg,
+            #ffedd5,
+            #fde68a
+        );
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.65);
+}
+
+.cart-item-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+}
+
+.cart-item-initials {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: #92400e;
+    font-size: 21px;
+    font-weight: 850;
+    letter-spacing: 0.02em;
+}
+
+.cart-item-image.d-none,
+.cart-item-initials.d-none {
+    display: none !important;
+}
 
     .cart-item-unavailable {
         opacity: 0.72;
