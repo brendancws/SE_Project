@@ -1,5 +1,6 @@
 ﻿@page
 @model RROMS.Pages.Customer.Help.IndexModel
+
 @{
     ViewData["Title"] = "Help Assistant";
 }
@@ -14,29 +15,30 @@
             <h1>Dineflow Help Assistant</h1>
 
             <p>
-                Ask a question about using Dineflow. The assistant
-                provides guidance and directs you to the relevant page.
+                Ask about reservations, orders, payments, receipts,
+                notifications, feedback, or account settings.
             </p>
         </div>
 
         <span class="assistant-type">
-            Rule-based guidance
+            Dineflow Guidance
         </span>
     </header>
 
     <section class="assistant-introduction">
         <div class="assistant-avatar"
-     aria-hidden="true">
-    <svg viewBox="0 0 24 24">
-        <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
-        <path d="M9 13h.01" />
-        <path d="M15 13h.01" />
-        <path d="M12 8.5V5" />
-        <circle cx="12"
-                cy="4"
-                r="1" />
-    </svg>
-</div>
+             aria-hidden="true">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
+                <path d="M9 13h.01" />
+                <path d="M15 13h.01" />
+                <path d="M12 8.5V5" />
+                <circle cx="12"
+                        cy="4"
+                        r="1" />
+            </svg>
+        </div>
 
         <div>
             <span class="assistant-label">
@@ -46,17 +48,232 @@
             <h2>How can I help?</h2>
 
             <p>
-                Ask about reservations, menu items, your cart,
-                checkout, payments, order tracking, receipts,
-                notifications, feedback, or profile settings.
+                Get quick, reliable guidance based on the actual
+                Dineflow reservation, ordering, payment, and account
+                workflows.
             </p>
         </div>
     </section>
 
     <div class="help-layout">
         <main class="assistant-panel">
+            <div class="chat-header">
+                <div class="chat-header-status">
+                    <span class="online-indicator"
+                          aria-hidden="true">
+                    </span>
+
+                    <strong>Dineflow Assistant</strong>
+
+                    <span class="chat-ready-text">
+                        Ready to help
+                    </span>
+                </div>
+
+                @if (Model.HasConversation)
+                {
+                    <form method="post"
+                          asp-page-handler="Clear"
+                          id="clearConversationForm"
+                          class="clear-conversation-form">
+
+                        <button type="button"
+                                class="clear-conversation-button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#clearConversationModal">
+                            Clear conversation
+                        </button>
+                    </form>
+                }
+            </div>
+
+            <section id="chatWindow"
+                     class="chat-window"
+                     aria-live="polite">
+
+                @if (!Model.HasConversation)
+                {
+                    <div class="chat-message assistant-message">
+                        <div class="chat-avatar"
+                             aria-hidden="true">
+
+                            <svg viewBox="0 0 24 24">
+                                <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
+                                <path d="M9 13h.01" />
+                                <path d="M15 13h.01" />
+                                <path d="M12 8.5V5" />
+                                <circle cx="12"
+                                        cy="4"
+                                        r="1" />
+                            </svg>
+                        </div>
+
+                        <div class="chat-message-content">
+                            <span class="chat-sender">
+                                Dineflow Assistant
+                            </span>
+
+                            <div class="chat-bubble assistant-bubble">
+                                <p>
+                                    Hello! I’m the Dineflow Help
+                                    Assistant.
+                                </p>
+
+                                <p>
+                                    I can guide you through
+                                    reservations, menu and cart,
+                                    checkout, payments, order tracking,
+                                    receipts, notifications, feedback,
+                                    and profile settings.
+                                </p>
+
+                                <p>
+                                    Type a question below or select
+                                    one of the quick questions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var entry in Model.Conversation)
+                    {
+                        <div class="chat-exchange">
+                            <div class="chat-message user-message">
+                                <div class="chat-message-content">
+                                    <span class="chat-sender user-sender">
+                                        You
+                                    </span>
+
+                                    <div class="chat-bubble user-bubble">
+                                        <p>@entry.Question</p>
+                                    </div>
+
+                                    <time class="chat-time"
+                                          datetime="@entry.CreatedAt.ToString("O")">
+                                        @entry.CreatedAt.ToString("h:mm tt")
+                                    </time>
+                                </div>
+
+                                <div class="user-avatar"
+                                     aria-hidden="true">
+                                    You
+                                </div>
+                            </div>
+
+                            <div class="chat-message assistant-message">
+                                <div class="chat-avatar"
+                                     aria-hidden="true">
+
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
+                                        <path d="M9 13h.01" />
+                                        <path d="M15 13h.01" />
+                                        <path d="M12 8.5V5" />
+                                        <circle cx="12"
+                                                cy="4"
+                                                r="1" />
+                                    </svg>
+                                </div>
+
+                                <div class="chat-message-content">
+                                    <span class="chat-sender">
+                                        Dineflow Assistant
+                                    </span>
+
+                                    <div class="chat-bubble assistant-bubble">
+                                        <h2>
+                                            @entry.Response.Title
+                                        </h2>
+
+                                        <p>
+                                            @entry.Response.Answer
+                                        </p>
+
+                                        @if (entry.Response.Steps.Any())
+                                        {
+                                            <div class="chat-steps">
+                                                <span>What to do</span>
+
+                                                <ol>
+                                                    @foreach (
+                                                        string step in
+                                                        entry.Response.Steps)
+                                                    {
+                                                        <li>@step</li>
+                                                    }
+                                                </ol>
+                                            </div>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                                entry.Response.ActionPage) &&
+                                             !string.IsNullOrWhiteSpace(
+                                                entry.Response.ActionText))
+                                        {
+                                            <a href="@entry.Response.ActionPage"
+                                               class="response-action">
+
+                                                @entry.Response.ActionText
+
+                                                <span aria-hidden="true">
+                                                    →
+                                                </span>
+                                            </a>
+                                        }
+
+                                        @if (entry.Response.Intent ==
+                                            "Fallback")
+                                        {
+                                            <div class="fallback-note">
+                                                This assistant provides
+                                                predefined Dineflow
+                                                guidance and does not
+                                                use an external
+                                                generative-AI service.
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div id="typingIndicator"
+                     class="chat-message assistant-message typing-message"
+                     aria-live="polite">
+
+                    <div class="chat-avatar"
+                         aria-hidden="true">
+
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 8.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-5l-4 2v-2H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z" />
+                            <path d="M9 13h.01" />
+                            <path d="M15 13h.01" />
+                            <path d="M12 8.5V5" />
+                            <circle cx="12"
+                                    cy="4"
+                                    r="1" />
+                        </svg>
+                    </div>
+
+                    <div class="typing-bubble">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                        <span class="visually-hidden">
+                            Dineflow Assistant is responding
+                        </span>
+                    </div>
+                </div>
+            </section>
+
             <form method="post"
                   novalidate
+                  id="questionForm"
                   class="question-form">
 
                 <div asp-validation-summary="ModelOnly"
@@ -64,21 +281,28 @@
                 </div>
 
                 <label asp-for="Question"
-                       class="question-label">
-                    Your question
+                       class="visually-hidden">
+                    Ask Dineflow Assistant
                 </label>
 
                 <div class="question-input-row">
                     <textarea asp-for="Question"
                               class="form-control question-input"
-                              rows="3"
+                              rows="2"
                               maxlength="300"
-                              placeholder="For example: How do I track my order?">
-                    </textarea>
+                              placeholder="Ask Dineflow Assistant a question..."></textarea>
 
                     <button type="submit"
+                            id="askButton"
                             class="ask-button">
-                        Ask
+
+                        <span>Send</span>
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="m5 12 14-7-4 14-3-6-7-1Z" />
+                            <path d="m12 13 7-8" />
+                        </svg>
                     </button>
                 </div>
 
@@ -95,93 +319,18 @@
                     </span>
                 </div>
             </form>
-
-            @if (Model.BotResponse != null)
-            {
-                <section class="assistant-response"
-                         aria-live="polite">
-
-                    <div class="response-heading">
-                        <div class="response-icon"
-                             aria-hidden="true">
-                            i
-                        </div>
-
-                        <div>
-                            <span>Assistant Response</span>
-                            <h2>@Model.BotResponse.Title</h2>
-                        </div>
-                    </div>
-
-                    <p class="response-answer">
-                        @Model.BotResponse.Answer
-                    </p>
-
-                    @if (Model.BotResponse.Steps.Any())
-                    {
-                        <div class="response-steps">
-                            <span>What to do</span>
-
-                            <ol>
-                                @foreach (string step in
-                                    Model.BotResponse.Steps)
-                                {
-                                    <li>@step</li>
-                                }
-                            </ol>
-                        </div>
-                    }
-
-                    @if (!string.IsNullOrWhiteSpace(
-                            Model.BotResponse.ActionPage) &&
-                         !string.IsNullOrWhiteSpace(
-                            Model.BotResponse.ActionText))
-                    {
-                        <a href="@Model.BotResponse.ActionPage"
-                           class="response-action">
-                            @Model.BotResponse.ActionText
-                            <span aria-hidden="true">→</span>
-                        </a>
-                    }
-
-                    @if (Model.BotResponse.Intent == "Fallback")
-                    {
-                        <div class="fallback-note">
-                            This assistant provides predefined
-                            Dineflow guidance and does not use AI.
-                        </div>
-                    }
-                </section>
-            }
-            else
-            {
-                <section class="assistant-placeholder">
-                    <div class="placeholder-icon"
-                         aria-hidden="true">
-                        ?
-                    </div>
-
-                    <h2>Your answer will appear here</h2>
-
-                    <p>
-                        Enter a short question above or choose one
-                        of the suggested questions.
-                    </p>
-                </section>
-            }
         </main>
 
         <aside class="suggestions-panel">
             <div class="suggestions-heading">
                 <span class="help-eyebrow">
-                    Quick Questions
+                    Conversation Starters
                 </span>
 
-                <h2>Suggested Questions</h2>
+                <h2>Quick Questions</h2>
 
                 <p>
-                    Select a question to place it into the question
-                    field, then choose Ask.
+                    Select a question to ask the assistant immediately.
                 </p>
             </div>
 
@@ -192,23 +341,95 @@
                     <button type="button"
                             class="suggested-question"
                             data-suggested-question="@suggestion">
-                        <span aria-hidden="true">?</span>
-                        @suggestion
+
+                        <span class="suggested-question-icon"
+                              aria-hidden="true">
+
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+                                <path d="M8 9h8M8 13h5" />
+                            </svg>
+                        </span>
+
+                        <span class="suggested-question-text">
+                            @suggestion
+                        </span>
+
+                        <span class="suggested-question-arrow"
+                              aria-hidden="true">
+                            →
+                        </span>
                     </button>
                 }
             </div>
 
             <div class="assistant-boundary">
-                <strong>Guidance only</strong>
+                <div class="boundary-icon"
+                     aria-hidden="true">
+                    i
+                </div>
 
-                <p>
-                    The assistant explains where to go and what to do.
-                    It cannot create reservations, place orders,
-                    process payments, or change account details.
-                </p>
+                <div>
+                    <strong>Guidance only</strong>
+
+                    <p>
+                        The assistant explains where to go and what
+                        to do. It cannot create reservations, place
+                        orders, process payments, or change account
+                        details.
+                    </p>
+                </div>
             </div>
         </aside>
     </div>
+
+    @if (Model.HasConversation)
+    {
+        <div class="modal fade"
+             id="clearConversationModal"
+             tabindex="-1"
+             aria-labelledby="clearConversationModalLabel"
+             aria-hidden="true">
+
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content conversation-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5"
+                            id="clearConversationModalLabel">
+                            Clear this conversation?
+                        </h2>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        All Help Assistant questions and responses
+                        from this browser session will be removed.
+                        Your cart and other Dineflow data will not
+                        be affected.
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Keep conversation
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger"
+                                form="clearConversationForm">
+                            Yes, clear conversation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <section class="supported-topics">
         <div class="supported-topics-heading">
@@ -222,38 +443,74 @@
         <div class="topic-grid">
             <article>
                 <span aria-hidden="true">R</span>
-                <strong>Reservations</strong>
-                <small>Book, edit, cancel, status, and duration</small>
+
+                <div>
+                    <strong>Reservations</strong>
+
+                    <small>
+                        Book, edit, cancel, status, and duration
+                    </small>
+                </div>
             </article>
 
             <article>
                 <span aria-hidden="true">M</span>
-                <strong>Menu and Cart</strong>
-                <small>Browse dishes and manage cart items</small>
+
+                <div>
+                    <strong>Menu and Cart</strong>
+
+                    <small>
+                        Browse dishes and manage cart items
+                    </small>
+                </div>
             </article>
 
             <article>
                 <span aria-hidden="true">P</span>
-                <strong>Checkout and Payment</strong>
-                <small>Reservation linking, Card, and Cash</small>
+
+                <div>
+                    <strong>Checkout and Payment</strong>
+
+                    <small>
+                        Reservation linking, Card, and Cash
+                    </small>
+                </div>
             </article>
 
             <article>
                 <span aria-hidden="true">O</span>
-                <strong>Orders</strong>
-                <small>Progress tracking and status meanings</small>
+
+                <div>
+                    <strong>Orders</strong>
+
+                    <small>
+                        Progress tracking and status meanings
+                    </small>
+                </div>
             </article>
 
             <article>
                 <span aria-hidden="true">H</span>
-                <strong>History and Receipts</strong>
-                <small>Past records, receipts, and summaries</small>
+
+                <div>
+                    <strong>History and Receipts</strong>
+
+                    <small>
+                        Past records, receipts, and summaries
+                    </small>
+                </div>
             </article>
 
             <article>
                 <span aria-hidden="true">A</span>
-                <strong>Account Help</strong>
-                <small>Notifications, feedback, and password</small>
+
+                <div>
+                    <strong>Account Help</strong>
+
+                    <small>
+                        Notifications, feedback, and password
+                    </small>
+                </div>
             </article>
         </div>
     </section>
@@ -299,10 +556,10 @@
     .assistant-type {
         flex-shrink: 0;
         padding: 7px 12px;
-        border: 1px solid #bfdbfe;
+        border: 1px solid #fde68a;
         border-radius: 999px;
-        color: #1e3a8a;
-        background: #eff6ff;
+        color: #92400e;
+        background: #fffbeb;
         font-size: 10px;
         font-weight: 800;
     }
@@ -331,53 +588,53 @@
     }
 
     .assistant-avatar {
-    width: 62px;
-    height: 62px;
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 18px;
-    color: #111827;
-    background:
-        linear-gradient(
-            135deg,
-            #fbbf24,
-            #f59e0b
-        );
-    box-shadow:
-        0 10px 24px rgba(245, 158, 11, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
+        width: 62px;
+        height: 62px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border:
+            1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 18px;
+        color: #111827;
+        background:
+            linear-gradient(
+                135deg,
+                #fbbf24,
+                #f59e0b
+            );
+        box-shadow:
+            0 10px 24px rgba(245, 158, 11, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
 
-.assistant-avatar svg {
-    width: 32px;
-    height: 32px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
+    .assistant-avatar svg {
+        width: 32px;
+        height: 32px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
 
     .assistant-label {
-    display: block;
-    margin-bottom: 4px;
-    color: #fbbf24;
-    font-size: 9px;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
+        display: block;
+        margin-bottom: 4px;
+        color: #fbbf24;
+        font-size: 9px;
+        font-weight: 850;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
 
     .assistant-introduction h2 {
-    margin: 0 0 5px;
-    color: #ffffff;
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-}
+        margin: 0 0 5px;
+        color: white;
+        font-size: 21px;
+        font-weight: 800;
+    }
 
     .assistant-introduction p {
         max-width: 740px;
@@ -410,22 +667,350 @@
         overflow: hidden;
     }
 
-    .question-form {
-        padding: 22px;
+    .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 50px;
+        padding: 10px 18px;
         border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+    }
+
+    .chat-header-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chat-header strong {
+        color: #1f2937;
+        font-size: 12px;
+    }
+
+    .chat-ready-text {
+        margin-left: 4px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 500;
+    }
+
+    .online-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow:
+            0 0 0 3px rgba(16, 185, 129, 0.14);
+    }
+
+    .clear-conversation-form {
+        margin: 0;
+    }
+
+    .clear-conversation-button {
+        padding: 6px 10px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        color: #b91c1c;
+        background: #fef2f2;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    .clear-conversation-button:hover {
+        border-color: #dc2626;
+        color: white;
+        background: #dc2626;
+    }
+
+    .chat-window {
+        min-height: 390px;
+        max-height: 560px;
+        display: flex;
+        flex-direction: column;
+        gap: 19px;
+        overflow-y: auto;
+        padding: 24px;
+        background:
+            linear-gradient(
+                180deg,
+                #ffffff,
+                #fafafa
+            );
+        scroll-behavior: smooth;
+    }
+
+    .chat-exchange {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .chat-exchange + .chat-exchange {
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .chat-message {
+        display: flex;
+        gap: 11px;
+    }
+
+    .assistant-message {
+        align-items: flex-start;
+    }
+
+    .user-message {
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
+
+    .chat-avatar,
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        flex: 0 0 40px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    .chat-avatar {
+        color: #111827;
+        background:
+            linear-gradient(
+                135deg,
+                #fbbf24,
+                #f59e0b
+            );
+    }
+
+    .chat-avatar svg {
+        width: 21px;
+        height: 21px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .user-avatar {
+        color: white;
+        background: #334155;
+        font-size: 9px;
+        font-weight: 850;
+    }
+
+    .chat-message-content {
+        max-width: 82%;
+        min-width: 0;
+    }
+
+    .user-message .chat-message-content {
+        display: flex;
+        align-items: flex-end;
+        flex-direction: column;
+    }
+
+    .chat-sender {
+        display: block;
+        margin: 0 0 5px 4px;
+        color: #92400e;
+        font-size: 9px;
+        font-weight: 850;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .user-sender {
+        margin-right: 4px;
+        color: #64748b;
+        text-align: right;
+    }
+
+    .chat-time {
+        display: block;
+        margin-top: 5px;
+        color: #9ca3af;
+        font-size: 8px;
+    }
+
+    .user-message .chat-time {
+        margin-right: 4px;
+        text-align: right;
+    }
+
+    .chat-bubble {
+        padding: 15px 17px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px 18px 18px;
+        box-shadow:
+            0 5px 15px rgba(31, 41, 55, 0.045);
+    }
+
+    .assistant-bubble {
+        color: #374151;
+        background: white;
+    }
+
+    .user-bubble {
+        border-color: #1f2937;
+        border-radius: 18px 6px 18px 18px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #1f2937,
+                #334155
+            );
+    }
+
+    .chat-bubble h2 {
+        margin: 0 0 8px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .chat-bubble p {
+        margin: 0 0 9px;
+        font-size: 12px;
+        line-height: 1.62;
+    }
+
+    .user-bubble p {
+        margin: 0;
+        color: white;
+    }
+
+    .chat-bubble p:last-child {
+        margin-bottom: 0;
+    }
+
+    .chat-steps {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 11px;
+        background: #f8fafc;
+    }
+
+    .chat-steps > span {
+        display: block;
+        margin-bottom: 7px;
+        color: #64748b;
+        font-size: 8px;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .chat-steps ol {
+        margin: 0;
+        padding-left: 19px;
+        color: #374151;
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .chat-steps li + li {
+        margin-top: 4px;
+    }
+
+    .response-action {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 8px 13px;
+        border: 1px solid #f59e0b;
+        border-radius: 9px;
+        color: #111827;
+        background: #f59e0b;
+        font-size: 10px;
+        font-weight: 850;
+        text-decoration: none;
+    }
+
+    .response-action:hover {
+        border-color: #d97706;
+        color: white;
+        background: #d97706;
+    }
+
+    .fallback-note {
+        margin-top: 13px;
+        padding: 10px 12px;
+        border-radius: 9px;
+        color: #78350f;
+        background: #fffbeb;
+        font-size: 9px;
+        line-height: 1.5;
+    }
+
+    .typing-message {
+        display: none;
+    }
+
+    .typing-message.visible {
+        display: flex;
+    }
+
+    .typing-bubble {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 40px;
+        padding: 11px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px 16px 16px;
+        background: white;
+    }
+
+    .typing-bubble > span:not(.visually-hidden) {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #9ca3af;
+        animation:
+            typingPulse 1s infinite ease-in-out;
+    }
+
+    .typing-bubble > span:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+
+    .typing-bubble > span:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    @@keyframes typingPulse {
+        0%,
+        60%,
+        100% {
+            opacity: 0.35;
+            transform: translateY(0);
+        }
+
+        30% {
+            opacity: 1;
+            transform: translateY(-3px);
+        }
+    }
+
+    .question-form {
+        padding: 18px;
+        border-top: 1px solid #e5e7eb;
         background: #fffdf8;
     }
 
     .validation-summary.validation-summary-valid {
         display: none;
-    }
-
-    .question-label {
-        display: block;
-        margin-bottom: 7px;
-        color: #374151;
-        font-size: 12px;
-        font-weight: 800;
     }
 
     .question-input-row {
@@ -437,9 +1022,12 @@
     }
 
     .question-input {
-        min-height: 86px;
+        min-height: 58px;
+        max-height: 125px;
+        padding: 12px 14px;
         border-color: #d1d5db;
-        border-radius: 10px;
+        border-radius: 12px;
+        font-size: 12px;
         resize: vertical;
     }
 
@@ -450,12 +1038,17 @@
     }
 
     .ask-button {
-        min-width: 92px;
+        min-width: 94px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 15px;
         border: 1px solid #f59e0b;
-        border-radius: 10px;
+        border-radius: 12px;
         color: #111827;
         background: #f59e0b;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 850;
     }
 
@@ -463,6 +1056,23 @@
         border-color: #d97706;
         color: white;
         background: #d97706;
+    }
+
+    .ask-button:disabled {
+        border-color: #d1d5db;
+        color: #9ca3af;
+        background: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    .ask-button svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     .question-details {
@@ -477,152 +1087,6 @@
         flex-shrink: 0;
         color: #9ca3af;
         font-size: 9px;
-    }
-
-    .assistant-response,
-    .assistant-placeholder {
-        padding: 24px;
-    }
-
-    .response-heading {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .response-icon {
-        width: 38px;
-        height: 38px;
-        display: flex;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        border-radius: 11px;
-        color: white;
-        background: #2563eb;
-        font-size: 14px;
-        font-weight: 850;
-    }
-
-    .response-heading span {
-        display: block;
-        margin-bottom: 2px;
-        color: #2563eb;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-    }
-
-    .response-heading h2 {
-        margin: 0;
-        color: #111827;
-        font-size: 19px;
-        font-weight: 800;
-    }
-
-    .response-answer {
-        margin: 0;
-        color: #4b5563;
-        font-size: 13px;
-        line-height: 1.65;
-    }
-
-    .response-steps {
-        margin-top: 18px;
-        padding: 16px;
-        border-radius: 11px;
-        background: #f9fafb;
-    }
-
-    .response-steps > span {
-        display: block;
-        margin-bottom: 8px;
-        color: #6b7280;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-    }
-
-    .response-steps ol {
-        margin: 0;
-        padding-left: 20px;
-        color: #374151;
-        font-size: 11px;
-        line-height: 1.65;
-    }
-
-    .response-steps li + li {
-        margin-top: 4px;
-    }
-
-    .response-action {
-        min-height: 40px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 17px;
-        padding: 8px 14px;
-        border: 1px solid #2563eb;
-        border-radius: 9px;
-        color: white;
-        background: #2563eb;
-        font-size: 11px;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .response-action:hover {
-        border-color: #1d4ed8;
-        color: white;
-        background: #1d4ed8;
-    }
-
-    .fallback-note {
-        margin-top: 14px;
-        padding: 10px 12px;
-        border-radius: 9px;
-        color: #78350f;
-        background: #fffbeb;
-        font-size: 10px;
-    }
-
-    .assistant-placeholder {
-        padding-top: 48px;
-        padding-bottom: 48px;
-        text-align: center;
-    }
-
-    .placeholder-icon {
-        width: 54px;
-        height: 54px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 13px;
-        border-radius: 16px;
-        color: #92400e;
-        background: #fef3c7;
-        font-size: 22px;
-        font-weight: 850;
-    }
-
-    .assistant-placeholder h2 {
-        margin: 0 0 6px;
-        color: #111827;
-        font-size: 17px;
-        font-weight: 800;
-    }
-
-    .assistant-placeholder p {
-        max-width: 430px;
-        margin: 0 auto;
-        color: #6b7280;
-        font-size: 11px;
-        line-height: 1.55;
     }
 
     .suggestions-panel {
@@ -657,41 +1121,64 @@
     }
 
     .suggested-question {
-        display: flex;
-        align-items: center;
+        display: grid;
+        grid-template-columns:
+            28px minmax(0, 1fr) auto;
         gap: 9px;
+        align-items: center;
         width: 100%;
-        padding: 10px 11px;
+        padding: 10px;
         border: 1px solid #e5e7eb;
-        border-radius: 9px;
+        border-radius: 10px;
         color: #374151;
         background: #f9fafb;
-        font-size: 10px;
-        font-weight: 700;
         text-align: left;
+        cursor: pointer;
     }
 
     .suggested-question:hover {
         border-color: #f59e0b;
         color: #92400e;
         background: #fff7ed;
+        transform: translateX(2px);
     }
 
-    .suggested-question span {
-        width: 20px;
-        height: 20px;
+    .suggested-question-icon {
+        width: 28px;
+        height: 28px;
         display: flex;
-        flex-shrink: 0;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
+        border-radius: 9px;
         color: #92400e;
         background: #fef3c7;
-        font-size: 9px;
-        font-weight: 850;
+    }
+
+    .suggested-question-icon svg {
+        width: 15px;
+        height: 15px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .suggested-question-text {
+        font-size: 10px;
+        font-weight: 750;
+        line-height: 1.4;
+    }
+
+    .suggested-question-arrow {
+        color: #9ca3af;
+        font-size: 13px;
     }
 
     .assistant-boundary {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
         margin-top: 17px;
         padding: 13px;
         border-radius: 10px;
@@ -699,10 +1186,24 @@
         background: #eff6ff;
     }
 
+    .boundary-icon {
+        width: 22px;
+        height: 22px;
+        display: flex;
+        flex: 0 0 22px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #2563eb;
+        font-size: 10px;
+        font-weight: 850;
+    }
+
     .assistant-boundary strong {
         display: block;
         margin-bottom: 3px;
-        font-size: 11px;
+        font-size: 10px;
     }
 
     .assistant-boundary p {
@@ -735,11 +1236,10 @@
     }
 
     .topic-grid article {
-        display: grid;
-        grid-template-columns:
-            34px minmax(0, 1fr);
-        gap: 3px 10px;
+        display: flex;
         align-items: center;
+        gap: 10px;
+        min-width: 0;
         padding: 12px;
         border-radius: 10px;
         background: #f9fafb;
@@ -749,7 +1249,7 @@
         width: 34px;
         height: 34px;
         display: flex;
-        grid-row: 1 / 3;
+        flex: 0 0 34px;
         align-items: center;
         justify-content: center;
         border-radius: 10px;
@@ -759,7 +1259,17 @@
         font-weight: 850;
     }
 
+    .topic-grid article > div {
+        min-width: 0;
+    }
+
+    .topic-grid strong,
+    .topic-grid small {
+        display: block;
+    }
+
     .topic-grid strong {
+        margin-bottom: 2px;
         color: #1f2937;
         font-size: 11px;
     }
@@ -768,6 +1278,13 @@
         color: #6b7280;
         font-size: 9px;
         line-height: 1.4;
+    }
+
+    .conversation-modal {
+        border: 0;
+        border-radius: 16px;
+        box-shadow:
+            0 18px 50px rgba(31, 41, 55, 0.18);
     }
 
     @@media (max-width: 920px) {
@@ -795,12 +1312,32 @@
             align-items: flex-start;
         }
 
+        .chat-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .chat-window {
+            min-height: 340px;
+            padding: 18px;
+        }
+
+        .chat-message-content {
+            max-width: 88%;
+        }
+
         .question-input-row {
             grid-template-columns: 1fr;
         }
 
-        .ask-button {
+        .ask-button,
+        .clear-conversation-button {
+            width: 100%;
             min-height: 42px;
+        }
+
+        .clear-conversation-form {
+            width: 100%;
         }
 
         .topic-grid {
@@ -822,6 +1359,27 @@
         .question-details {
             flex-direction: column;
         }
+
+        .chat-avatar,
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            flex-basis: 34px;
+        }
+
+        .chat-message-content {
+            max-width: calc(100% - 45px);
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .typing-bubble > span:not(.visually-hidden) {
+            animation: none;
+        }
+
+        .chat-window {
+            scroll-behavior: auto;
+        }
     }
 </style>
 
@@ -831,12 +1389,37 @@
     <script>
         (function () {
             const question =
-                document.getElementById("Question");
+                document.getElementById(
+                    "Question"
+                );
+
+            const questionForm =
+                document.getElementById(
+                    "questionForm"
+                );
+
+            const askButton =
+                document.getElementById(
+                    "askButton"
+                );
 
             const questionCharacterCount =
                 document.getElementById(
                     "questionCharacterCount"
                 );
+
+            const typingIndicator =
+                document.getElementById(
+                    "typingIndicator"
+                );
+
+            const chatWindow =
+                document.getElementById(
+                    "chatWindow"
+                );
+
+            let submitting =
+                false;
 
             function updateQuestionCount() {
                 if (!question ||
@@ -848,9 +1431,78 @@
                     question.value.length.toString();
             }
 
+            function scrollChatToBottom() {
+                if (!chatWindow) {
+                    return;
+                }
+
+                chatWindow.scrollTop =
+                    chatWindow.scrollHeight;
+            }
+
+            function beginSubmission() {
+                if (submitting ||
+                    !questionForm ||
+                    !question ||
+                    !askButton) {
+                    return;
+                }
+
+                if (!questionForm.checkValidity() ||
+                    !question.value.trim()) {
+                    questionForm.reportValidity();
+                    return;
+                }
+
+                submitting =
+                    true;
+
+                typingIndicator?.classList.add(
+                    "visible"
+                );
+
+                askButton.disabled =
+                    true;
+
+                askButton.innerHTML =
+                    "<span>Sending...</span>";
+
+                scrollChatToBottom();
+
+                window.setTimeout(
+                    function () {
+                        questionForm.submit();
+                    },
+                    550
+                );
+            }
+
             question?.addEventListener(
                 "input",
                 updateQuestionCount
+            );
+
+            question?.addEventListener(
+                "keydown",
+                function (event) {
+                    if (event.key === "Enter" &&
+                        !event.shiftKey) {
+                        event.preventDefault();
+                        beginSubmission();
+                    }
+                }
+            );
+
+            questionForm?.addEventListener(
+                "submit",
+                function (event) {
+                    if (submitting) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    beginSubmission();
+                }
             );
 
             document
@@ -861,7 +1513,8 @@
                     button.addEventListener(
                         "click",
                         function () {
-                            if (!question) {
+                            if (!question ||
+                                submitting) {
                                 return;
                             }
 
@@ -871,12 +1524,21 @@
                                 ) ?? "";
 
                             updateQuestionCount();
-                            question.focus();
+                            beginSubmission();
                         }
                     );
                 });
 
-            updateQuestionCount();
+            if (question) {
+                question.value =
+                    "";
+
+                updateQuestionCount();
+            }
+
+            window.requestAnimationFrame(
+                scrollChatToBottom
+            );
         })();
     </script>
 }

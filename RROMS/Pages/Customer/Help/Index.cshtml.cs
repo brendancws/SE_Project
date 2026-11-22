@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -7,6 +8,15 @@ namespace RROMS.Pages.Customer.Help
     // Protected by the CustomerOnly folder convention in Program.cs.
     public class IndexModel : PageModel
     {
+        private const string ConversationSessionKey =
+            "Customer.Help.Conversation";
+
+        private const int MaximumConversationEntries = 10;
+
+        private static readonly JsonSerializerOptions
+            ConversationJsonOptions =
+                new(JsonSerializerDefaults.Web);
+
         private static readonly IReadOnlyList<ChatbotRule>
             Rules = BuildRules();
 
@@ -18,14 +28,17 @@ namespace RROMS.Pages.Customer.Help
             300,
             ErrorMessage =
                 "Your question cannot exceed 300 characters.")]
-        public string Question { get; set; } =
-            string.Empty;
+        public string Question { get; set; }
+            = string.Empty;
 
-        public ChatbotResponse? BotResponse
+        public List<ConversationEntry> Conversation
         {
             get;
             private set;
-        }
+        } = new();
+
+        public bool HasConversation =>
+            Conversation.Count > 0;
 
         public IReadOnlyList<string> SuggestedQuestions
         {
@@ -42,11 +55,17 @@ namespace RROMS.Pages.Customer.Help
 
         public void OnGet()
         {
+            Conversation =
+                LoadConversation();
         }
 
         public IActionResult OnPost()
         {
-            if (string.IsNullOrWhiteSpace(Question))
+            Conversation =
+                LoadConversation();
+
+            if (string.IsNullOrWhiteSpace(
+                Question))
             {
                 ModelState.AddModelError(
                     nameof(Question),
@@ -58,11 +77,104 @@ namespace RROMS.Pages.Customer.Help
                 return Page();
             }
 
-            Question = Question.Trim();
+            string submittedQuestion =
+                Question.Trim();
 
-            BotResponse = FindResponse(Question);
+            ChatbotResponse response =
+                FindResponse(
+                    submittedQuestion);
 
-            return Page();
+            Conversation.Add(
+                new ConversationEntry
+                {
+                    Question =
+                        submittedQuestion,
+
+                    Response =
+                        response,
+
+                    CreatedAt =
+                        DateTime.Now
+                });
+
+            if (Conversation.Count >
+                MaximumConversationEntries)
+            {
+                Conversation =
+                    Conversation
+                        .Skip(
+                            Conversation.Count -
+                            MaximumConversationEntries)
+                        .ToList();
+            }
+
+            SaveConversation(
+                Conversation);
+
+            /*
+             * Redirect after saving so refreshing the browser does
+             * not submit the previous question again.
+             */
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostClear()
+        {
+            HttpContext.Session.Remove(
+                ConversationSessionKey);
+
+            return RedirectToPage();
+        }
+
+        private List<ConversationEntry>
+            LoadConversation()
+        {
+            string? conversationJson =
+                HttpContext.Session.GetString(
+                    ConversationSessionKey);
+
+            if (string.IsNullOrWhiteSpace(
+                conversationJson))
+            {
+                return new List<ConversationEntry>();
+            }
+
+            try
+            {
+                List<ConversationEntry>? conversation =
+                    JsonSerializer.Deserialize<
+                        List<ConversationEntry>>(
+                        conversationJson,
+                        ConversationJsonOptions);
+
+                return conversation ??
+                    new List<ConversationEntry>();
+            }
+            catch (JsonException)
+            {
+                /*
+                 * Remove only malformed Help history. The cart and
+                 * all other session data remain untouched.
+                 */
+                HttpContext.Session.Remove(
+                    ConversationSessionKey);
+
+                return new List<ConversationEntry>();
+            }
+        }
+
+        private void SaveConversation(
+            IReadOnlyList<ConversationEntry>
+                conversation)
+        {
+            string conversationJson =
+                JsonSerializer.Serialize(
+                    conversation,
+                    ConversationJsonOptions);
+
+            HttpContext.Session.SetString(
+                ConversationSessionKey,
+                conversationJson);
         }
 
         private static ChatbotResponse FindResponse(
@@ -76,9 +188,11 @@ namespace RROMS.Pages.Customer.Help
                     .Select(rule => new
                     {
                         Rule = rule,
-                        Score = CalculateScore(
-                            normalizedQuestion,
-                            rule)
+
+                        Score =
+                            CalculateScore(
+                                normalizedQuestion,
+                                rule)
                     })
                     .Where(result =>
                         result.Score > 0)
@@ -109,7 +223,7 @@ namespace RROMS.Pages.Customer.Help
 
                     Steps = new[]
                     {
-                        "Use one of the suggested questions below.",
+                        "Use one of the suggested questions.",
                         "Keep the question short and mention the feature you need help with.",
                         "Use the Customer sidebar if you already know which page you need."
                     }
@@ -144,7 +258,8 @@ namespace RROMS.Pages.Customer.Help
         {
             int score = 0;
 
-            foreach (string phrase in rule.Phrases)
+            foreach (string phrase in
+                rule.Phrases)
             {
                 string normalizedPhrase =
                     Normalize(phrase);
@@ -166,7 +281,8 @@ namespace RROMS.Pages.Customer.Help
                 }
             }
 
-            foreach (string keyword in rule.Keywords)
+            foreach (string keyword in
+                rule.Keywords)
             {
                 string normalizedKeyword =
                     Normalize(keyword);
@@ -208,8 +324,10 @@ namespace RROMS.Pages.Customer.Help
             char[] characters =
                 normalized
                     .Select(character =>
-                        char.IsLetterOrDigit(character) ||
-                        char.IsWhiteSpace(character)
+                        char.IsLetterOrDigit(
+                            character) ||
+                        char.IsWhiteSpace(
+                            character)
                             ? character
                             : ' ')
                     .ToArray();
@@ -329,32 +447,32 @@ namespace RROMS.Pages.Customer.Help
                 new()
                 {
                     Intent =
-    "CancelReservation",
+                        "CancelReservation",
 
-Priority =
-    70,
+                    Priority =
+                        70,
 
-Phrases = new[]
-{
-    "how do i cancel my booking",
-    "how can i cancel my booking",
-    "how do i cancel my reservation",
-    "how can i cancel my reservation",
-    "cancel my booking",
-    "cancel my reservation",
-    "cancel a booking",
-    "cancel a reservation",
-    "remove my reservation",
-    "cancel table booking",
-    "booking cancellation",
-    "reservation cancellation"
-},
+                    Phrases = new[]
+                    {
+                        "how do i cancel my booking",
+                        "how can i cancel my booking",
+                        "how do i cancel my reservation",
+                        "how can i cancel my reservation",
+                        "cancel my booking",
+                        "cancel my reservation",
+                        "cancel a booking",
+                        "cancel a reservation",
+                        "remove my reservation",
+                        "cancel table booking",
+                        "booking cancellation",
+                        "reservation cancellation"
+                    },
 
-Keywords = new[]
-{
-    "cancel",
-    "cancellation"
-},
+                    Keywords = new[]
+                    {
+                        "cancel",
+                        "cancellation"
+                    },
 
                     Title =
                         "Cancel a reservation",
@@ -432,37 +550,37 @@ Keywords = new[]
                 new()
                 {
                     Intent =
-    "ReservationDuration",
+                        "ReservationDuration",
 
-Priority =
-    55,
+                    Priority =
+                        55,
 
-Phrases = new[]
-{
-    "how long is my booking",
-    "how long is my reservation",
-    "how long is the booking",
-    "how long is the reservation",
-    "how long is reservation",
-    "how long is booking",
-    "reservation duration",
-    "booking duration",
-    "two hour slot",
-    "two hours",
-    "dining slot",
-    "reservation time limit",
-    "booking time limit"
-},
+                    Phrases = new[]
+                    {
+                        "how long is my booking",
+                        "how long is my reservation",
+                        "how long is the booking",
+                        "how long is the reservation",
+                        "how long is reservation",
+                        "how long is booking",
+                        "reservation duration",
+                        "booking duration",
+                        "two hour slot",
+                        "two hours",
+                        "dining slot",
+                        "reservation time limit",
+                        "booking time limit"
+                    },
 
-Keywords = new[]
-{
-    "duration",
-    "hours",
-    "hour",
-    "slot",
-    "long",
-    "limit"
-},
+                    Keywords = new[]
+                    {
+                        "duration",
+                        "hours",
+                        "hour",
+                        "slot",
+                        "long",
+                        "limit"
+                    },
 
                     Title =
                         "Reservation duration",
@@ -636,60 +754,61 @@ Keywords = new[]
                 },
 
                 new()
-{
-    Intent =
-        "CardPaymentDeclined",
+                {
+                    Intent =
+                        "CardPaymentDeclined",
 
-    Priority =
-        60,
+                    Priority =
+                        60,
 
-    Phrases = new[]
-    {
-        "card payment was declined",
-        "card payment declined",
-        "payment was declined",
-        "payment declined",
-        "card was declined",
-        "card declined",
-        "card payment failed",
-        "payment failed",
-        "cannot pay by card",
-        "card not working"
-    },
+                    Phrases = new[]
+                    {
+                        "card payment was declined",
+                        "card payment declined",
+                        "payment was declined",
+                        "payment declined",
+                        "card was declined",
+                        "card declined",
+                        "card payment failed",
+                        "payment failed",
+                        "cannot pay by card",
+                        "card not working"
+                    },
 
-    Keywords = new[]
-    {
-        "card",
-        "payment",
-        "declined",
-        "failed"
-    },
+                    Keywords = new[]
+                    {
+                        "card",
+                        "payment",
+                        "declined",
+                        "failed"
+                    },
 
-    Title =
-        "Card payment was declined",
+                    Title =
+                        "Card payment was declined",
 
-    Answer =
-    "A declined simulated Card payment does not create an " +
-    "order or payment record, and the payment attempt does " +
-    "not clear the cart. Check the entered card number and " +
-    "try again. In Dineflow's simulation, a card number " +
-    "ending in 0000 is always declined.",
+                    Answer =
+                        "A declined simulated Card payment does not " +
+                        "create an order or payment record, and the " +
+                        "payment attempt does not clear the cart. " +
+                        "Check the entered card number and try again. " +
+                        "In Dineflow's simulation, a card number " +
+                        "ending in 0000 is always declined.",
 
-    Steps = new[]
-    {
-        "Stay on the Payment page.",
-        "Check that the card number was entered correctly.",
-        "Use a simulated card number that does not end in 0000.",
-        "Submit the Card payment again, or choose Cash on Arrival.",
-        "If you leave the page, return through Cart and Checkout."
-    },
+                    Steps = new[]
+                    {
+                        "Stay on the Payment page.",
+                        "Check that the card number was entered correctly.",
+                        "Use a simulated card number that does not end in 0000.",
+                        "Submit the Card payment again, or choose Cash on Arrival.",
+                        "If you leave the page, return through Cart and Checkout."
+                    },
 
-    ActionText =
-        "Return to My Cart",
+                    ActionText =
+                        "Return to My Cart",
 
-    ActionPage =
-        "/Customer/Cart/Index"
-},
+                    ActionPage =
+                        "/Customer/Cart/Index"
+                },
 
                 new()
                 {
@@ -700,22 +819,21 @@ Keywords = new[]
                         30,
 
                     Phrases = new[]
-{
-    "pay by card",
-    "card payment",
-    "online payment",
-    "how does card payment work",
-    "can i use a card"
-},
-
+                    {
+                        "pay by card",
+                        "card payment",
+                        "online payment",
+                        "how does card payment work",
+                        "can i use a card"
+                    },
 
                     Keywords = new[]
-{
-    "card",
-    "pay",
-    "payment",
-    "online"
-},
+                    {
+                        "card",
+                        "pay",
+                        "payment",
+                        "online"
+                    },
 
                     Title =
                         "Card payment",
@@ -1142,10 +1260,21 @@ Keywords = new[]
             };
         }
 
+        public sealed class ConversationEntry
+        {
+            public string Question { get; set; }
+                = string.Empty;
+
+            public ChatbotResponse Response { get; set; }
+                = new();
+
+            public DateTime CreatedAt { get; set; }
+        }
+
         public sealed class ChatbotRule
         {
-            public string Intent { get; init; } =
-                string.Empty;
+            public string Intent { get; init; }
+                = string.Empty;
 
             public int Priority { get; init; }
 
@@ -1161,11 +1290,11 @@ Keywords = new[]
                 init;
             } = Array.Empty<string>();
 
-            public string Title { get; init; } =
-                string.Empty;
+            public string Title { get; init; }
+                = string.Empty;
 
-            public string Answer { get; init; } =
-                string.Empty;
+            public string Answer { get; init; }
+                = string.Empty;
 
             public IReadOnlyList<string> Steps
             {
@@ -1180,24 +1309,24 @@ Keywords = new[]
 
         public sealed class ChatbotResponse
         {
-            public string Intent { get; init; } =
-                string.Empty;
+            public string Intent { get; set; }
+                = string.Empty;
 
-            public string Title { get; init; } =
-                string.Empty;
+            public string Title { get; set; }
+                = string.Empty;
 
-            public string Answer { get; init; } =
-                string.Empty;
+            public string Answer { get; set; }
+                = string.Empty;
 
             public IReadOnlyList<string> Steps
             {
                 get;
-                init;
+                set;
             } = Array.Empty<string>();
 
-            public string? ActionText { get; init; }
+            public string? ActionText { get; set; }
 
-            public string? ActionPage { get; init; }
+            public string? ActionPage { get; set; }
         }
     }
 }
