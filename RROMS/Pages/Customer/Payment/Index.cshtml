@@ -11,7 +11,17 @@
             CultureInfo.InvariantCulture);
 
     int totalQuantity =
-        Model.Lines.Sum(line => line.Quantity);
+        Model.Lines.Sum(line =>
+            line.Quantity);
+
+    string reservationTime =
+        Model.SelectedReservation == null
+            ? string.Empty
+            : DateTime.Today
+                .Add(Model.SelectedReservation.Time)
+                .ToString(
+                    "h:mm tt",
+                    CultureInfo.InvariantCulture);
 }
 
 <div class="payment-page">
@@ -386,9 +396,8 @@
                             </strong>
 
                             <span>
-                                @Model.SelectedReservation.Time.ToString(
-                                    @"hh\:mm")
-                            </span>
+    @reservationTime
+</span>
                         </div>
                     </div>
 

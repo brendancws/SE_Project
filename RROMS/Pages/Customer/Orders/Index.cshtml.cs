@@ -36,6 +36,15 @@ namespace RROMS.Pages.Customer.Orders
 
             public DateTime? OrderDate { get; set; }
 
+            public string OrderDateText { get; set; }
+                = "Date not recorded";
+
+            public string OrderDateOnlyText { get; set; }
+                = "-";
+
+            public string OrderTimeText { get; set; }
+                = "-";
+
             public string Status { get; set; }
                 = "Pending";
 
@@ -135,8 +144,8 @@ namespace RROMS.Pages.Customer.Orders
                         order.CustomerID == customerId);
 
             /*
-             * The summary cards are calculated from the customer's
-             * complete order dataset before pagination is applied.
+             * Calculate the overview cards from the customer's
+             * complete order dataset before applying pagination.
              */
             TotalOrders =
                 await ownedOrders.CountAsync();
@@ -151,9 +160,8 @@ namespace RROMS.Pages.Customer.Orders
                     order.Status == "Completed");
 
             /*
-             * Paid Orders follows the existing page behavior:
-             * an order is counted as Paid when its most recent
-             * payment attempt has Paid status.
+             * Count an order as paid when its latest payment record
+             * has Paid status.
              */
             List<int> allOwnedOrderIds =
                 await ownedOrders
@@ -163,7 +171,7 @@ namespace RROMS.Pages.Customer.Orders
 
             if (allOwnedOrderIds.Count > 0)
             {
-                var paymentSummaries =
+                var latestPaymentSummaries =
                     await _context.Payments
                         .AsNoTracking()
                         .Where(payment =>
@@ -183,7 +191,7 @@ namespace RROMS.Pages.Customer.Orders
                         .ToListAsync();
 
                 List<int> latestPaymentIds =
-                    paymentSummaries
+                    latestPaymentSummaries
                         .Select(summary =>
                             summary.LatestPaymentID)
                         .ToList();
@@ -213,8 +221,8 @@ namespace RROMS.Pages.Customer.Orders
                 TotalPages);
 
             /*
-             * Only the five orders displayed on the current page
-             * are loaded with reservation and table information.
+             * Load only the five orders displayed on the current
+             * page, together with reservation and table data.
              */
             var pagedOrders =
                 await ownedOrders
@@ -245,8 +253,8 @@ namespace RROMS.Pages.Customer.Orders
             }
 
             /*
-             * Load line items only for the five orders displayed
-             * on this page.
+             * Load line items only for the orders displayed on the
+             * current page.
              */
             var displayedItems =
                 await _context.OrderItems
@@ -259,8 +267,8 @@ namespace RROMS.Pages.Customer.Orders
                     .ToListAsync();
 
             /*
-             * Load payment attempts only for displayed orders,
-             * then select the newest attempt per order.
+             * Load payment attempts only for displayed orders, then
+             * use the highest PaymentID as the newest attempt.
              */
             var displayedPayments =
                 await _context.Payments
@@ -286,13 +294,56 @@ namespace RROMS.Pages.Customer.Orders
             Orders =
                 pagedOrders
                     .Select(order =>
-                        new OrderView
+                    {
+                        string orderDateText =
+                            order.OrderDate?.ToString(
+                                "dd MMM yyyy, h:mm tt")
+                            ?? "Date not recorded";
+
+                        string orderDateOnlyText =
+                            order.OrderDate?.ToString(
+                                "dd MMM yyyy")
+                            ?? "-";
+
+                        string orderTimeText =
+                            order.OrderDate?.ToString(
+                                "h:mm tt")
+                            ?? "-";
+
+                        string bookingText =
+                            "-";
+
+                        if (order.Reservation != null)
+                        {
+                            string reservationTime =
+                                DateTime.Today
+                                    .Add(
+                                        order.Reservation.Time)
+                                    .ToString("h:mm tt");
+
+                            bookingText =
+                                $"{order.Reservation.Date:dd MMM yyyy} " +
+                                $"at {reservationTime} - " +
+                                $"Table " +
+                                $"{order.Reservation.Table?.TableNumber ?? "-"}";
+                        }
+
+                        return new OrderView
                         {
                             OrderID =
                                 order.OrderID,
 
                             OrderDate =
                                 order.OrderDate,
+
+                            OrderDateText =
+                                orderDateText,
+
+                            OrderDateOnlyText =
+                                orderDateOnlyText,
+
+                            OrderTimeText =
+                                orderTimeText,
 
                             Status =
                                 order.Status ?? "Pending",
@@ -301,12 +352,7 @@ namespace RROMS.Pages.Customer.Orders
                                 order.TotalAmount ?? 0m,
 
                             BookingText =
-                                order.Reservation == null
-                                    ? "-"
-                                    : $"{order.Reservation.Date:dd MMM yyyy} " +
-                                      $"at {order.Reservation.Time:hh\\:mm} - " +
-                                      $"Table " +
-                                      $"{order.Reservation.Table?.TableNumber ?? "-"}",
+                                bookingText,
 
                             PaymentStatus =
                                 latestPaymentByOrder.TryGetValue(
@@ -337,7 +383,8 @@ namespace RROMS.Pages.Customer.Orders
                                                 item.Subtotal
                                         })
                                     .ToList()
-                        })
+                        };
+                    })
                     .ToList();
         }
 
@@ -348,7 +395,9 @@ namespace RROMS.Pages.Customer.Orders
                     ClaimTypes.NameIdentifier);
 
             return
-                int.TryParse(idValue, out int id) &&
+                int.TryParse(
+                    idValue,
+                    out int id) &&
                 id > 0
                     ? id
                     : null;

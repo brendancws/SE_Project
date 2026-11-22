@@ -171,9 +171,14 @@ namespace RROMS.Pages.Customer.Reservations
 
             await transaction.CommitAsync();
 
+            string reservationTime =
+    DateTime.Today
+        .Add(time)
+        .ToString("h:mm tt");
+
             StatusMessage =
                 $"Reservation made for table {table.TableNumber} " +
-                $"on {date:dd MMM yyyy} at {time:hh\\:mm}. " +
+                $"on {date:dd MMM yyyy} at {reservationTime}. " +
                 "It is pending confirmation.";
 
             return RedirectToPage(

@@ -273,6 +273,11 @@
                             _ => "text-muted"
                         };
 
+                    string reservationTime =
+                        DateTime.Today
+                            .Add(reservation.Time)
+                            .ToString("h:mm tt");
+
                     <article class="reservation-card"
                              data-reservation-id="@reservation.ReservationID"
                              data-current-status="@status">
@@ -322,7 +327,7 @@
                                     </span>
 
                                     <strong>
-                                        @reservation.Time.ToString(@"hh\:mm")
+                                        @reservationTime
                                     </strong>
                                 </div>
 
@@ -439,8 +444,7 @@
                                             @reservation.Date.ToString(
                                                 "dd MMM yyyy")
                                             at
-                                            @reservation.Time.ToString(
-                                                @"hh\:mm")?
+                                            @reservationTime?
                                         </div>
 
                                         <div class="modal-footer">

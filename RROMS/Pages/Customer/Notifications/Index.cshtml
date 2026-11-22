@@ -212,12 +212,16 @@
 
             <div class="notification-list">
                 @foreach (var notification in Model.Notifications)
-                {
-                    bool isUnread =
-                        notification.IsRead != true;
+{
+    bool isUnread =
+        notification.IsRead != true;
 
-                    string message =
-                        notification.Message ?? string.Empty;
+    string createdTime =
+        notification.CreatedAt?.ToString("h:mm tt")
+        ?? "--:--";
+
+    string message =
+        notification.Message ?? string.Empty;
 
                     string messageLower =
                         message.ToLowerInvariant();
@@ -328,10 +332,8 @@
                                 <span aria-hidden="true">•</span>
 
                                 <span>
-                                    @(notification.CreatedAt?.ToString(
-                                        "HH:mm")
-                                        ?? "--:--")
-                                </span>
+    @createdTime
+</span>
 
                                 <span aria-hidden="true">•</span>
 

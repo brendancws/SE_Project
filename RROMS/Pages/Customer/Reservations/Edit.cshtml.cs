@@ -198,10 +198,15 @@ namespace RROMS.Pages.Customer.Reservations
 
             await _context.SaveChangesAsync();
 
+            string reservationTime =
+    DateTime.Today
+        .Add(time)
+        .ToString("h:mm tt");
+
             TempData["StatusMessage"] =
                 $"Reservation updated: table {table.TableNumber} " +
-$"on {date:dd MMM yyyy} at {time:hh\\:mm}. " +
-"It is pending confirmation.";
+                $"on {date:dd MMM yyyy} at {reservationTime}. " +
+                "It is pending confirmation.";
 
             return RedirectToPage("/Customer/Reservations/Index");
         }

@@ -1,6 +1,7 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.History.IndexModel
+
 @{
     ViewData["Title"] = "History";
 
@@ -50,7 +51,8 @@
     <nav class="history-tabs"
          aria-label="History categories">
 
-        <a class="history-tab @(Model.Tab == "reservations" ? "active" : "")"
+        <a class="history-tab
+                  @(Model.Tab == "reservations" ? "active" : "")"
            asp-page="/Customer/History/Index"
            asp-route-tab="reservations"
            asp-route-from="@Model.FromText"
@@ -67,7 +69,8 @@
             </span>
         </a>
 
-        <a class="history-tab @(Model.Tab == "orders" ? "active" : "")"
+        <a class="history-tab
+                  @(Model.Tab == "orders" ? "active" : "")"
            asp-page="/Customer/History/Index"
            asp-route-tab="orders"
            asp-route-from="@Model.FromText"
@@ -84,7 +87,8 @@
             </span>
         </a>
 
-        <a class="history-tab @(Model.Tab == "payments" ? "active" : "")"
+        <a class="history-tab
+                  @(Model.Tab == "payments" ? "active" : "")"
            asp-page="/Customer/History/Index"
            asp-route-tab="payments"
            asp-route-from="@Model.FromText"
@@ -110,7 +114,6 @@
                 </span>
 
                 <h2>@activeTabTitle</h2>
-
                 <p>@activeTabDescription</p>
             </div>
 
@@ -118,7 +121,9 @@
             {
                 <span class="history-record-count">
                     @Model.TotalCount
-                    @(Model.TotalCount == 1 ? "record" : "records")
+                    @(Model.TotalCount == 1
+                        ? "record"
+                        : "records")
                 </span>
             }
         </div>
@@ -183,6 +188,7 @@
         <section class="history-empty-state">
             <div class="history-empty-icon"
                  aria-hidden="true">
+
                 @switch (Model.Tab)
                 {
                     case "orders":
@@ -226,13 +232,21 @@
                             row.Status ?? "Pending";
 
                         string reservationStatusClass =
-                            reservationStatus.ToLowerInvariant() switch
-                            {
-                                "confirmed" => "confirmed",
-                                "cancelled" => "cancelled",
-                                "pending" => "pending",
-                                _ => "other"
-                            };
+                            reservationStatus
+                                .ToLowerInvariant() switch
+                                {
+                                    "confirmed" => "confirmed",
+                                    "cancelled" => "cancelled",
+                                    "pending" => "pending",
+                                    _ => "other"
+                                };
+
+                        string reservationTime =
+                            DateTime.Today
+                                .Add(row.Time)
+                                .ToString(
+                                    "h:mm tt",
+                                    CultureInfo.InvariantCulture);
 
                         <article class="history-record-card">
                             <div class="history-date-block">
@@ -262,7 +276,8 @@
                                         </h3>
                                     </div>
 
-                                    <span class="history-status-pill @reservationStatusClass">
+                                    <span class="history-status-pill
+                                                 @reservationStatusClass">
                                         @reservationStatus
                                     </span>
                                 </div>
@@ -270,9 +285,7 @@
                                 <div class="history-detail-grid">
                                     <div class="history-detail">
                                         <span>Time</span>
-                                        <strong>
-                                            @row.Time.ToString(@"hh\:mm")
-                                        </strong>
+                                        <strong>@reservationTime</strong>
                                     </div>
 
                                     <div class="history-detail">
@@ -304,16 +317,23 @@
                             row.Status ?? "Pending";
 
                         string orderStatusClass =
-                            orderStatus.ToLowerInvariant() switch
-                            {
-                                "completed" => "completed",
-                                "cancelled" => "cancelled",
-                                "preparing" => "preparing",
-                                "ready to serve" => "ready",
-                                "served" => "served",
-                                "pending" => "pending",
-                                _ => "other"
-                            };
+                            orderStatus
+                                .ToLowerInvariant() switch
+                                {
+                                    "completed" => "completed",
+                                    "cancelled" => "cancelled",
+                                    "preparing" => "preparing",
+                                    "ready to serve" => "ready",
+                                    "served" => "served",
+                                    "pending" => "pending",
+                                    _ => "other"
+                                };
+
+                        string orderDateText =
+                            row.OrderDate?.ToString(
+                                "dd MMM yyyy, h:mm tt",
+                                CultureInfo.InvariantCulture)
+                            ?? "Not recorded";
 
                         <article class="history-record-card order-record">
                             <div class="history-reference-block">
@@ -328,10 +348,13 @@
                                             Food Order
                                         </span>
 
-                                        <h3>Order #@row.OrderID</h3>
+                                        <h3>
+                                            Order #@row.OrderID
+                                        </h3>
                                     </div>
 
-                                    <span class="history-status-pill @orderStatusClass">
+                                    <span class="history-status-pill
+                                                 @orderStatusClass">
                                         @orderStatus
                                     </span>
                                 </div>
@@ -341,9 +364,7 @@
                                         <span>Order Date</span>
 
                                         <strong>
-                                            @(row.OrderDate?.ToString(
-                                                "dd MMM yyyy, HH:mm")
-                                                ?? "Not recorded")
+                                            @orderDateText
                                         </strong>
                                     </div>
 
@@ -376,17 +397,26 @@
                             row.Status ?? "Pending";
 
                         string paymentStatusClass =
-                            paymentStatus.ToLowerInvariant() switch
-                            {
-                                "paid" => "paid",
-                                "failed" => "failed",
-                                "cancelled" => "cancelled",
-                                "pending" => "pending",
-                                _ => "other"
-                            };
+                            paymentStatus
+                                .ToLowerInvariant() switch
+                                {
+                                    "paid" => "paid",
+                                    "failed" => "failed",
+                                    "cancelled" => "cancelled",
+                                    "pending" => "pending",
+                                    _ => "other"
+                                };
+
+                        string paymentDateText =
+                            row.PaymentDate?.ToString(
+                                "dd MMM yyyy, h:mm tt",
+                                CultureInfo.InvariantCulture)
+                            ?? "Not recorded";
 
                         <article class="history-record-card payment-record">
-                            <div class="history-reference-block payment-reference">
+                            <div class="history-reference-block
+                                        payment-reference">
+
                                 <span>Payment</span>
                                 <strong>#@row.PaymentID</strong>
                             </div>
@@ -398,15 +428,20 @@
                                             Payment Transaction
                                         </span>
 
-                                        <h3>Payment #@row.PaymentID</h3>
+                                        <h3>
+                                            Payment #@row.PaymentID
+                                        </h3>
                                     </div>
 
-                                    <span class="history-status-pill @paymentStatusClass">
+                                    <span class="history-status-pill
+                                                 @paymentStatusClass">
                                         @paymentStatus
                                     </span>
                                 </div>
 
-                                <div class="history-detail-grid payment-details">
+                                <div class="history-detail-grid
+                                            payment-details">
+
                                     <div class="history-detail">
                                         <span>Order</span>
                                         <strong>#@row.OrderID</strong>
@@ -414,12 +449,7 @@
 
                                     <div class="history-detail">
                                         <span>Payment Date</span>
-
-                                        <strong>
-                                            @(row.PaymentDate?.ToString(
-                                                "dd MMM yyyy, HH:mm")
-                                                ?? "Not recorded")
-                                        </strong>
+                                        <strong>@paymentDateText</strong>
                                     </div>
 
                                     <div class="history-detail">
@@ -830,7 +860,8 @@
 
     .history-record-card {
         display: grid;
-        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-columns:
+            92px minmax(0, 1fr);
         overflow: hidden;
         border: 1px solid #e5e7eb;
         border-radius: 16px;

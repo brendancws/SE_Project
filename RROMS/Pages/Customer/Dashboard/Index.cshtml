@@ -1,14 +1,24 @@
 ﻿@page
 @using System.Globalization
 @model RROMS.Pages.Customer.Dashboard.IndexModel
+
 @{
     ViewData["Title"] = "Home";
+
+    string nextReservationTime =
+        Model.NextReservation == null
+            ? string.Empty
+            : DateTime.Today
+                .Add(Model.NextReservation.Time)
+                .ToString("h:mm tt");
 }
 
 <div class="customer-dashboard">
     <section class="dashboard-hero">
         <div>
-            <span class="hero-label">Customer Portal</span>
+            <span class="hero-label">
+                Customer Portal
+            </span>
 
             <h1>
                 Welcome back, @Model.CustomerName
@@ -35,8 +45,10 @@
 
     <section class="dashboard-summary-grid"
              aria-label="Customer overview">
+
         <article class="summary-card">
-            <div class="summary-icon reservation-icon">
+            <div class="summary-icon reservation-icon"
+                 aria-hidden="true">
                 📅
             </div>
 
@@ -53,7 +65,7 @@
                     </strong>
 
                     <small>
-                        @Model.NextReservation.Time.ToString(@"hh\:mm")
+                        @nextReservationTime
                         · @Model.BookingReference
                     </small>
                 }
@@ -66,7 +78,8 @@
         </article>
 
         <article class="summary-card">
-            <div class="summary-icon order-icon">
+            <div class="summary-icon order-icon"
+                 aria-hidden="true">
                 🍽️
             </div>
 
@@ -81,7 +94,8 @@
 
                     <small>
                         @(Model.LatestOrder.Status ?? "Pending")
-                        · RM @((Model.LatestOrder.TotalAmount ?? 0m)
+                        ·
+                        RM @((Model.LatestOrder.TotalAmount ?? 0m)
                             .ToString(
                                 "0.00",
                                 CultureInfo.InvariantCulture))
@@ -90,13 +104,17 @@
                 else
                 {
                     <strong>No orders yet</strong>
-                    <small>Browse the menu to get started</small>
+
+                    <small>
+                        Browse the menu to get started
+                    </small>
                 }
             </div>
         </article>
 
         <article class="summary-card">
-            <div class="summary-icon notification-icon">
+            <div class="summary-icon notification-icon"
+                 aria-hidden="true">
                 🔔
             </div>
 
@@ -110,13 +128,13 @@
                 </strong>
 
                 <small>
-    @(Model.UnreadNotificationCount switch
-    {
-        0 => "You're all caught up",
-        1 => "New update waiting",
-        _ => "New updates waiting"
-    })
-</small>
+                    @(Model.UnreadNotificationCount switch
+                    {
+                        0 => "You're all caught up",
+                        1 => "New update waiting",
+                        _ => "New updates waiting"
+                    })
+                </small>
             </div>
         </article>
     </section>
@@ -152,11 +170,18 @@
                     </div>
 
                     <div class="visit-details">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="d-flex
+                                    align-items-center
+                                    gap-2
+                                    flex-wrap">
+
                             <h3>@Model.BookingReference</h3>
 
-                            <span class="badge @RROMS.Pages.Customer.Dashboard.IndexModel.ReservationBadgeClass(Model.NextReservation.Status)">
-                                @(Model.NextReservation.Status ?? "Pending")
+                            <span class="badge
+                                         @RROMS.Pages.Customer.Dashboard.IndexModel.ReservationBadgeClass(
+                                             Model.NextReservation.Status)">
+                                @(Model.NextReservation.Status
+                                    ?? "Pending")
                             </span>
                         </div>
 
@@ -164,18 +189,20 @@
                             @Model.NextReservation.Date.ToString(
                                 "dddd, dd MMMM yyyy")
                             at
-                            @Model.NextReservation.Time.ToString(@"hh\:mm")
+                            @nextReservationTime
                         </p>
 
                         <div class="detail-list">
                             <span>
                                 <strong>Table:</strong>
+
                                 @(Model.NextReservation.Table?.TableNumber
                                     ?? "-")
                             </span>
 
                             <span>
                                 <strong>Guests:</strong>
+
                                 @Model.NextReservation.NumberOfGuests
                             </span>
                         </div>
@@ -185,7 +212,10 @@
             else
             {
                 <div class="empty-state">
-                    <div class="empty-icon">📅</div>
+                    <div class="empty-icon"
+                         aria-hidden="true">
+                        📅
+                    </div>
 
                     <div>
                         <h3>No upcoming reservation</h3>
@@ -228,7 +258,9 @@
                         <h3>@Model.OrderReference</h3>
                     </div>
 
-                    <span class="badge @RROMS.Pages.Customer.Dashboard.IndexModel.OrderBadgeClass(Model.LatestOrder.Status)">
+                    <span class="badge
+                                 @RROMS.Pages.Customer.Dashboard.IndexModel.OrderBadgeClass(
+                                     Model.LatestOrder.Status)">
                         @(Model.LatestOrder.Status ?? "Pending")
                     </span>
                 </div>
@@ -236,6 +268,7 @@
                 <div class="order-metrics">
                     <div>
                         <span>Total</span>
+
                         <strong>
                             RM @((Model.LatestOrder.TotalAmount ?? 0m)
                                 .ToString(
@@ -246,6 +279,7 @@
 
                     <div>
                         <span>Placed</span>
+
                         <strong>
                             @(Model.LatestOrder.OrderDate?.ToString(
                                 "dd MMM yyyy")
@@ -255,6 +289,7 @@
 
                     <div>
                         <span>Booking</span>
+
                         <strong>
                             @(Model.LatestOrder.ReservationID.HasValue
                                 ? $"RES-{Model.LatestOrder.ReservationID.Value:D6}"
@@ -266,7 +301,10 @@
             else
             {
                 <div class="empty-state compact-empty">
-                    <div class="empty-icon">🍽️</div>
+                    <div class="empty-icon"
+                         aria-hidden="true">
+                        🍽️
+                    </div>
 
                     <div>
                         <h3>No orders yet</h3>
@@ -300,7 +338,11 @@
         <div class="quick-actions-grid">
             <a asp-page="/Customer/Reservations/Create"
                class="quick-action-card">
-                <span class="quick-action-icon">📅</span>
+
+                <span class="quick-action-icon"
+                      aria-hidden="true">
+                    📅
+                </span>
 
                 <span>
                     <strong>Book a Table</strong>
@@ -310,7 +352,11 @@
 
             <a asp-page="/Customer/Menu/Index"
                class="quick-action-card">
-                <span class="quick-action-icon">📖</span>
+
+                <span class="quick-action-icon"
+                      aria-hidden="true">
+                    📖
+                </span>
 
                 <span>
                     <strong>Browse Menu</strong>
@@ -320,7 +366,11 @@
 
             <a asp-page="/Customer/Orders/Index"
                class="quick-action-card">
-                <span class="quick-action-icon">🍽️</span>
+
+                <span class="quick-action-icon"
+                      aria-hidden="true">
+                    🍽️
+                </span>
 
                 <span>
                     <strong>Track Orders</strong>
@@ -330,10 +380,15 @@
 
             <a asp-page="/Customer/Notifications/Index"
                class="quick-action-card">
-                <span class="quick-action-icon">🔔</span>
+
+                <span class="quick-action-icon"
+                      aria-hidden="true">
+                    🔔
+                </span>
 
                 <span>
                     <strong>Notifications</strong>
+
                     <small>
                         @Model.UnreadNotificationCount unread
                     </small>
@@ -370,7 +425,8 @@
                 #1f2937 60%,
                 #374151 100%
             );
-        box-shadow: 0 18px 40px rgba(31, 41, 55, 0.16);
+        box-shadow:
+            0 18px 40px rgba(31, 41, 55, 0.16);
     }
 
     .hero-label,
@@ -400,45 +456,46 @@
 
     .hero-actions {
         display: flex;
+        flex-shrink: 0;
         flex-wrap: wrap;
         gap: 12px;
-        flex-shrink: 0;
     }
 
     .dashboard-primary-btn,
     .dashboard-secondary-btn {
-        border-radius: 10px;
         padding: 10px 18px;
+        border-radius: 10px;
         font-weight: 700;
     }
 
     .dashboard-primary-btn {
         border-color: #f59e0b;
-        background: #f59e0b;
         color: #111827;
+        background: #f59e0b;
     }
 
     .dashboard-primary-btn:hover {
         border-color: #d97706;
-        background: #d97706;
         color: white;
+        background: #d97706;
     }
 
     .dashboard-secondary-btn {
         border: 1px solid #d1d5db;
-        background: white;
         color: #1f2937;
+        background: white;
     }
 
     .dashboard-secondary-btn:hover {
         border-color: #9ca3af;
-        background: #f9fafb;
         color: #111827;
+        background: #f9fafb;
     }
 
     .dashboard-summary-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
         gap: 18px;
     }
 
@@ -447,14 +504,15 @@
     .quick-action-card {
         border: 1px solid #e5e7eb;
         background: white;
-        box-shadow: 0 8px 22px rgba(31, 41, 55, 0.05);
+        box-shadow:
+            0 8px 22px rgba(31, 41, 55, 0.05);
     }
 
     .summary-card {
         display: flex;
+        min-width: 0;
         align-items: center;
         gap: 15px;
-        min-width: 0;
         padding: 20px;
         border-radius: 16px;
     }
@@ -518,8 +576,8 @@
     }
 
     .dashboard-panel {
-        border-radius: 18px;
         padding: 26px;
+        border-radius: 18px;
     }
 
     .panel-header,
@@ -575,8 +633,8 @@
         align-items: center;
         justify-content: center;
         border-radius: 14px;
-        background: #1f2937;
         color: white;
+        background: #1f2937;
     }
 
     .visit-day {
@@ -630,7 +688,8 @@
 
     .order-metrics {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns:
+            repeat(3, 1fr);
         gap: 12px;
         margin-top: 18px;
     }
@@ -661,9 +720,9 @@
 
     .empty-state {
         display: flex;
+        min-height: 160px;
         align-items: center;
         gap: 18px;
-        min-height: 160px;
         padding: 24px;
         border: 1px dashed #d1d5db;
         border-radius: 16px;
@@ -701,15 +760,16 @@
 
     .quick-actions-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
         gap: 16px;
     }
 
     .quick-action-card {
         display: flex;
+        min-width: 0;
         align-items: center;
         gap: 14px;
-        min-width: 0;
         padding: 18px;
         border-radius: 15px;
         color: #1f2937;
@@ -721,10 +781,11 @@
     }
 
     .quick-action-card:hover {
-        transform: translateY(-2px);
         border-color: #f59e0b;
         color: #111827;
-        box-shadow: 0 12px 28px rgba(31, 41, 55, 0.09);
+        box-shadow:
+            0 12px 28px rgba(31, 41, 55, 0.09);
+        transform: translateY(-2px);
     }
 
     .quick-action-icon {
@@ -764,7 +825,8 @@
         }
 
         .quick-actions-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
         }
     }
 

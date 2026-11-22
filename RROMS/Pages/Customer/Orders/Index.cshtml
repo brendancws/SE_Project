@@ -258,9 +258,7 @@
 
                             <div class="order-heading-content">
                                 <span class="order-date">
-                                    @(order.OrderDate?.ToString(
-                                        "dd MMM yyyy, HH:mm")
-                                        ?? "Date not recorded")
+                                    @order.OrderDateText
                                 </span>
 
                                 <h3>Order #@order.OrderID</h3>
@@ -289,9 +287,7 @@
                                 <span>Order Date</span>
 
                                 <strong>
-                                    @(order.OrderDate?.ToString(
-                                        "dd MMM yyyy")
-                                        ?? "-")
+                                    @order.OrderDateOnlyText
                                 </strong>
                             </div>
 
@@ -299,9 +295,7 @@
                                 <span>Order Time</span>
 
                                 <strong>
-                                    @(order.OrderDate?.ToString(
-                                        "HH:mm")
-                                        ?? "-")
+                                    @order.OrderTimeText
                                 </strong>
                             </div>
 
@@ -1098,8 +1092,8 @@
 
     .order-progress {
         display: flex;
-        align-items: flex-start;
         width: 100%;
+        align-items: flex-start;
         overflow-x: auto;
         padding: 5px 2px 8px;
     }
