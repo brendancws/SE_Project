@@ -324,6 +324,155 @@
         </div>
     </section>
 
+    @if (Model.HasRecommendations)
+{
+    <section class="recommendations-section">
+        <div class="recommendations-header">
+            <div>
+                <span class="panel-eyebrow">
+                    @Model.RecommendationEyebrow
+                </span>
+
+                <h2>@Model.RecommendationTitle</h2>
+
+                <p>
+                    @Model.RecommendationDescription
+                </p>
+            </div>
+
+            <a asp-page="/Customer/Menu/Index"
+               class="panel-link">
+                View full menu
+            </a>
+        </div>
+
+        <div class="recommendation-grid">
+            @foreach (var dish in Model.RecommendedDishes)
+            {
+                <article class="recommendation-card">
+                    <div class="recommendation-image-wrapper">
+                        @if (!string.IsNullOrWhiteSpace(
+                            dish.ImageURL))
+                        {
+                            <img src="@dish.ImageURL"
+                                 alt="@dish.Name"
+                                 class="recommendation-image"
+                                 loading="lazy"
+                                 onerror="this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none');" />
+
+                            <div class="recommendation-image-fallback d-none"
+                                 aria-hidden="true">
+                                @GetMenuInitials(dish.Name)
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="recommendation-image-fallback"
+                                 aria-hidden="true">
+                                @GetMenuInitials(dish.Name)
+                            </div>
+                        }
+
+                        <span class="recommendation-category">
+                            @dish.CategoryName
+                        </span>
+                    </div>
+
+                    <div class="recommendation-content">
+                        <div class="recommendation-title-row">
+                            <h3>@dish.Name</h3>
+
+                            <strong>
+                                RM @dish.Price.ToString(
+                                    "0.00",
+                                    CultureInfo.InvariantCulture)
+                            </strong>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            dish.Description))
+                        {
+                            <p class="recommendation-description">
+                                @dish.Description
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="recommendation-description">
+                                An available Dineflow dish selected
+                                for your next dining experience.
+                            </p>
+                        }
+
+                        <div class="recommendation-reason">
+                            <span aria-hidden="true">
+                                @(Model.RecommendationsArePersonalized
+                                    ? "★"
+                                    : "↗")
+                            </span>
+
+                            <span>@dish.Reason</span>
+                        </div>
+
+                        <div class="recommendation-actions">
+                            <a asp-page="/Customer/Menu/Index"
+                               class="recommendation-menu-link">
+                                View Menu
+                            </a>
+
+                            <form method="post"
+                                  asp-page="/Customer/Cart/Index"
+                                  asp-page-handler="Add"
+                                  class="recommendation-cart-form">
+
+                                <input type="hidden"
+                                       name="menuItemId"
+                                       value="@dish.MenuItemID" />
+
+                                <input type="hidden"
+                                       name="quantity"
+                                       value="1" />
+
+                                <button type="submit"
+                                        class="recommendation-add-button">
+                                    Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="recommendation-explanation">
+            <span class="recommendation-explanation-icon"
+                  aria-hidden="true">
+                i
+            </span>
+
+            <p>
+                @if (Model.RecommendationsArePersonalized)
+                {
+                    <text>
+                        Recommendations use your previous
+                        non-cancelled orders and currently available
+                        dishes. Recently ordered items are avoided
+                        when other choices are available.
+                    </text>
+                }
+                else
+                {
+                    <text>
+                        These suggestions use currently available
+                        dishes and ordering popularity across
+                        Dineflow.
+                    </text>
+                }
+            </p>
+        </div>
+    </section>
+}
+
     <section class="quick-actions-section">
         <div class="section-heading">
             <div>
@@ -397,6 +546,40 @@
         </div>
     </section>
 </div>
+
+@functions {
+    private static string GetMenuInitials(
+        string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "DF";
+        }
+
+        string[] words =
+            name.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length == 1)
+        {
+            return words[0]
+                .Substring(
+                    0,
+                    Math.Min(
+                        2,
+                        words[0].Length))
+                .ToUpperInvariant();
+        }
+
+        return string.Concat(
+            words
+                .Take(2)
+                .Select(word =>
+                    char.ToUpperInvariant(
+                        word[0])));
+    }
+}
 
 <style>
     .customer-dashboard {
@@ -814,6 +997,269 @@
         overflow-wrap: anywhere;
     }
 
+    .recommendations-section {
+    padding: 26px;
+    border: 1px solid #e5e7eb;
+    border-radius: 19px;
+    background: white;
+    box-shadow:
+        0 9px 27px rgba(31, 41, 55, 0.06);
+}
+
+.recommendations-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 18px;
+}
+
+.recommendations-header h2 {
+    margin: 0 0 6px;
+    color: #111827;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.recommendations-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.recommendation-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: white;
+    box-shadow:
+        0 7px 20px rgba(31, 41, 55, 0.05);
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.recommendation-card:hover {
+    border-color: #fbbf24;
+    box-shadow:
+        0 13px 30px rgba(31, 41, 55, 0.1);
+    transform: translateY(-3px);
+}
+
+.recommendation-image-wrapper {
+    position: relative;
+    height: 170px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            135deg,
+            #ffedd5,
+            #fde68a
+        );
+}
+
+.recommendation-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    transition:
+        transform 0.25s ease;
+}
+
+.recommendation-card:hover
+.recommendation-image {
+    transform: scale(1.035);
+}
+
+.recommendation-image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #92400e;
+    font-size: 30px;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+}
+
+.recommendation-image.d-none,
+.recommendation-image-fallback.d-none {
+    display: none !important;
+}
+
+.recommendation-category {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    padding: 6px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    color: #111827;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 4px 12px rgba(31, 41, 55, 0.12);
+    font-size: 9px;
+    font-weight: 850;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+}
+
+.recommendation-content {
+    display: flex;
+    min-height: 220px;
+    flex-direction: column;
+    padding: 17px;
+}
+
+.recommendation-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 13px;
+}
+
+.recommendation-title-row h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.recommendation-title-row > strong {
+    flex-shrink: 0;
+    color: #b45309;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.recommendation-description {
+    display: -webkit-box;
+    min-height: 42px;
+    overflow: hidden;
+    margin: 10px 0 12px;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.recommendation-reason {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 15px;
+    padding: 9px 10px;
+    border-radius: 9px;
+    color: #78350f;
+    background: #fffbeb;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.recommendation-reason > span:first-child {
+    flex-shrink: 0;
+    color: #d97706;
+}
+
+.recommendation-actions {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 0.85fr)
+        minmax(0, 1.15fr);
+    gap: 8px;
+    margin-top: auto;
+}
+
+.recommendation-cart-form {
+    margin: 0;
+}
+
+.recommendation-menu-link,
+.recommendation-add-button {
+    min-height: 39px;
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 11px;
+    border: 1px solid;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.recommendation-menu-link {
+    border-color: #d1d5db;
+    color: #374151;
+    background: white;
+}
+
+.recommendation-menu-link:hover {
+    border-color: #9ca3af;
+    color: #111827;
+    background: #f9fafb;
+}
+
+.recommendation-add-button {
+    border-color: #f59e0b;
+    color: #111827;
+    background: #f59e0b;
+}
+
+.recommendation-add-button:hover {
+    border-color: #d97706;
+    color: white;
+    background: #d97706;
+}
+
+.recommendation-explanation {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 17px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: #1e3a8a;
+    background: #eff6ff;
+}
+
+.recommendation-explanation-icon {
+    width: 21px;
+    height: 21px;
+    display: flex;
+    flex: 0 0 21px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    background: #2563eb;
+    font-size: 9px;
+    font-weight: 850;
+}
+
+.recommendation-explanation p {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
     @@media (max-width: 1150px) {
         .dashboard-hero {
             align-items: flex-start;
@@ -828,6 +1274,20 @@
             grid-template-columns:
                 repeat(2, minmax(0, 1fr));
         }
+
+        .recommendation-grid {
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+}
+
+.recommendation-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+.recommendation-card:last-child:nth-child(odd)
+.recommendation-image-wrapper {
+    height: 210px;
+}
     }
 
     @@media (max-width: 800px) {
@@ -854,5 +1314,24 @@
         .visit-card {
             align-items: flex-start;
         }
+
+        .recommendations-header {
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.recommendation-grid {
+    grid-template-columns: 1fr;
+}
+
+.recommendation-card:last-child:nth-child(odd) {
+    grid-column: auto;
+}
+
+.recommendation-image-wrapper,
+.recommendation-card:last-child:nth-child(odd)
+.recommendation-image-wrapper {
+    height: 190px;
+}
     }
 </style>
