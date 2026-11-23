@@ -828,10 +828,8 @@
                 {
                     <li class="schedule-row">
                         <div class="schedule-time">
-                            @DateTime.Today
-                                .Add(reservation.Time)
-                                .ToString("h:mm tt")
-                        </div>
+    @(DateTime.Today.Add(reservation.Time).ToString("h:mm tt"))
+</div>
 
                         <div class="schedule-customer">
                             <div class="schedule-customer-name">
