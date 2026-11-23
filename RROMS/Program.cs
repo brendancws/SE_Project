@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
+using RROMS.Services;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,6 +65,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString(
             "DefaultConnection")));
 
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection(
+        "SmtpSettings"));
+
 // ==========================================
 // 3. PASSWORD HASHING
 // ==========================================
@@ -79,6 +84,10 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IPasswordHasher<RROMS.Models.Admin>,
     PasswordHasher<RROMS.Models.Admin>>();
+
+builder.Services.AddScoped<
+    IEmailService,
+    GmailEmailService>();
 
 // ==========================================
 // 4. COOKIE AUTHENTICATION
