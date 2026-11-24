@@ -42,6 +42,12 @@ builder.Services.AddRazorPages(options =>
         "/Customer/Account/Register");
 
     options.Conventions.AllowAnonymousToPage(
+    "/Customer/Account/ForgotPassword");
+
+    options.Conventions.AllowAnonymousToPage(
+    "/Customer/Account/ResetPassword");
+
+    options.Conventions.AllowAnonymousToPage(
         "/Customer/Dashboard/Index");
 
     // Administrator authorisation

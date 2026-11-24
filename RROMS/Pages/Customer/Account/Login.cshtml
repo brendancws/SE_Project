@@ -57,10 +57,15 @@
 
         <div class="auth-field">
             <div class="auth-label-row">
-                <label asp-for="Password">
-                    Password
-                </label>
-            </div>
+    <label asp-for="Password">
+        Password
+    </label>
+
+    <a asp-page="./ForgotPassword"
+       class="forgot-password-link">
+        Forgot Password?
+    </a>
+</div>
 
             <div class="auth-input-wrapper">
                 <span class="auth-input-icon"
@@ -262,6 +267,18 @@
         color: white;
         background: #d97706;
     }
+
+.forgot-password-link {
+    color: #d97706;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.forgot-password-link:hover {
+    color: #92400e;
+    text-decoration: underline;
+}
 
     .auth-submit-button {
         min-height: 48px;
