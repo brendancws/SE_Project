@@ -31,6 +31,8 @@ namespace RROMS.Data
 
         public DbSet<Payment> Payments { get; set; }
 
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
         public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<Feedback> Feedbacks { get; set; }
@@ -71,6 +73,9 @@ namespace RROMS.Data
 
             modelBuilder.Entity<Payment>()
                 .ToTable("Payment");
+
+            modelBuilder.Entity<PasswordResetToken>()
+    .ToTable("PasswordResetToken");
 
             modelBuilder.Entity<Notification>()
                 .ToTable("Notification");

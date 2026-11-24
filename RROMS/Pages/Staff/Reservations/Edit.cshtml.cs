@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
+using RROMS.Services;
 
 namespace RROMS.Pages.Staff.Reservations
 {
@@ -11,9 +12,14 @@ namespace RROMS.Pages.Staff.Reservations
     {
         private readonly ApplicationDbContext _context;
 
-        public EditModel(ApplicationDbContext context)
+        private readonly IEmailService _emailService;
+
+        public EditModel(
+    ApplicationDbContext context,
+    IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public Reservation Reservation { get; set; } = null!;
@@ -196,6 +202,71 @@ namespace RROMS.Pages.Staff.Reservations
                         CreatedAt = DateTime.Now,
                         IsRead = false
                     });
+
+                if (reservation.Customer?.Email != null)
+                {
+                    string emailTitle =
+                        normalizedStatus == "Confirmed"
+                            ? "Reservation Confirmed"
+                            : normalizedStatus == "Cancelled"
+                                ? "Reservation Cancelled"
+                                : "Reservation Updated";
+
+                    string emailContent =
+                        $"""
+        <p>Hello {reservation.Customer.Name},</p>
+
+        <p>
+            Your reservation status has been updated.
+        </p>
+
+        <div style="
+            background:#f9fafb;
+            border-radius:10px;
+            padding:14px;
+            margin:18px 0;">
+
+            <strong>Reservation Reference</strong><br/>
+            RES-{reservation.ReservationID:D6}
+
+            <br/><br/>
+
+            <strong>Date</strong><br/>
+            {reservation.Date:dd MMM yyyy}
+
+            <br/><br/>
+
+            <strong>Time</strong><br/>
+            {DateTime.Today.Add(reservation.Time):h:mm tt}
+
+            <br/><br/>
+
+            <strong>Table</strong><br/>
+            {reservation.Table?.TableNumber}
+
+            <br/><br/>
+
+            <strong>Status</strong><br/>
+            {normalizedStatus}
+        </div>
+
+        <p>
+            Thank you for choosing Dineflow.
+        </p>
+
+        <p>
+            Regards,<br/>
+            Dineflow Reservations Team
+        </p>
+        """;
+
+                    await _emailService.SendEmailAsync(
+                        reservation.Customer.Email,
+                        emailTitle,
+                        EmailTemplates.Wrap(
+                            emailTitle,
+                            emailContent));
+                }
             }
 
             // Reservation and notification are saved together.
