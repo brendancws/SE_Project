@@ -1,0 +1,76 @@
+﻿namespace RROMS.Services
+{
+    public static class EmailTemplates
+    {
+        public static string Wrap(
+            string title,
+            string content)
+        {
+            return $"""
+            <!DOCTYPE html>
+            <html>
+            <body style="
+                margin:0;
+                padding:24px;
+                background:#f3f4f6;
+                font-family:'Segoe UI',Arial,sans-serif;">
+
+                <div style="
+                    max-width:620px;
+                    margin:auto;
+                    background:#ffffff;
+                    border:1px solid #e5e7eb;
+                    border-radius:16px;
+                    overflow:hidden;">
+
+                    <div style="
+                        background:#f59e0b;
+                        padding:24px;">
+
+                        <h1 style="
+            margin:0;
+            color:white;
+            font-size:32px;
+            font-weight:800;">
+                            Dineflow
+                        </h1>
+
+                        <p style="
+                            margin:8px 0 0;
+                            color:#fef3c7;">
+                            Restaurant Reservation & Ordering
+                        </p>
+                    </div>
+
+                    <div style="padding:32px;">
+
+                        <h2 style="
+                            margin-top:0;
+                            color:#111827;">
+                            {title}
+                        </h2>
+
+                        {content}
+
+                    </div>
+
+                    <div style="
+                        padding:18px 32px;
+                        border-top:1px solid #e5e7eb;
+                        background:#f9fafb;
+                        color:#6b7280;
+                        font-size:13px;">
+
+                        This is an automated message from Dineflow.
+            Please do not reply directly to this email.
+
+            © Dineflow Restaurant Reservation & Ordering System
+
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+        }
+    }
+}

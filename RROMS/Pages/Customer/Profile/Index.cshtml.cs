@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
+using RROMS.Services;
 using CustomerModel = RROMS.Models.Customer;
 
 namespace RROMS.Pages.Customer.Profile
@@ -18,12 +19,16 @@ namespace RROMS.Pages.Customer.Profile
         private readonly IPasswordHasher<CustomerModel>
     _passwordHasher;
 
+        private readonly IEmailService _emailService;
+
         public IndexModel(
-            ApplicationDbContext context,
-            IPasswordHasher<CustomerModel> passwordHasher)
+    ApplicationDbContext context,
+    IPasswordHasher<CustomerModel> passwordHasher,
+    IEmailService emailService)
         {
             _context = context;
             _passwordHasher = passwordHasher;
+            _emailService = emailService;
         }
 
         // Read-only display values.
@@ -355,6 +360,61 @@ namespace RROMS.Pages.Customer.Profile
                     PasswordInput.NewPassword);
 
             await _context.SaveChangesAsync();
+
+            string emailContent =
+    $"""
+    <p>Hello {customer.Name},</p>
+
+    <p>
+        This email confirms that your
+        Dineflow account password was
+        successfully changed.
+    </p>
+
+    <div style="
+        background:#f9fafb;
+        border-radius:10px;
+        padding:14px;
+        margin:18px 0;">
+
+        <strong>Date and Time</strong><br/>
+
+        {DateTime.Now:dd MMM yyyy h:mm tt} MYT
+    </div>
+
+    <div style="
+        background:#fef2f2;
+        border-left:4px solid #dc2626;
+        padding:14px;
+        margin:18px 0;">
+
+        <strong>
+            Did not make this change?
+        </strong>
+
+        <p style="margin-top:8px;">
+            Contact support immediately.
+        </p>
+    </div>
+
+    <p>
+        For security reasons, Dineflow
+        never includes passwords in email messages.
+    </p>
+
+    <p>
+        Regards,<br/>
+        Dineflow Security Team
+    </p>
+    """;
+
+            await _emailService.SendEmailAsync(
+                customer.Email,
+                "Your Dineflow Password Has Been Changed",
+                EmailTemplates.Wrap(
+                    "Password Changed Successfully",
+                    emailContent)
+            );
 
             StatusMessage =
                 "Your password has been changed successfully.";
