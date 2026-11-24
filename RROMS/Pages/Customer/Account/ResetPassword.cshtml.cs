@@ -48,6 +48,8 @@ namespace RROMS.Pages.Customer.Account
         [TempData]
         public string? StatusMessage { get; set; }
 
+        public bool InvalidToken { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
             if (string.IsNullOrWhiteSpace(Token))
@@ -62,11 +64,11 @@ namespace RROMS.Pages.Customer.Account
                         token.Token == Token);
 
             if (resetToken == null ||
-                resetToken.Used ||
-                resetToken.ExpiresAt < DateTime.Now)
+    resetToken.Used ||
+    resetToken.ExpiresAt < DateTime.Now)
             {
-                return BadRequest(
-                    "This password reset link is invalid or has expired.");
+                InvalidToken = true;
+                return Page();
             }
 
             return Page();
@@ -86,11 +88,11 @@ namespace RROMS.Pages.Customer.Account
                         token.Token == Token);
 
             if (resetToken == null ||
-                resetToken.Used ||
-                resetToken.ExpiresAt < DateTime.Now)
+    resetToken.Used ||
+    resetToken.ExpiresAt < DateTime.Now)
             {
-                return BadRequest(
-                    "This password reset link is invalid or has expired.");
+                InvalidToken = true;
+                return Page();
             }
 
             CustomerModel customer =
