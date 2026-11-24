@@ -171,14 +171,14 @@ namespace RROMS.Pages.Admin
             TotalRevenue = await _db.CustomerOrders
                 .AsNoTracking()
                 .Where(order =>
-                    order.Status == "Served")
+    order.Status == "Completed")
                 .SumAsync(order =>
                     order.TotalAmount ?? 0m);
 
             TodayRevenue = await _db.CustomerOrders
                 .AsNoTracking()
                 .Where(order =>
-                    order.Status == "Served" &&
+                    order.Status == "Completed" &&
                     order.OrderDate.HasValue &&
                     order.OrderDate.Value >= today &&
                     order.OrderDate.Value < tomorrow)
@@ -338,15 +338,15 @@ namespace RROMS.Pages.Admin
                         .ToList());
 
             // -------------------------------------------------
-            // Chart 3: Served revenue during the last 7 days
+            // Chart 3: Completed revenue during the last 7 days
             // -------------------------------------------------
 
             var start7 = today.AddDays(-6);
 
-            var servedOrders = await _db.CustomerOrders
+            var completedOrders = await _db.CustomerOrders
                 .AsNoTracking()
                 .Where(order =>
-                    order.Status == "Served" &&
+                    order.Status == "Completed" &&
                     order.OrderDate.HasValue &&
                     order.OrderDate.Value >= start7 &&
                     order.OrderDate.Value < tomorrow)
@@ -373,7 +373,7 @@ namespace RROMS.Pages.Admin
 
             var revenueAmounts = last7Days
                 .Select(date =>
-                    servedOrders
+                    completedOrders
                         .Where(order =>
                             order.OrderDate.Date == date.Date)
                         .Sum(order =>
