@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
+using RROMS.Services;
 
 namespace RROMS.Pages.Customer.Reservations
 {
@@ -16,9 +17,14 @@ namespace RROMS.Pages.Customer.Reservations
 
         private readonly ApplicationDbContext _context;
 
-        public CreateModel(ApplicationDbContext context)
+        private readonly IEmailService _emailService;
+
+        public CreateModel(
+    ApplicationDbContext context,
+    IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         [BindProperty]
@@ -170,6 +176,73 @@ namespace RROMS.Pages.Customer.Reservations
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
+
+            string emailContent =
+    $"""
+    <p>Hello,</p>
+
+    <p>
+        Your reservation request has been submitted
+        successfully and is awaiting staff confirmation.
+    </p>
+
+    <div style="
+        background:#f9fafb;
+        border-radius:10px;
+        padding:14px;
+        margin:18px 0;">
+
+        <strong>Reservation Reference</strong><br/>
+        RES-{reservation.ReservationID:D6}
+    </div>
+
+    <div style="
+        background:#f9fafb;
+        border-radius:10px;
+        padding:14px;
+        margin:18px 0;">
+
+        <strong>Date</strong><br/>
+        {date:dd MMM yyyy}
+
+        <br/><br/>
+
+        <strong>Time</strong><br/>
+        {DateTime.Today.Add(time):h:mm tt}
+
+        <br/><br/>
+
+        <strong>Guests</strong><br/>
+        {numberOfGuests}
+
+        <br/><br/>
+
+        <strong>Table</strong><br/>
+        {table.TableNumber}
+
+        <br/><br/>
+
+        <strong>Status</strong><br/>
+        Pending
+    </div>
+
+    <p>
+        You will receive another email once the
+        reservation has been confirmed or cancelled.
+    </p>
+
+    <p>
+        Regards,<br/>
+        Dineflow Reservations Team
+    </p>
+    """;
+
+            await _emailService.SendEmailAsync(
+                User.FindFirstValue(ClaimTypes.Email)!,
+                "Reservation Submitted",
+                EmailTemplates.Wrap(
+                    "Reservation Submitted",
+                    emailContent));
 
             string reservationTime =
     DateTime.Today
