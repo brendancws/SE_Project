@@ -72,5 +72,132 @@
             </html>
             """;
         }
+
+        public static string PaymentReceipt(
+    string customerName,
+    int orderId,
+    decimal amount,
+    string transactionNo,
+    DateTime paymentDate)
+        {
+            return Wrap(
+                "Payment Receipt",
+                $"""
+        <p>Hello {customerName},</p>
+
+        <p>
+            Your payment has been received successfully.
+            Below are your payment details.
+        </p>
+
+        <div style="
+            background:#f9fafb;
+            border-radius:12px;
+            padding:18px;
+            margin:20px 0;">
+
+            <strong>Order Number</strong><br>
+            ORD-{orderId:D6}
+
+        </div>
+
+        <div style="
+            background:#f9fafb;
+            border-radius:12px;
+            padding:18px;
+            margin:14px 0;">
+
+            <strong>Transaction Number</strong><br>
+            {transactionNo}
+
+            <br><br>
+
+            <strong>Payment Date</strong><br>
+            {paymentDate:dd MMM yyyy hh:mm tt}
+
+            <br><br>
+
+            <strong>Payment Method</strong><br>
+            Card
+
+            <br><br>
+
+            <strong>Status</strong><br>
+            Paid
+
+            <br><br>
+
+            <strong>Amount Paid</strong><br>
+            RM {amount:0.00}
+        </div>
+
+        <p>
+            Thank you for choosing Dineflow.
+        </p>
+
+        <p>
+            Regards,<br>
+            Dineflow Payments Team
+        </p>
+        """);
+        }
+
+        public static string OrderConfirmationPendingPayment(
+    string customerName,
+    int orderId,
+    decimal amount)
+        {
+            return Wrap(
+                "Order Confirmation",
+                $"""
+        <p>Hello {customerName},</p>
+
+        <p>
+            Your food order has been placed successfully.
+        </p>
+
+        <div style="
+            background:#f9fafb;
+            border-radius:12px;
+            padding:18px;
+            margin:20px 0;">
+
+            <strong>Order Number</strong><br>
+            ORD-{orderId:D6}
+
+        </div>
+
+        <div style="
+            background:#f9fafb;
+            border-radius:12px;
+            padding:18px;
+            margin:14px 0;">
+
+            <strong>Payment Method</strong><br>
+            Cash on Arrival
+
+            <br><br>
+
+            <strong>Payment Status</strong><br>
+            Pending
+
+            <br><br>
+
+            <strong>Amount Due</strong><br>
+            RM {amount:0.00}
+
+        </div>
+
+        <p>
+            Please make payment at the restaurant when you arrive.
+        </p>
+
+        <p>
+            Regards,<br>
+            Dineflow Team
+        </p>
+        """);
+        }
     }
+
 }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using RROMS.Data;
 using RROMS.Models;
 using RROMS.Pages.Customer.Cart;
+using RROMS.Services;
 
 namespace RROMS.Pages.Customer.Payment
 {
@@ -18,10 +19,14 @@ namespace RROMS.Pages.Customer.Payment
             TimeSpan.FromHours(2);
 
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public IndexModel(ApplicationDbContext context)
+        public IndexModel(
+            ApplicationDbContext context,
+            IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public class PaymentLine
@@ -232,6 +237,22 @@ namespace RROMS.Pages.Customer.Payment
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    var customer =
+    await _context.Customers
+        .FirstOrDefaultAsync(c =>
+            c.CustomerID == customerId.Value);
+
+                    if (customer != null)
+                    {
+                        await _emailService.SendEmailAsync(
+                            customer.Email,
+                            "Dineflow Order Confirmation",
+                            EmailTemplates.OrderConfirmationPendingPayment(
+                                customer.Name,
+                                newOrderId,
+                                amount));
+                    }
+
                     CartSession.Clear(
                         HttpContext.Session,
                         customerId.Value);
@@ -308,27 +329,29 @@ namespace RROMS.Pages.Customer.Payment
                             customerId.Value,
                             SelectedReservation);
 
-                    _context.Payments.Add(
-                        new RROMS.Models.Payment
-                        {
-                            OrderID =
-                                newOrderId,
+                    var payment = new RROMS.Models.Payment
+                    {
+                        OrderID =
+        newOrderId,
 
-                            PaymentDate =
-                                DateTime.Now,
+                        PaymentDate =
+        DateTime.Now,
 
-                            Amount =
-                                amount,
+                        Amount =
+        amount,
 
-                            Method =
-                                "Card",
+                        Method =
+        "Card",
 
-                            Status =
-                                "Paid",
+                        Status =
+        "Paid",
 
-                            TransactionNo =
-                                $"SIM-{DateTime.Now:yyyyMMddHHmmss}"
-                        });
+                        TransactionNo =
+        $"SIM-{DateTime.Now:yyyyMMddHHmmss}"
+                    };
+
+                    _context.Payments.Add(payment);
+
 
                     _context.Notifications.Add(
                         new Notification
@@ -354,6 +377,25 @@ namespace RROMS.Pages.Customer.Payment
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    var customer =
+    await _context.Customers
+        .FirstOrDefaultAsync(c =>
+            c.CustomerID == customerId.Value);
+
+                    if (customer != null)
+                    {
+                        await _emailService.SendEmailAsync(
+                            customer.Email,
+                            "Dineflow Payment Receipt",
+                            EmailTemplates.PaymentReceipt(
+                                customer.Name,
+                                newOrderId,
+                                payment.Amount,
+                                payment.TransactionNo ?? "N/A",
+                                payment.PaymentDate ?? DateTime.Now));
+                    }
+
+                  
                     CartSession.Clear(
                         HttpContext.Session,
                         customerId.Value);
