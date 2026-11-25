@@ -39,8 +39,13 @@ namespace RROMS.Pages.Customer.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
             CustomerModel? customer =
-                await _context.Customers
+                        await _context.Customers
                     .FirstOrDefaultAsync(customer =>
                         customer.Email == Email);
 
